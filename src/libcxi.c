@@ -37,9 +37,11 @@
  * @return On success, 0. Else, negative errno.
  * @note This function has been modified to improve readability and efficiency.
  * - Use ssize_t for rc:
- * 		The write system call returns a ssize_t, which should be matched for type consistency.
+ * 		The write system call returns a ssize_t, 
+ * 		which should be matched for type consistency.
  * - Combine conditions for readability and efficiency:
- * 	  By handling negative values (rc < 0) first, the condition rc != len is simpler and only applies to successful writes.
+ * 	  By handling negative values (rc < 0) first, 
+ * 	  the condition rc != len is simpler and only applies to successful writes.
  */
 static int device_write(const struct cxil_dev_priv *dev,
 						const void *cmd, size_t len) 
