@@ -45,6 +45,7 @@ case "${OBS_TARGET_OS}" in
     sle15_sp5_*)    GPU_BRANCH='release/uss-1.1' ;;
     sle15_sp6_*)    GPU_BRANCH='release/uss-1.2' ;;
     cos_3_2_*)      GPU_BRANCH='release/uss-1.2' ;;
+    cos_3_3_*)      GPU_BRANCH='release/uss-1.3' ;;
     csm_1_6_*)      GPU_BRANCH='release/uss-1.2' ;;
     *)              GPU_BRANCH='dev/master' ;;
 esac
@@ -191,6 +192,9 @@ elif command -v zypper > /dev/null; then
                         AMD_RPMS="hip-devel"
                     ;;
         cos_3_2_*)      NVIDIA_RPMS="nvhpc"
+                        AMD_RPMS="hip-devel"
+                    ;;
+        cos_3_3_*)      NVIDIA_RPMS="nvhpc"
                         AMD_RPMS="hip-devel"
                     ;;
         *)              NVIDIA_RPMS="nvhpc-2023"
