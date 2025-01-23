@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* IP/TCP control messaging for CXI benchmarks */
@@ -213,6 +213,7 @@ static int ctrl_init(struct ctrl_connection *ctrl)
 	rc = ctrl_set_rcvtmo(ctrl, &dflt_tmo);
 	if (rc)
 		goto done;
+
 	rc = setsockopt(ctrl->fd, SOL_SOCKET, SO_SNDTIMEO, &dflt_tmo,
 			sizeof(dflt_tmo));
 	if (rc == -1) {
@@ -250,10 +251,10 @@ static int ctrl_exchange_config(struct ctrl_connection *ctrl, const char *name,
 	/* Verify names match */
 	buf_len = strlen(name) + 1;
 	rc = ctrl_exchange_data(ctrl, name, buf_len, peer_buf,
-				MAX_CTRL_DATA_BYTES);
+				sizeof(peer_buf));
 	if (rc < 0)
 		return rc;
-	if (rc != buf_len || strncmp(name, peer_buf, buf_len)) {
+	if (rc != buf_len || strcmp(name, peer_buf)) {
 		fprintf(stderr,
 			"Client and server program names do not match!\n");
 		return -EINVAL;
@@ -262,7 +263,7 @@ static int ctrl_exchange_config(struct ctrl_connection *ctrl, const char *name,
 	/* Verify MAJ.MIN versions match */
 	buf_len = strlen(ver) + 1;
 	rc = ctrl_exchange_data(ctrl, ver, buf_len, peer_buf,
-				MAX_CTRL_DATA_BYTES);
+				sizeof(peer_buf));
 	if (rc < 0)
 		return rc;
 	vers_match = false;
@@ -281,27 +282,24 @@ static int ctrl_exchange_config(struct ctrl_connection *ctrl, const char *name,
 
 	/* Exchange config options */
 	rc = ctrl_exchange_data(ctrl, opts, sizeof(*opts), peer_buf,
-				MAX_CTRL_DATA_BYTES);
+				sizeof(peer_buf));
 	if (rc < 0)
 		return rc;
-
 	if ((size_t)rc != sizeof(*opts)) {
-		fprintf(stderr, "Bad opts size (exp %lu got %d)\n",
+		fprintf(stderr, "Bad opts size (exp %zu got %d)\n",
 			sizeof(*opts), rc);
-		rc = -EINVAL;
-	} else {
-		if (ctrl->is_server)
-			memcpy(opts, peer_buf,
-			       (sizeof(*opts) - sizeof(opts->loc_opts)
-				- sizeof(opts->rmt_opts)));
-
-		peer_opts = (struct util_opts *)peer_buf;
-		memcpy(&opts->rmt_opts, &peer_opts->loc_opts,
-		       sizeof(opts->rmt_opts));
-		rc = 0;
+		return -EINVAL;
 	}
 
-	return rc;
+	peer_opts = (struct util_opts *)peer_buf;
+	if (ctrl->is_server)
+		memcpy(opts, peer_opts,
+		       (sizeof(*opts) - sizeof(opts->loc_opts)
+			- sizeof(opts->rmt_opts)));
+
+	opts->rmt_opts = peer_opts->loc_opts;
+
+	return 0;
 }
 
 /* Exchange client/server NIC fabric addresses */
@@ -378,45 +376,89 @@ int ctrl_close(struct ctrl_connection *ctrl)
 	return rc;
 }
 
+/* Helper function for ctrl_send */
+static ssize_t __ctrl_send(int fd, const void *buf, size_t len)
+{
+	ssize_t bytes;
+
+	bytes = send(fd, buf, len, 0);
+	if (bytes < 0) {
+		int rc = -errno;
+
+		fprintf(stderr, "send() failed: %s\n", strerror(-rc));
+		return rc;
+	} else if (bytes == 0) {
+		fprintf(stderr, "No data sent or remote connection closed\n");
+		return -ECONNABORTED;
+	} else if (bytes != len) {
+		fprintf(stderr, "Bad send size (exp %zu got %zu)\n", len, bytes);
+		return -EIO;
+	}
+
+	return bytes;
+}
+
 /* Encapsulate and send a control message
  * returns -errno on error, 0 on success
  */
-int ctrl_send(struct ctrl_connection *ctrl, const void *buf, size_t size)
+static int ctrl_send(struct ctrl_connection *ctrl, const void *buf, size_t size)
 {
-	int rc;
-	struct ctrl_msg *msg = (struct ctrl_msg *)ctrl->buf;
+	struct ctrl_msg msg = {};
+	ssize_t bytes;
 
 	if (!ctrl || (!buf && size > 0))
 		return -EINVAL;
-	if (size > MAX_CTRL_DATA_BYTES)
-		return -EMSGSIZE;
 
-	msg->pyld_len = size;
-	if (size > 0)
-		memcpy(msg->pyld, buf, size);
-	rc = send(ctrl->fd, ctrl->buf, (size + sizeof(*msg)), 0);
-	if (rc < 0) {
-		rc = -errno;
-		fprintf(stderr, "send() failed: %s\n", strerror(-rc));
-	} else if (rc == 0) {
-		rc = -ECONNABORTED;
-		fprintf(stderr,
-			"No data sent or no data received at remote connection\n");
-	} else {
-		rc = 0;
+	msg.pyld_len = size;
+
+	bytes = __ctrl_send(ctrl->fd, &msg, sizeof(msg));
+	if (bytes < 0)
+		return bytes;
+
+	if (size) {
+		bytes = __ctrl_send(ctrl->fd, buf, size);
+		if (bytes < 0)
+			return bytes;
 	}
 
-	return rc;
+	return 0;
+}
+
+/* Helper function for ctrl_recv */
+static ssize_t __ctrl_recv(int fd, void *buf, size_t len)
+{
+	ssize_t bytes;
+
+	bytes = recv(fd, buf, len, 0);
+	if (bytes < 0) {
+		int rc = -errno;
+
+		/* recv will return EAGAIN when a timeout is set */
+		if (rc == -EAGAIN)
+			rc = -ETIMEDOUT;
+
+		fprintf(stderr, "recv() failed: %s\n", strerror(-rc));
+		return rc;
+	} else if (bytes == 0) {
+		fprintf(stderr, "No data received or remote connection closed\n");
+		return -ECONNABORTED;
+	} else if (bytes != len) {
+		fprintf(stderr, "Bad recv size (exp %zu got %zu)\n", len, bytes);
+		return -EIO;
+	}
+
+	return bytes;
 }
 
 /* Attempt to receive and de-encapsulate a control message
  * returns -errno on error, number of bytes received on success
  */
-int ctrl_recv(struct ctrl_connection *ctrl, void *buf, size_t size,
-	      struct timeval *tmo_tv)
+static int ctrl_recv(struct ctrl_connection *ctrl, void *buf, size_t size,
+		struct timeval *tmo_tv)
 {
 	int rc;
-	struct ctrl_msg *msg = (struct ctrl_msg *)ctrl->buf;
+	struct ctrl_msg msg = {};
+	ssize_t bytes;
 
 	if (!ctrl || (!buf && size > 0))
 		return -EINVAL;
@@ -425,32 +467,50 @@ int ctrl_recv(struct ctrl_connection *ctrl, void *buf, size_t size,
 	if (rc)
 		return rc;
 
-	rc = recv(ctrl->fd, ctrl->buf, CTRL_MSG_BUF_SZ, 0);
-	if (rc < 0) {
-		rc = -errno;
+	bytes = __ctrl_recv(ctrl->fd, &msg, sizeof(msg));
+	if (bytes < 0)
+		return bytes;
 
-		/* recv will return EAGAIN when a timeout is set */
-		if (rc == -EAGAIN)
-			rc = -ETIMEDOUT;
+	if (msg.pyld_len) {
+		if (msg.pyld_len > size) {
+			fprintf(stderr, "Received message (%u) larger than buf (%zu)\n",
+				msg.pyld_len, size);
+			return -EMSGSIZE;
+		}
 
-		fprintf(stderr, "recv() failed: %s\n", strerror(-rc));
-	} else if (rc == 0) {
-		rc = -ECONNABORTED;
-		fprintf(stderr,
-			"No data received or remote connection closed\n");
-	} else if (msg->pyld_len > size) {
-		rc = -EMSGSIZE;
-		fprintf(stderr, "Received message (%u) larger than buf (%lu)\n",
-			msg->pyld_len, size);
+		bytes = __ctrl_recv(ctrl->fd, buf, msg.pyld_len);
+		if (bytes < 0)
+			return bytes;
 	}
 
-	if (rc > 0) {
-		if (msg->pyld_len > 0)
-			memcpy(buf, msg->pyld, msg->pyld_len);
-		rc = msg->pyld_len;
+	return msg.pyld_len;
+}
+
+/* Helper function for ctrl_exchange_data and ctrl_barrier */
+static int __ctrl_exchange_data(struct ctrl_connection *ctrl,
+		const void *cbuf, size_t clen, void *sbuf, size_t slen,
+		struct timeval *tmo)
+{
+	int rc;
+	int rc_recv;
+
+	if (ctrl->is_server) {
+		rc = ctrl_send(ctrl, cbuf, clen);
+		if (rc < 0)
+			return rc;
 	}
 
-	return rc;
+	rc_recv = ctrl_recv(ctrl, sbuf, slen, tmo);
+	if (rc_recv < 0)
+		return rc_recv;
+
+	if (!ctrl->is_server) {
+		rc = ctrl_send(ctrl, cbuf, clen);
+		if (rc < 0)
+			return rc;
+	}
+
+	return rc_recv;
 }
 
 /* Exchange client/server data
@@ -460,26 +520,14 @@ int ctrl_exchange_data(struct ctrl_connection *ctrl, const void *client_buf,
 		       size_t cbuf_size, void *server_buf, size_t sbuf_size)
 {
 	int rc;
-	int rc_recv;
 
 	if (!ctrl || !client_buf || !server_buf)
 		return -EINVAL;
 
-	if (ctrl->is_server) {
-		rc = ctrl_send(ctrl, client_buf, cbuf_size);
-		if (rc < 0)
-			return rc;
-	}
-	rc_recv = ctrl_recv(ctrl, server_buf, sbuf_size, &dflt_tmo);
-	if (rc_recv < 0)
-		return rc_recv;
-	if (!ctrl->is_server) {
-		rc = ctrl_send(ctrl, client_buf, cbuf_size);
-		if (rc < 0)
-			return rc;
-	}
+	rc = __ctrl_exchange_data(ctrl, client_buf, cbuf_size,
+			server_buf, sbuf_size, &dflt_tmo);
 
-	return rc_recv;
+	return rc;
 }
 
 /* Sync client and server */
@@ -493,23 +541,11 @@ int ctrl_barrier(struct ctrl_connection *ctrl, uint64_t tmo_usec, char *label)
 
 	tmo_tv.tv_sec = tmo_usec / SEC2USEC;
 	tmo_tv.tv_usec = tmo_usec % SEC2USEC;
-	if (!ctrl->is_server) {
-		rc = ctrl_send(ctrl, NULL, 0);
-		if (rc < 0)
-			goto done;
-	}
-	rc = ctrl_recv(ctrl, NULL, 0, &tmo_tv);
-	if (rc < 0)
-		goto done;
-	if (ctrl->is_server) {
-		rc = ctrl_send(ctrl, NULL, 0);
-		if (rc < 0)
-			goto done;
-	}
 
-done:
-	if (rc)
-		fprintf(stderr, "%shandshake failed: %s\n", label,
+	rc = __ctrl_exchange_data(ctrl, NULL, 0, NULL, 0, &tmo_tv);
+	if (rc < 0)
+		fprintf(stderr, "%s handshake failed: %s\n", label,
 			strerror(-rc));
+
 	return rc;
 }

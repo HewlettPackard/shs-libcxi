@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI Atomic Memory Operation bandwidth benchmark */
@@ -35,7 +35,7 @@
 #define NONFETCH_U32_HRP_DISABLE_MAX_REV 2
 
 static const char *name = "cxi_atomic_bw";
-static const char *version = "2.1.0";
+static const char *version = "2.2.0";
 
 /* Allocate INI resources */
 int atomic_bw_alloc_ini(struct util_context *util)
@@ -470,7 +470,7 @@ int main(int argc, char **argv)
 
 	/* Signal ready */
 	rc = ctrl_barrier(ctrl, NO_TIMEOUT,
-			  ctrl->is_server ? "Client " : "Server ");
+			  ctrl->is_server ? "Client" : "Server");
 	if (rc)
 		goto cleanup;
 

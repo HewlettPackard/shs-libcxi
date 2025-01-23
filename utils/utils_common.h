@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI benchmark common structures and functions */
@@ -71,7 +71,7 @@
 /* Simple control message header to verify sizes */
 struct ctrl_msg {
 	uint32_t pyld_len;
-	uint8_t pyld[0];
+	/* payload follows */
 } __attribute__((packed));
 
 #define MAX_CTRL_DATA_BYTES (CTRL_MSG_BUF_SZ - sizeof(struct ctrl_msg))
@@ -92,7 +92,7 @@ struct ctrl_connection {
 
 	struct timeval last_rcvtmo;
 	int fd;
-	char buf[CTRL_MSG_BUF_SZ];
+	char buf[CTRL_MSG_BUF_SZ]; /* unused */
 };
 
 /* Combined buffer and associated CXI Memory Descriptor */
@@ -354,9 +354,6 @@ int ctrl_connect(struct ctrl_connection *ctrl, const char *name,
 		 const char *version, struct util_opts *opts,
 		 struct cxi_ep_addr *loc_addr, struct cxi_ep_addr *rmt_addr);
 int ctrl_close(struct ctrl_connection *ctrl);
-int ctrl_send(struct ctrl_connection *ctrl, const void *buf, size_t size);
-int ctrl_recv(struct ctrl_connection *ctrl, void *buf, size_t size,
-	      struct timeval *tmo_tv);
 int ctrl_exchange_data(struct ctrl_connection *ctrl, const void *client_buf,
 		       size_t cbuf_size, void *server_buf, size_t sbuf_size);
 int ctrl_barrier(struct ctrl_connection *ctrl, uint64_t tmo_usec, char *label);

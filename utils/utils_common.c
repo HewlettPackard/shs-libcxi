@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2024 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI benchmark common functions */
@@ -551,7 +551,6 @@ int run_bw_active(struct util_context *util,
 	uint64_t start_time;
 	uint64_t elapsed;
 	uint64_t duration_usec;
-	uint64_t postrun_timeout;
 
 	if (!util || !do_iter)
 		return -EINVAL;
@@ -566,47 +565,33 @@ int run_bw_active(struct util_context *util,
 	 * when running for a duration rather than a number of iterations.
 	 */
 	duration_usec = opts->duration * SEC2USEC;
+
+	rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Pre-run");
+	if (rc)
+		return rc;
+
 	start_time = get_time_usec(util->cxi.dev);
-	if (ctrl->connected && opts->bidirectional) {
-		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Pre-run ");
-		if (rc)
-			return rc;
-	}
 
 	util->count = 0;
 	elapsed = 0;
-	while (((!opts->duration && util->count < opts->iters) ||
-	       (opts->duration && elapsed < duration_usec))) {
+	while ((!opts->duration && util->count < opts->iters) ||
+			(opts->duration && elapsed < duration_usec)) {
 		rc = do_iter(util);
-		if (rc != 0) {
-			if (rc != EAGAIN) {
-				fprintf(stderr, "Iteration failed: %s\n",
-					strerror(abs(rc)));
-				return rc;
-			}
-		} else {
+		if (!rc)
 			util->count++;
+		else if (rc != EAGAIN) {
+			fprintf(stderr, "Iteration failed: %s\n",
+				strerror(abs(rc)));
+			return rc;
 		}
 
 		if (opts->duration)
 			elapsed = get_time_usec(util->cxi.dev) - start_time;
 	}
 
-	if (!opts->duration)
-		elapsed = get_time_usec(util->cxi.dev) - start_time;
-
-	if (ctrl->connected) {
-		postrun_timeout = get_post_run_timeout(elapsed);
-		rc = ctrl_barrier(ctrl, postrun_timeout, "Post-run ");
-		if (rc) {
-			if (rc == -ETIMEDOUT) {
-				fprintf(stderr,
-					"Post-run peer did not respond within %ld usec\n",
-					postrun_timeout);
-			}
-			return rc;
-		}
-	}
+	rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run");
+	if (rc)
+		return rc;
 
 	/* Final elapsed time update */
 	elapsed = get_time_usec(util->cxi.dev) - start_time;
@@ -624,7 +609,11 @@ int run_bw_passive(struct util_context *util)
 	if (!util)
 		return -EINVAL;
 
-	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Post-run ");
+	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Pre-run");
+	if (rc)
+		return rc;
+
+	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Post-run");
 	if (rc)
 		return rc;
 
@@ -717,7 +706,7 @@ int run_lat_active(struct util_context *util,
 	}
 
 	if (ctrl->connected) {
-		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run ");
+		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run");
 		if (rc)
 			goto done;
 	}
@@ -769,7 +758,7 @@ int run_lat_passive(struct util_context *util)
 	if (!util)
 		return -EINVAL;
 
-	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Post-run ");
+	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Post-run");
 	if (rc)
 		return rc;
 	print_separator(strlen(util->header));

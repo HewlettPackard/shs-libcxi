@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI send bandwidth benchmark */
@@ -577,7 +577,7 @@ int wait_for_rdzv_done(struct util_context *util)
 			 * be cleared.  Only retry once.
 			 */
 			rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT,
-					  "RDZV cleanup ");
+					  "RDZV cleanup");
 			if (retries++ ||(rc != -EAGAIN && rc != -ETIMEDOUT))
 				break;
 			fprintf(stderr, "Retrying...\n");
@@ -798,7 +798,7 @@ int main(int argc, char **argv)
 
 	/* Signal ready */
 	rc = ctrl_barrier(ctrl, NO_TIMEOUT,
-			  ctrl->is_server ? "Client " : "Server ");
+			  ctrl->is_server ? "Client" : "Server");
 	if (rc)
 		goto cleanup;
 

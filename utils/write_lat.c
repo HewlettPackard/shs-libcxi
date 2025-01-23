@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI RDMA write latency benchmark */
@@ -394,7 +394,7 @@ int main(int argc, char **argv)
 
 	/* Signal ready */
 	rc = ctrl_barrier(ctrl, NO_TIMEOUT,
-			  ctrl->is_server ? "Client " : "Server ");
+			  ctrl->is_server ? "Client" : "Server");
 	if (rc)
 		goto cleanup;
 
