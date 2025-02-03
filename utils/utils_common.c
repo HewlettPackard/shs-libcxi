@@ -566,9 +566,11 @@ int run_bw_active(struct util_context *util,
 	 */
 	duration_usec = opts->duration * SEC2USEC;
 
-	rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Pre-run");
-	if (rc)
-		return rc;
+        if (ctrl->connected) {
+		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Pre-run");
+		if (rc)
+			return rc;
+	}
 
 	start_time = get_time_usec(util->cxi.dev);
 
@@ -589,9 +591,11 @@ int run_bw_active(struct util_context *util,
 			elapsed = get_time_usec(util->cxi.dev) - start_time;
 	}
 
-	rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run");
-	if (rc)
-		return rc;
+        if (ctrl->connected) {
+		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run");
+		if (rc)
+			return rc;
+	}
 
 	/* Final elapsed time update */
 	elapsed = get_time_usec(util->cxi.dev) - start_time;
