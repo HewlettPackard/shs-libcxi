@@ -311,11 +311,6 @@ struct sct_entry {
 	 */
 	bool accel_close_event;
 
-	/* Incremented upon a retry getting another timeout.
-	 * Reset when op_complete is received for the final timeout in a chain.
-	 */
-	unsigned int backoff_to_in_chain;
-
 	/* Incremented upon a retry getting another nack.
 	 * Reset when an op_complete is returned.
 	 */

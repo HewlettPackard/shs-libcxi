@@ -1710,10 +1710,7 @@ static void complete_ordered(struct retry_handler *rh,
 	if (sct->batch_size && sct->batch_size < max_batch_size)
 		sct->batch_size++;
 
-	/* Reset backoff timeout and NACK counts when forward progress is
-	 * made.
-	 */
-	sct->backoff_to_in_chain = 0;
+	/* Reset NACK counts when forward progress is made. */
 	sct->backoff_nack_only_in_chain = 0;
 
 	check_sct_status(rh, sct, false);

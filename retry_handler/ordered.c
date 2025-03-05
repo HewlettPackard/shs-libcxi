@@ -260,20 +260,33 @@ static void schedule_retry_sct(struct retry_handler *rh,
 	unsigned int random_usec;
 	unsigned int backoff_usec_val;
 	unsigned int bit_shift_count;
-	int i;
+	unsigned int backoff_to_in_chain = 0;
+	struct spt_entry *spt;
 
 	sct->timeout_list.func = timeout_check_sct;
 
-	/* Timeout packets are in chain */
+	/* Timeout packets are in chain. Dynamically select timeout retry
+	 * internval to be used based on number of times first timed out SPT
+	 * has been retried.
+	 */
 	if (sct->num_to_pkts_in_chain)
-		sct->backoff_to_in_chain++;
-	/* Only nack in chain */
-	else
+		list_for_each_entry(spt, &sct->spt_list, list) {
+			if (spt->status != STS_NEED_RETRY)
+				continue;
+
+			if (spt->current_event_to) {
+				backoff_to_in_chain = spt->to_retries;
+				break;
+			}
+		}
+	else {
+		/* Only nack in chain */
 		sct->backoff_nack_only_in_chain++;
+	}
 
 	rh_printf(rh, LOG_DEBUG,
 		  "sct=%u, backoff_to_in_chain=%u, backoff_nack_only_in_chain=%u\n",
-		  sct->sct_idx, sct->backoff_to_in_chain,
+		  sct->sct_idx, backoff_to_in_chain,
 		  sct->backoff_nack_only_in_chain);
 
 	/* If there are only NACKs, retry immediately until we've retried
@@ -288,11 +301,11 @@ static void schedule_retry_sct(struct retry_handler *rh,
 	} else {
 		/* Timeouts are in the chain - get retry timing from backoff array */
 		if (sct->num_to_pkts_in_chain) {
-			i = sct->backoff_to_in_chain - 1;
-			if (i >= MAX_SPT_RETRIES_LIMIT)
-				fatal(rh, "invalid backoff_to_in_chain value: %i\n", i);
+			if (backoff_to_in_chain >= MAX_SPT_RETRIES_LIMIT)
+				fatal(rh, "invalid backoff_to_in_chain value: %i\n",
+				      backoff_to_in_chain);
 
-			usec = retry_interval_values_us[i];
+			usec = retry_interval_values_us[backoff_to_in_chain];
 
 		/* Only NACKs in the chain - calculate exponential backoff */
 		} else {
