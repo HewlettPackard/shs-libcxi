@@ -1989,11 +1989,15 @@ void setup_timing(struct retry_handler *rh)
 
 	retry_time_sum = 0;
 	for (i = 0; i < max_spt_retries; ++i) {
+		rh_printf(rh, LOG_WARNING, "retry_interval[%d]: %f\n",
+			  i, (double)retry_interval_values_us[i] / 1000000);
 		retry_time_sum += retry_interval_values_us[i];
+
 		/* Each retry time should not be more than max_retry_interval_us */
 		if (retry_interval_values_us[i] > rh->max_retry_interval_us)
-			fatal(rh, "Backoff interval: %u exceeds allowable maximum:%u\n",
-			      retry_interval_values_us[i], rh->max_retry_interval_us);
+			fatal(rh, "Backoff interval: %f exceeds allowable maximum:%f\n",
+			      (double)retry_interval_values_us[i] / 1000000,
+			      (double)rh->max_retry_interval_us / 1000000);
 	}
 
 	/* Total retry time sum should be less than max_allowed_retry_time_us */

@@ -439,6 +439,7 @@ int read_config(const char *filename, struct retry_handler *rh)
 				rc = 1;
 				goto out;
 			}
+			retry_interval_values_us[i] = intconf;
 		}
 	}
 
