@@ -950,7 +950,6 @@ CXIL_API int cxil_map(struct cxil_lni *lni, void *va, size_t len,
 	return 0;
 
 err_write:
-	fprintf(stderr, "cxil_map: write error\n");
 	if ((flags & (CXI_MAP_PIN | CXI_MAP_DEVICE)) == CXI_MAP_PIN)
 		cxil_dofork_range(va, len);
 err_dontfork:
