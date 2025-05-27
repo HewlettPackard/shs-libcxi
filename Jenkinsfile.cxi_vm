@@ -6,5 +6,5 @@ map.commitScript = "cxi_vm_commit.sh"
 map.postScript = "cxi_vm_post.sh"
 map.primaryBranch = "main"
 map.timeoutMinutes = 10
-map.downstreamProjects = ["os-networking-team/cassini-vm/HPE/hpc-shs-libfabric-netc/main", "os-networking-team/cassini-vm/HPE/hpc-shs-pycxi/main"]
+map.downstreamProjects = ["os-networking-team/cassini-vm/libfabric-netc/main", "os-networking-team/cassini-vm/HPE/hpc-shs-pycxi/main"]
 cxiVmPipeline (map)
