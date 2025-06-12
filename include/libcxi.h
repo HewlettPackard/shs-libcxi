@@ -391,6 +391,19 @@ CXIL_API int cxil_alloc_cp(struct cxil_lni *lni, unsigned int vni,
  */
 CXIL_API int cxil_destroy_cp(struct cxi_cp *cp);
 
+/**
+ * @brief Modify an exclusive communication profile with new VNI
+ *
+ * @param lni LNI of communication profile
+ * @param cp Communication profile to modify
+ * @param vni new value of VNI to be set for this communication profile
+ *
+ * @return On success, zero is returned and the new VNI for the communication
+ *         profile is updated. Otherwise, a negative errno value
+ *         is returned indicating the error.
+ */
+CXIL_API int cxil_modify_cp(struct cxil_lni *lni, struct cxi_cp *cp,
+			    unsigned int vni);
 
 /**
  * @brief Atomically reserve a contiguous range of VNI PIDs.

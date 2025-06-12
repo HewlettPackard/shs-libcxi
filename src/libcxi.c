@@ -534,6 +534,27 @@ CXIL_API int cxil_destroy_cp(struct cxi_cp *cp)
 	return 0;
 }
 
+/* Modify an exclusive CXI communication profile */
+CXIL_API int cxil_modify_cp(struct cxil_lni *lni, struct cxi_cp *cp,
+			    unsigned int vni)
+{
+	struct cxi_cp_modify_cmd cmd = {};
+	struct cxil_cp_priv *cp_priv;
+	struct cxil_lni_priv *lni_priv;
+
+	if (!lni || !cp)
+		return -EINVAL;
+
+	lni_priv = container_of(lni, struct cxil_lni_priv, lni);
+	cp_priv = container_of(cp, struct cxil_cp_priv, cp);
+
+	cmd.op = CXI_OP_CP_MODIFY;
+	cmd.cp_hndl = cp_priv->cp_hndl;
+	cmd.vni = vni;
+
+	return device_write(lni_priv->dev, &cmd, sizeof(cmd));
+}
+
 /* Atomically reserve a contiguous range of VNI PIDs. */
 CXIL_API int cxil_reserve_domain(struct cxil_lni *lni, unsigned int vni,
 				 unsigned int pid, unsigned int count)

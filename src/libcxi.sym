@@ -104,3 +104,8 @@ global:
 	cxil_set_svc_lpr;
 	cxil_get_svc_lpr;
 } LIBCXI_1.7;
+
+LIBCXI_1.9 {
+global:
+	cxil_modify_cp;
+} LIBCXI_1.8;
