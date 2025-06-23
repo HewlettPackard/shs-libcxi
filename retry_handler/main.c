@@ -2247,6 +2247,9 @@ static void pct_eq_cb(uv_poll_t *handle, int status, int revents)
 	event_handler(rh);
 }
 
+/* Handle various signals and break out from uv_run
+ * via uv_stop if necessary.
+ */
 static void signal_cb(uv_signal_t *handle, int signum)
 {
 	struct retry_handler *rh = handle->data;
@@ -2259,7 +2262,6 @@ static void signal_cb(uv_signal_t *handle, int signum)
 				    default_ioi_unord_limit_inflight);
 		rh_printf(rh, LOG_ALERT, "got SIGINT\n");
 		uv_stop(loop);
-		exit(0);
 	} else if (signum == SIGTERM) {
 		modify_spt_timeout(rh, default_spt_timeout_epoch);
 		modify_mcu_inflight(rh, default_get_packets_inflight,
@@ -2268,7 +2270,6 @@ static void signal_cb(uv_signal_t *handle, int signum)
 				    default_ioi_unord_limit_inflight);
 		rh_printf(rh, LOG_ALERT, "got SIGTERM\n");
 		uv_stop(loop);
-		exit(0);
 	} else if (signum == SIGHUP) {
 		rh_printf(rh, LOG_WARNING, "got SIGHUP\n");
 		dump_rh_state(rh);
@@ -2403,7 +2404,7 @@ int main(int argc, char *argv[])
 	sd_notify(0, "READY=1");
 	sd_notify(0, "STATUS=Running");
 #endif // defined(HAVE_LIBSYSTEMD)
-	uv_run(loop, 0);
+	uv_run(loop, UV_RUN_DEFAULT);
 
 	uv_loop_close(loop);
 
