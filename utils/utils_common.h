@@ -357,6 +357,8 @@ int ctrl_close(struct ctrl_connection *ctrl);
 int ctrl_exchange_data(struct ctrl_connection *ctrl, const void *client_buf,
 		       size_t cbuf_size, void *server_buf, size_t sbuf_size);
 int ctrl_barrier(struct ctrl_connection *ctrl, uint64_t tmo_usec, char *label);
+int ctrl_barrier_msg(struct ctrl_connection *ctrl, uint64_t tmo_usec,
+	 char *label, uint8_t msg);
 
 /* CXI context functions */
 int ctx_alloc(struct cxi_context *ctx, uint32_t dev_id, uint32_t svc_id);

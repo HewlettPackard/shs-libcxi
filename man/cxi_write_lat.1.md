@@ -1,5 +1,5 @@
 ---
-title: CXI_WRITE_LAT(1) Version 2.1.0 | CXI Diagnostics and Utilities
+title: CXI_WRITE_LAT(1) Version 2.3.0 | CXI Diagnostics and Utilities
 date: 2023-08-19
 ---
 

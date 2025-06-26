@@ -27,7 +27,7 @@
 #define DELAY_DFLT 1000
 
 static const char *name = "cxi_read_lat";
-static const char *version = "2.2.0";
+static const char *version = "2.3.0";
 
 /* Allocate resources */
 int read_lat_alloc_ini(struct util_context *util)

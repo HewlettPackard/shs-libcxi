@@ -38,7 +38,10 @@ struct rgid_objs {
 };
 
 struct rgid_objs obj[2] = {};
-struct cxi_svc_desc svc_desc = {};
+struct cxi_svc_desc svc_desc = {
+	.num_vld_vnis = 1,
+	.vnis[0] = 8,
+};
 struct cxi_rsrc_use rsrc_use = {};
 
 int get_rgids_avail(void)
@@ -51,9 +54,9 @@ int get_rgids_avail(void)
 	if (fp) {
 		rc = fscanf(fp, "%d", &rgids);
 		cr_assert_eq(rc, 1, "rc=%d\n", rc);
+		fclose(fp);
 	}
 
-	pclose(fp);
 
 	return rgids;
 }

@@ -26,7 +26,7 @@
 #define LIST_SIZE_DFLT 256
 
 static const char *name = "cxi_read_bw";
-static const char *version = "2.2.0";
+static const char *version = "2.3.0";
 
 /* Allocate RDMA Initiator resources */
 int read_bw_alloc_ini(struct util_context *util)

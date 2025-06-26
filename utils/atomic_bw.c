@@ -35,7 +35,7 @@
 #define NONFETCH_U32_HRP_DISABLE_MAX_REV 2
 
 static const char *name = "cxi_atomic_bw";
-static const char *version = "2.2.0";
+static const char *version = "2.3.0";
 
 /* Allocate INI resources */
 int atomic_bw_alloc_ini(struct util_context *util)
@@ -291,9 +291,6 @@ void usage(void)
 	printf("  -n, --iters=ITERS      Number of iterations to run (default: %u)\n",
 	       ITERS_DFLT);
 	printf("  -D, --duration=SEC     Run for the specified number of seconds\n");
-	printf("                         Ranges must be powers of 2 (e.g. \"1:8192\")\n");
-	printf("                         The maximum size is %lu\n",
-	       MAX_MSG_SIZE);
 	printf("  -l, --list-size=SIZE   Number of writes per iteration, all pushed to the\n");
 	printf("                         initiator CQ prior to initiating xfer (default: %u)\n",
 	       LIST_SIZE_DFLT);

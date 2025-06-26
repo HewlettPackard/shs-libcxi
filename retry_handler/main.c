@@ -1989,11 +1989,15 @@ void setup_timing(struct retry_handler *rh)
 
 	retry_time_sum = 0;
 	for (i = 0; i < max_spt_retries; ++i) {
+		rh_printf(rh, LOG_WARNING, "retry_interval[%d]: %f\n",
+			  i, (double)retry_interval_values_us[i] / 1000000);
 		retry_time_sum += retry_interval_values_us[i];
+
 		/* Each retry time should not be more than max_retry_interval_us */
 		if (retry_interval_values_us[i] > rh->max_retry_interval_us)
-			fatal(rh, "Backoff interval: %u exceeds allowable maximum:%u\n",
-			      retry_interval_values_us[i], rh->max_retry_interval_us);
+			fatal(rh, "Backoff interval: %f exceeds allowable maximum:%f\n",
+			      (double)retry_interval_values_us[i] / 1000000,
+			      (double)rh->max_retry_interval_us / 1000000);
 	}
 
 	/* Total retry time sum should be less than max_allowed_retry_time_us */
@@ -2243,6 +2247,9 @@ static void pct_eq_cb(uv_poll_t *handle, int status, int revents)
 	event_handler(rh);
 }
 
+/* Handle various signals and break out from uv_run
+ * via uv_stop if necessary.
+ */
 static void signal_cb(uv_signal_t *handle, int signum)
 {
 	struct retry_handler *rh = handle->data;
@@ -2255,7 +2262,6 @@ static void signal_cb(uv_signal_t *handle, int signum)
 				    default_ioi_unord_limit_inflight);
 		rh_printf(rh, LOG_ALERT, "got SIGINT\n");
 		uv_stop(loop);
-		exit(0);
 	} else if (signum == SIGTERM) {
 		modify_spt_timeout(rh, default_spt_timeout_epoch);
 		modify_mcu_inflight(rh, default_get_packets_inflight,
@@ -2264,7 +2270,6 @@ static void signal_cb(uv_signal_t *handle, int signum)
 				    default_ioi_unord_limit_inflight);
 		rh_printf(rh, LOG_ALERT, "got SIGTERM\n");
 		uv_stop(loop);
-		exit(0);
 	} else if (signum == SIGHUP) {
 		rh_printf(rh, LOG_WARNING, "got SIGHUP\n");
 		dump_rh_state(rh);
@@ -2399,7 +2404,7 @@ int main(int argc, char *argv[])
 	sd_notify(0, "READY=1");
 	sd_notify(0, "STATUS=Running");
 #endif // defined(HAVE_LIBSYSTEMD)
-	uv_run(loop, 0);
+	uv_run(loop, UV_RUN_DEFAULT);
 
 	uv_loop_close(loop);
 

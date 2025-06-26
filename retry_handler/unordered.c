@@ -58,8 +58,8 @@ static void schedule_retry_unordered_pkt(struct retry_handler *rh,
 	unsigned int usec;
 
 	spt->timeout_list.func = timeout_retry_unordered_pkt;
-	usec = MAX(unorder_pkt_min_retry_delay,
-		   retry_interval_values_us[spt->to_retries]);
+	usec = (unorder_pkt_min_retry_delay > retry_interval_values_us[spt->to_retries]) ?
+		unorder_pkt_min_retry_delay : retry_interval_values_us[spt->to_retries];
 
 	if (usec == 0) {
 		retry_unordered_pkt(rh, spt);

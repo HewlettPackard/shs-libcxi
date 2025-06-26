@@ -19,6 +19,7 @@ fi
 # Virtualization arguments have been stripped.
 export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
 TOP_DIR=$(realpath $(pwd)/../..)
+KO_PATH=drivers/net/ethernet/hpe/ss1
 
 modprobe fuse
 mkdir -p /run/cxi/cxi0
@@ -26,8 +27,8 @@ modprobe ptp
 modprobe iommu_v2 || modprobe amd_iommu_v2
 insmod $TOP_DIR/slingshot_base_link/cxi-sbl.ko
 insmod $TOP_DIR/sl-driver/knl/cxi-sl.ko
-insmod $TOP_DIR/cxi-driver/cxi/cxi-ss1.ko disable_default_svc=0 active_qos_profile=1
-insmod $TOP_DIR/cxi-driver/cxi/cxi-user.ko
+insmod $TOP_DIR/cxi-driver/$KO_PATH/cxi-ss1.ko disable_default_svc=0 active_qos_profile=1
+insmod $TOP_DIR/cxi-driver/$KO_PATH/cxi-user.ko
 
 # Execute the command (if any)
 $@

@@ -1,5 +1,5 @@
 ---
-title: CXI_ATOMIC_BW(1) Version 2.0.0 | CXI Diagnostics and Utilities
+title: CXI_ATOMIC_BW(1) Version 2.3.0 | CXI Diagnostics and Utilities
 date: 2023-01-30
 ---
 

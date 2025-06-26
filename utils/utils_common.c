@@ -678,42 +678,45 @@ int run_lat_active(struct util_context *util,
 			fprintf(stderr, "Iteration failed: %s\n",
 				strerror(-rc));
 			goto done;
-		} else if (rc != EAGAIN) {
-			if (warmup_count < opts->warmup) {
-				warmup_count++;
-			} else {
-				if (!util->count)
-					start_time = get_time_usec(
-						util->cxi.dev);
+		} else if (rc == ENOTCONN) {
+			break;
+		}
+		if (warmup_count < opts->warmup) {
+			warmup_count++;
+		} else {
+			if (!util->count)
+				start_time = get_time_usec(
+					util->cxi.dev);
 
-				if (opts->report_all)
-					lats[util->count] = util->last_lat;
-				if (util->last_lat < lat_min)
-					lat_min = util->last_lat;
-				if (util->last_lat > lat_max)
-					lat_max = util->last_lat;
-				lat_sum += util->last_lat;
-				lat_sum2 += (util->last_lat * util->last_lat);
-				util->count++;
-			}
+			if (opts->report_all)
+				lats[util->count] = util->last_lat;
+			if (util->last_lat < lat_min)
+				lat_min = util->last_lat;
+			if (util->last_lat > lat_max)
+				lat_max = util->last_lat;
+			lat_sum += util->last_lat;
+			lat_sum2 += (util->last_lat * util->last_lat);
+			util->count++;
+		}
 
-			if (opts->iter_delay) {
-				rc = active_sleep(opts->iter_delay,
-						  util->cxi.dev);
-				if (rc < 0)
-					goto done;
-			}
+		if (opts->iter_delay) {
+			rc = active_sleep(opts->iter_delay,
+					  util->cxi.dev);
+			if (rc < 0)
+				goto done;
 		}
 
 		if (opts->duration && start_time)
 			elapsed = get_time_usec(util->cxi.dev) - start_time;
 	}
 
-	if (ctrl->connected) {
-		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run");
-		if (rc)
+	if (ctrl->connected && rc != ENOTCONN) {
+		rc = ctrl_barrier_msg(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run",
+			ENOTCONN);
+		if (rc < 0)
 			goto done;
 	}
+	rc = 0;
 
 	lat_avg = lat_sum / util->count;
 	lat_sdev = sqrt((lat_sum2 / util->count) - (lat_avg * lat_avg));
@@ -762,9 +765,11 @@ int run_lat_passive(struct util_context *util)
 	if (!util)
 		return -EINVAL;
 
-	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Post-run");
-	if (rc)
+	rc = ctrl_barrier_msg(&util->ctrl, NO_TIMEOUT, "Post-run", 0);
+	if (rc < 0)
 		return rc;
+	else
+		rc = 0;
 	print_separator(strlen(util->header));
 	printf("See client for results.\n");
 

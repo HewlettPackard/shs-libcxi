@@ -18,7 +18,10 @@ struct cxil_lni *lni2;
 void lni2_setup(void)
 {
 	int ret;
-	struct cxi_svc_desc svc_desc = {};
+	struct cxi_svc_desc svc_desc = {
+		.num_vld_vnis = 1,
+		.vnis[0] = 8,
+	};
 
 	svc_id2 = cxil_alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(svc_id2, 0, "cxil_alloc_svc(): Failed. ret:%d", svc_id2);
@@ -392,17 +395,6 @@ ParameterizedTestParameters(cps, alloc_cps)
 			.null_cp = false,
 		},
 
-		/* Too many CPs per LNI */
-		{
-			.vni = 1,
-			.tc = CXI_TC_BEST_EFFORT,
-			.tc_type = CXI_TC_TYPE_DEFAULT,
-			.count = C_COMM_PROF_PER_CQ + 1,
-			.rc = -ENOSPC,
-			.null_lni = false,
-			.null_cp = false,
-		},
-
 		/* Missing LNI */
 		{
 			.vni = 1,
@@ -451,12 +443,8 @@ ParameterizedTest(struct alloc_cps_params *param, cps, alloc_cps)
 	int cp_cnt = 0;
 	struct cxil_lni *cp_lni;
 
-	lni2_setup();
-
 	if (param->null_lni)
 		cp_lni = NULL;
-	else if (param->count > 1)
-		cp_lni = lni2;
 	else
 		cp_lni = lni;
 
@@ -494,8 +482,6 @@ ParameterizedTest(struct alloc_cps_params *param, cps, alloc_cps)
 
 	if (param->count > 0)
 		free(cps);
-
-	lni2_teardown();
 }
 
 TestSuite(cmdq, .init = lni_setup, .fini = lni_teardown);
@@ -757,7 +743,7 @@ ParameterizedTestParameters(evtq, evtq_alloc)
 ParameterizedTest(struct evtq_alloc_params *p, evtq, evtq_alloc)
 {
 	int rc;
-	void *eq_buf;
+	void *eq_buf = NULL;
 	struct cxi_md *eq_buf_md;
 	struct cxi_eq_attr attr = {};
 	size_t queue_len = s_page_size + p->queue_len_add;

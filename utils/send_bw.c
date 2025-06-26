@@ -35,7 +35,7 @@
 // clang-format on
 
 static const char *name = "cxi_send_bw";
-static const char *version = "2.2.0";
+static const char *version = "2.3.0";
 
 /* Increment the PUT event counter for either the next response or the next set
  * of puts

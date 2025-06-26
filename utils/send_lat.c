@@ -37,7 +37,7 @@
 // clang-format on
 
 static const char *name = "cxi_send_lat";
-static const char *version = "2.2.0";
+static const char *version = "2.3.0";
 
 /* Allocate resources */
 int send_lat_alloc(struct util_context *util)
@@ -360,7 +360,8 @@ int do_single_iteration(struct util_context *util)
 
 	util->dma_cmd.full_dma.request_len = util->size;
 
-	rc = ctrl_barrier(ctrl, NO_TIMEOUT, "Sync");
+	rc = ctrl_barrier_msg(ctrl, NO_TIMEOUT, "Sync", 0);
+
 	if (rc)
 		return rc;
 
