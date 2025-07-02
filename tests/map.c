@@ -171,7 +171,7 @@ void do_transfer(struct mem_window *src, struct mem_window *dest)
 	__u64 *dest_buf = NULL;
 	size_t len = dest->length / sizeof(__u64);
 
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 	append_le_sync(rx_pte, dest, C_PTL_LIST_PRIORITY, PUT_BUFFER_ID,
 		       0, 0, CXI_MATCH_ID_ANY, 0, true, false, false, false,
 		       false, true, false, NULL);
@@ -203,7 +203,7 @@ void do_transfer(struct mem_window *src, struct mem_window *dest)
 		memset(dest->buffer, 0xa5, dest->length);
 	}
 
-	do_put_sync(*src, dest->length, 0, 0, pid_idx, true, 0, 0, 0);
+	do_put_sync(*src, dest->length, 0, 0, pid_idx, true, 0, 0, 0, false);
 
 	if (dest->loc == on_device)
 		memcpy_device_to_host(dbuf, dest);
@@ -542,7 +542,7 @@ ParameterizedTest(struct map_xfer_params *param, map_xfer, puts)
 	cr_assert_eq(rc, 0, "Send MD cxil_map() failed %d", rc);
 
 	/* Initialize RMA PtlTE and Post RMA Buffer */
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 	append_le(rx_pte, &rma_mem, C_PTL_LIST_PRIORITY, PUT_BUFFER_ID,
 		  0, 0, CXI_MATCH_ID_ANY, 0, true, false, false, false, true,
 		  true, true);
@@ -551,7 +551,8 @@ ParameterizedTest(struct map_xfer_params *param, map_xfer, puts)
 
 	for (off = 0; off < param->buf_len; off += inc) {
 		memset(rma_mem.buffer, 0, xfer_len);
-		do_put_sync(snd_mem, xfer_len, 0, off, pid_idx, true, 0, 0, 0);
+		do_put_sync(snd_mem, xfer_len, 0, off, pid_idx, true, 0, 0, 0,
+			    false);
 
 		/* Validate Source and Destination Data Match */
 		for (i = 0; i < param->xfer_len; i++) {
@@ -969,7 +970,7 @@ Test(map_xfer, notifier)
 	 */
 	free(rma_mem.buffer);
 
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 
 	append_le_sync(rx_pte, &rma_mem, C_PTL_LIST_PRIORITY, PUT_BUFFER_ID,
 		       0, 0, CXI_MATCH_ID_ANY, 0, true, false, false, false,
@@ -1597,13 +1598,13 @@ ParameterizedTest(int *extra_flag, odp, odp_fail)
 	/* Page request error will be returned when VA is not backed by VMA. */
 	reg_win(&dst_mem, NULL, flags | *extra_flag);
 
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 	append_le_sync(rx_pte, &dst_mem, C_PTL_LIST_PRIORITY, PUT_BUFFER_ID,
 		       0, 0, CXI_MATCH_ID_ANY, 0, true, false, false, false,
 		       false, true, false, NULL);
 
 	/* Put will cause a page request error */
-	do_put(src_mem, dst_mem.length, 0, 0, pid_idx, true, 0, 0, 0);
+	do_put(src_mem, dst_mem.length, 0, 0, pid_idx, true, 0, 0, 0, false);
 	odp_check_event_rc(transmit_evtq, C_RC_PAGE_REQ_ERROR);
 
 	/* consume the rest of the target events */

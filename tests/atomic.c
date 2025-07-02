@@ -106,7 +106,7 @@ Test(atomic, idc, .timeout = 10)
 	set_cstate(transmit_cmdq, loc_mem.md->lac, 1);
 
 	/* Initialize RMA PtlTE */
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 
 	/* Post RMA Buffer */
 	append_le(rx_pte, &rem_mem, C_PTL_LIST_PRIORITY, WIN_BUFFER_ID,
@@ -240,7 +240,7 @@ Test(atomic, dma, .timeout = 5)
 	result = (uint64_t *)&loc_mem.buffer[8];
 
 	/* Initialize RMA PtlTE */
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 
 	/* Post RMA Buffer */
 	append_le(rx_pte, &rem_mem, C_PTL_LIST_PRIORITY, WIN_BUFFER_ID,

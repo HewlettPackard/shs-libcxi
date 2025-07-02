@@ -96,7 +96,7 @@ static void fork_test_runner(bool fork_safe)
 	init_buf = buf + INIT_BUF_OFFSET;
 	tgt_buf = buf + TGT_BUF_OFFSET;
 
-	ptlte_setup(pid_idx, false);
+	ptlte_setup(pid_idx, false, false);
 	append_le_sync(rx_pte, &mem, C_PTL_LIST_PRIORITY, PUT_BUFFER_ID,
 		       0, 0, CXI_MATCH_ID_ANY, 0, true, false, false, false,
 		       false, true, false, NULL);
@@ -129,7 +129,7 @@ static void fork_test_runner(bool fork_safe)
 	kill(pid, SIGUSR1);
 
 	do_put_sync(mem, XFER_SIZE, TGT_BUF_OFFSET, INIT_BUF_OFFSET,
-		    pid_idx, true, 0, 0, 0);
+		    pid_idx, true, 0, 0, 0, false);
 	ptlte_teardown();
 
 	if (cxil_is_copy_on_fork() || fork_safe) {

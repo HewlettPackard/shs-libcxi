@@ -131,7 +131,7 @@ Test(rendezvous, eager, .timeout = 5)
 
 	/* Initialize TX/RX PtlTEs */
 	pte_info_init(tx_idx, &tx_pte_info);
-	ptlte_setup(rx_idx, true);
+	ptlte_setup(rx_idx, true, false);
 
 	/* TX: Post Send buffer */
 	append_le(tx_pte_info.pte, &snd_mem, C_PTL_LIST_PRIORITY,
@@ -155,7 +155,7 @@ Test(rendezvous, eager, .timeout = 5)
 
 	/* TX: Initiate Eager Put Operation */
 	do_put_sync(snd_mem, EAGER_SEND_LENGTH, 0, 0, rx_idx, false, match,
-		    0, 0);
+		    0, 0, false);
 
 	/* RX: Gather PUT event from overflow buffer */
 	process_eqe(target_evtq, EQE_TGT_LONG, C_EVENT_PUT,
@@ -227,7 +227,7 @@ Test(rendezvous, long, .timeout = 5)
 
 	/* TX/RX: Initialize PtlTEs */
 	pte_info_init(tx_idx, &tx_pte_info);
-	ptlte_setup(rx_idx, true);
+	ptlte_setup(rx_idx, true, false);
 
 	/* TX: Post Send buffer */
 	append_le(tx_pte_info.pte, &snd_mem, C_PTL_LIST_PRIORITY,
@@ -253,7 +253,7 @@ Test(rendezvous, long, .timeout = 5)
 	 * Initiate Rendezvous Operation
 	 */
 	do_put(snd_mem, LONG_SEND_LENGTH, 0, 0, rx_idx, 0, match, ACK_USER_PTR,
-	       (domain->pid << 24) | dev->info.nid);
+	       (domain->pid << 24) | dev->info.nid, false);
 
 	/* RX:
 	 * Notification of match of the unexpected buffer from the PUT event

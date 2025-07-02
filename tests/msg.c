@@ -35,7 +35,7 @@ Test(msg, simple_send, .timeout = 10)
 	memset(rcv_mem.buffer, 0, rcv_mem.length);
 
 	/* Initialize recv PtlTE */
-	ptlte_setup(pid_idx, true);
+	ptlte_setup(pid_idx, true, false);
 
 	for (xfer_len = 1; xfer_len <= snd_mem.length; xfer_len <<= 1) {
 		/* Post receive buffer */
@@ -45,7 +45,8 @@ Test(msg, simple_send, .timeout = 10)
 			       NULL);
 
 		/* Initiate Put Operation */
-		do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0);
+		do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0,
+			    false);
 
 		/* Gather Unlink event from recv buffer */
 		process_eqe(target_evtq, EQE_TGT_LONG, C_EVENT_UNLINK,
@@ -95,7 +96,7 @@ Test(msg, ux_send, .timeout = 10)
 	memset(oflow_mem.buffer, 0, oflow_mem.length);
 
 	/* Initialize recv PtlTE */
-	ptlte_setup(pid_idx, true);
+	ptlte_setup(pid_idx, true, false);
 
 	/* Post overflow buffer to match all sends */
 	append_le_sync(rx_pte, &oflow_mem, C_PTL_LIST_OVERFLOW,
@@ -104,7 +105,8 @@ Test(msg, ux_send, .timeout = 10)
 
 	for (xfer_len = 1; xfer_len <= snd_mem.length; xfer_len <<= 1) {
 		/* Initiate Put Operation */
-		do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0);
+		do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0,
+			    false);
 
 		/* Gather PUT event from overflow buffer */
 		process_eqe(target_evtq, EQE_TGT_LONG, C_EVENT_PUT,

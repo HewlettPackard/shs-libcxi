@@ -55,12 +55,16 @@ struct mem_window {
 
 extern uint32_t dev_id;
 extern uint32_t vni;
+extern uint32_t vni_excp;
 extern uint32_t domain_pid;
 extern struct cxil_dev *dev;
 extern struct cxil_lni *lni;
 extern struct cxi_cp *cp;
+extern struct cxi_cp *excp;
 extern struct cxil_domain *domain;
+extern struct cxil_domain *domain_excp;
 extern struct cxi_cq *transmit_cmdq;
+extern struct cxi_cq *transmit_cmdq_excp;
 extern struct cxi_cq *target_cmdq;
 extern struct cxil_wait_obj *wait_obj;
 extern struct cxi_eq_attr transmit_eq_attr;
@@ -103,7 +107,7 @@ void test_data_teardown(void);
 /* Used by data transfer tests */
 void data_xfer_setup(void);
 void data_xfer_teardown(void);
-void ptlte_setup(uint32_t pid_idx, bool matching);
+void ptlte_setup(uint32_t pid_idx, bool matching, bool exclusive_cp);
 void ptlte_teardown(void);
 bool is_netsim(void);
 
@@ -158,10 +162,12 @@ int wait_for_event(struct cxil_wait_obj *wait);
 /* Generic Put interfaces, expand as necessary */
 void do_put(struct mem_window mem_win, size_t len, uint64_t r_off,
 	    uint64_t l_off, uint32_t pid_idx, bool restricted,
-	    uint64_t match_bits, uint64_t user_ptr, uint32_t initiator);
+	    uint64_t match_bits, uint64_t user_ptr, uint32_t initiator,
+	    bool exclusive_cp);
 void do_put_sync(struct mem_window mem_win, size_t len, uint64_t r_off,
 		 uint64_t l_off, uint32_t pid_idx, bool restricted,
-		 uint64_t match_bits, uint64_t user_ptr, uint32_t initiator);
+		 uint64_t match_bits, uint64_t user_ptr, uint32_t initiator,
+		 bool exclusive_cp);
 
 /* Generic Get interfaces, expand as necessary */
 void do_get(struct mem_window mem_win, size_t len, uint64_t r_off,

@@ -18,12 +18,16 @@
 
 uint32_t dev_id; /* Dev 0 */
 uint32_t vni = 1;
+uint32_t vni_excp = 16U;
 uint32_t domain_pid = C_PID_ANY;
 struct cxil_dev *dev;
 struct cxil_lni *lni;
 struct cxi_cp *cp;
+struct cxi_cp *excp;
 struct cxil_domain *domain;
+struct cxil_domain *domain_excp;
 struct cxi_cq *transmit_cmdq;
+struct cxi_cq *transmit_cmdq_excp;
 struct cxi_cq *target_cmdq;
 struct cxil_wait_obj *wait_obj;
 struct cxi_eq_attr transmit_eq_attr;
@@ -178,6 +182,7 @@ void data_xfer_setup(void)
 	cq_opts.lcid = cp->lcid;
 	ret = cxil_alloc_cmdq(lni, NULL, &cq_opts, &transmit_cmdq);
 	cr_assert_eq(ret, 0, "TX cxil_alloc_cmdq() failed %d", ret);
+
 	cq_opts.flags = 0;
 	ret = cxil_alloc_cmdq(lni, NULL, &cq_opts, &target_cmdq);
 	cr_assert_eq(ret, 0, "RX cxil_alloc_cmdq() failed %d", ret);
@@ -311,7 +316,7 @@ void expect_ct_values(struct cxi_ct *ct, uint64_t success, uint8_t failure)
 
 
 /* Allocate and enable a PtlTE. */
-void ptlte_setup(uint32_t pid_idx, bool matching)
+void ptlte_setup(uint32_t pid_idx, bool matching, bool exclusive_cp)
 {
 	int rc;
 	union c_cmdu cmd = {};
@@ -319,6 +324,7 @@ void ptlte_setup(uint32_t pid_idx, bool matching)
 	unsigned int ptn;
 	enum c_ptlte_state state;
 	struct cxi_pt_alloc_opts pt_opts = {};
+	struct cxil_domain *ptlte_domain = exclusive_cp ? domain_excp : domain;
 
 	pt_opts.is_matching = matching;
 
@@ -327,7 +333,7 @@ void ptlte_setup(uint32_t pid_idx, bool matching)
 	cr_assert_eq(rc, 0, "RX cxil_alloc_pte failed %d", rc);
 
 	/* Map */
-	rc = cxil_map_pte(rx_pte, domain, pid_idx, false, &rx_pte_map);
+	rc = cxil_map_pte(rx_pte, ptlte_domain, pid_idx, false, &rx_pte_map);
 	cr_assert_eq(rc, 0, "RX cxil_map_pte failed %d", rc);
 
 	/* Enable */
@@ -549,14 +555,17 @@ int wait_for_event(struct cxil_wait_obj *wait)
 /* Do a DMA Put transaction. */
 void do_put(struct mem_window mem_win, size_t len, uint64_t r_off,
 	    uint64_t l_off, uint32_t pid_idx, bool restricted,
-	    uint64_t match_bits, uint64_t user_ptr, uint32_t initiator)
+	    uint64_t match_bits, uint64_t user_ptr, uint32_t initiator,
+	    bool exclusive_cp)
 {
 	union c_cmdu cmd = {};
+	uint32_t dfa_domain_pid = exclusive_cp ? domain_excp->pid : domain->pid;
 	union c_fab_addr dfa;
 	uint8_t idx_ext;
 	int rc;
+	struct cxi_cq *cmdq = exclusive_cp ? transmit_cmdq_excp : transmit_cmdq;
 
-	cxi_build_dfa(dev->info.nid, domain->pid, dev->info.pid_bits,
+	cxi_build_dfa(dev->info.nid, dfa_domain_pid, dev->info.pid_bits,
 		      pid_idx, &dfa, &idx_ext);
 
 	cmd.full_dma.command.cmd_type = C_CMD_TYPE_DMA;
@@ -575,18 +584,19 @@ void do_put(struct mem_window mem_win, size_t len, uint64_t r_off,
 	cmd.full_dma.match_bits = match_bits;
 	cmd.full_dma.initiator = initiator;
 
-	rc = cxi_cq_emit_dma(transmit_cmdq, &cmd.full_dma);
+	rc = cxi_cq_emit_dma(cmdq, &cmd.full_dma);
 	cr_assert_eq(rc, 0, "During %s CQ emit failed %d", __func__, rc);
 
-	cxi_cq_ring(transmit_cmdq);
+	cxi_cq_ring(cmdq);
 }
 
 void do_put_sync(struct mem_window mem_win, size_t len, uint64_t r_off,
 		 uint64_t l_off, uint32_t pid_idx, bool restricted,
-		 uint64_t match_bits, uint64_t user_ptr, uint32_t initiator)
+		 uint64_t match_bits, uint64_t user_ptr, uint32_t initiator,
+		 bool exclusive_cp)
 {
 	do_put(mem_win, len, r_off, l_off, pid_idx, restricted, match_bits,
-	       user_ptr, initiator);
+	       user_ptr, initiator, exclusive_cp);
 
 	process_eqe(transmit_evtq, EQE_INIT_SHORT, C_EVENT_ACK, user_ptr, NULL);
 }

@@ -697,7 +697,7 @@ ParameterizedTest(struct le_invalidate_params *p, le_invalidate,
 	int rc;
 	struct cxil_pte *pte;
 
-	ptlte_setup(0, true);
+	ptlte_setup(0, true, false);
 
 	if (p->null_pte)
 		pte = NULL;
@@ -966,7 +966,7 @@ Test(evtq_poll, resize_poll, .disabled = true)
 	memset(rcv_mem.buffer, 0, rcv_mem.length);
 
 	/* Initialize recv PtlTE */
-	ptlte_setup(pid_idx, true);
+	ptlte_setup(pid_idx, true, false);
 
 	/* Post receive buffer */
 	append_le_sync(rx_pte, &rcv_mem, C_PTL_LIST_PRIORITY,
@@ -975,7 +975,7 @@ Test(evtq_poll, resize_poll, .disabled = true)
 		       NULL);
 
 	/* Initiate Put Operation */
-	do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0);
+	do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0, false);
 
 	/* Gather Unlink event from recv buffer */
 	process_eqe(target_evtq, EQE_TGT_LONG, C_EVENT_UNLINK,
@@ -1013,7 +1013,7 @@ Test(evtq_poll, resize_poll, .disabled = true)
 		       NULL);
 
 	/* Initiate Put Operation */
-	do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0);
+	do_put_sync(snd_mem, xfer_len, 0, 0, pid_idx, false, 0, 0, 0, false);
 
 	/* Gather Unlink event from recv buffer */
 	process_eqe(target_evtq, EQE_TGT_LONG, C_EVENT_UNLINK,
@@ -1058,7 +1058,7 @@ Test(pte, pte_status)
 	__u64 *ule_offs;
 	__u64 tgt_iova;
 
-	ptlte_setup(0, true);
+	ptlte_setup(0, true, false);
 
 	/* No PTE */
 	rc = cxil_pte_status(NULL, &status);
@@ -1080,7 +1080,7 @@ Test(pte, pte_status)
 		       0, 0, 0, CXI_MATCH_ID_ANY, 0,
 		       false, false, true, false, true, true, false,
 		       NULL);
-	do_put_sync(snd_mem, 8, 0, 0, 0, false, 0, 0, 0);
+	do_put_sync(snd_mem, 8, 0, 0, 0, false, 0, 0, 0, false);
 
 	ule_offs = malloc(10 * sizeof(*ule_offs));
 	assert(ule_offs);
