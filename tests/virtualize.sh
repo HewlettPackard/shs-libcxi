@@ -23,6 +23,8 @@ KO_PATH=drivers/net/ethernet/hpe/ss1
 
 modprobe fuse
 mkdir -p /run/cxi/cxi0
+modprobe configfs
+mount -t configfs none /sys/kernel/config
 modprobe ptp
 modprobe iommu_v2 || modprobe amd_iommu_v2
 insmod $TOP_DIR/slingshot_base_link/cxi-sbl.ko
