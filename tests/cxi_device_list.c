@@ -23,7 +23,7 @@ int main(void)
 	printf("Number of CXI devices found: %d\n", dev_list->count);
 	for (i = 0; i < dev_list->count; i++) {
 		printf("cxi%u:\n", dev_list->info[i].dev_id);
-		printf("  NID: %x\n", dev_list->info[i].nid);
+		printf("  NID: %u\n", dev_list->info[i].nid);
 		printf("  pid_granule: %d\n", dev_list->info[i].pid_granule);
 	}
 
