@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2020-2024 Hewlett Packard Enterprise Development LP
+ * Copyright 2020-2025 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI heatsink check */
@@ -93,7 +93,7 @@
 enum { OPSTATE_ENABLED = 0, OPSTATE_UNAVAILABLE = 2, OPSTATE_IN_TEST = 7 };
 
 static const char *name = "cxi_heatsink_check";
-static const char *version = "2.2.1";
+static const char *version = "2.2.2";
 static const char *asic_temp_0_name = "Cassini 0 Temperature";
 static const char *asic_temp_1_name = "Cassini 1 Temperature";
 static const char *qsfp_vr_temp_name = "3.3V QSFP VR Temperature";
@@ -616,7 +616,7 @@ int heatsink_alloc(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 		for (i = 0; i < NUM_NONMATCHING_LES; i++) {
 			rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf,
 				       0, flags, cxi->tgt_pte->ptn, 0, 0,
-				       match_bits, 0);
+				       match_bits, 0, 0);
 			if (rc)
 				return rc;
 		}
@@ -626,14 +626,14 @@ int heatsink_alloc(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 	if (!opts->no_ple) {
 		if (ctx->use_hrp) {
 			rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf,
-				       0, flags, cxi->tgt_pte->ptn, 0);
+				       0, flags, cxi->tgt_pte->ptn, 0, 0);
 			if (rc)
 				return rc;
 		} else {
 			match_bits = 2;
 			rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf,
 				       0, flags, cxi->tgt_pte->ptn, 0, 0,
-				       match_bits, 0);
+				       match_bits, 0, 0);
 			if (rc)
 				return rc;
 		}
@@ -670,7 +670,7 @@ int do_single_iteration(struct heatsink_ctx *ctx, struct heatsink_opts *opts,
 					       (last_append ? cxi->tgt_eq :
 							      NULL),
 					       cxi->tgt_buf, rmt_offset, flags,
-					       cxi->tgt_pte->ptn, 0);
+					       cxi->tgt_pte->ptn, 0, 0);
 				if (rc)
 					return rc;
 			} else {
@@ -679,7 +679,8 @@ int do_single_iteration(struct heatsink_ctx *ctx, struct heatsink_opts *opts,
 					cxi->tgt_cq,
 					(last_append ? cxi->tgt_eq : NULL),
 					cxi->tgt_buf, rmt_offset, flags,
-					cxi->tgt_pte->ptn, 0, 0, match_bits, 0);
+					cxi->tgt_pte->ptn, 0, 0, match_bits, 0,
+					0);
 				if (rc)
 					return rc;
 			}

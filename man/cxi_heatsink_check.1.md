@@ -1,6 +1,6 @@
 ---
-title: CXI_HEATSINK_CHECK(1) Version 2.2.0 | CXI Diagnostics and Utilities
-date: 2023-10-25
+title: CXI_HEATSINK_CHECK(1) Version 2.2.2 | CXI Diagnostics and Utilities
+date: 2025-08-05
 ---
 
 # NAME

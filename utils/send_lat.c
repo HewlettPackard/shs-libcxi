@@ -89,7 +89,8 @@ int send_lat_alloc(struct util_context *util)
 
 	tgt_opts.cq_opts.count = 1;
 
-	tgt_opts.pt_opts.is_matching = 1;
+	tgt_opts.pt_opts.is_matching = 1; // TODO: Really?
+	tgt_opts.use_final_lat = true;
 
 	/* Allocate */
 	rc = alloc_ini(cxi, &ini_opts);
@@ -167,7 +168,7 @@ int send_lat_alloc(struct util_context *util)
 		rc = append_me(cxi->ini_rdzv_pte_cq, cxi->ini_rdzv_eq,
 			       cxi->ini_buf, 0, flags, cxi->ini_rdzv_pte->ptn,
 			       0, rdzv_match_id, rdzv_match_bits,
-			       RDZV_IGNORE_BITS);
+			       RDZV_IGNORE_BITS, 0);
 		if (rc)
 			return rc;
 	}
@@ -179,13 +180,18 @@ int send_lat_alloc(struct util_context *util)
 	/* Append Persistent RX ME */
 	flags = C_LE_EVENT_UNLINK_DISABLE | C_LE_OP_PUT;
 	if (opts->use_rdzv) {
-		rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
-			       cxi->tgt_pte->ptn, 0, me_initiator, MATCH_BITS,
-			       0);
+		rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0,
+			       flags, cxi->tgt_pte->ptn, 0, me_initiator,
+			       MATCH_BITS, 0, 0);
+		rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0,
+			       flags, cxi->tgt_final_lat_pte->ptn, 0,
+			       me_initiator, MATCH_BITS, 0, 1);
 	} else {
 		flags |= C_LE_UNRESTRICTED_BODY_RO | C_LE_UNRESTRICTED_END_RO;
-		rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
-			       cxi->tgt_pte->ptn, 0);
+		rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0,
+			       flags, cxi->tgt_pte->ptn, 0, 0);
+		rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0,
+			       flags, cxi->tgt_final_lat_pte->ptn, 0, 1);
 	}
 	if (rc)
 		return rc;
@@ -308,6 +314,7 @@ static int do_single_recv(struct util_context *util)
 			break;
 
 		case C_EVENT_PUT:
+			util->final_lat_recv = event->tgt_long.buffer_id;
 		case C_EVENT_REPLY:
 			break;
 
@@ -360,8 +367,7 @@ int do_single_iteration(struct util_context *util)
 
 	util->dma_cmd.full_dma.request_len = util->size;
 
-	rc = ctrl_barrier_msg(ctrl, NO_TIMEOUT, "Sync", 0);
-
+	rc = ctrl_barrier(ctrl, NO_TIMEOUT, "Sync");
 	if (rc)
 		return rc;
 

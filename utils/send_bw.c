@@ -35,7 +35,7 @@
 // clang-format on
 
 static const char *name = "cxi_send_bw";
-static const char *version = "2.3.0";
+static const char *version = "2.4.0";
 
 /* Increment the PUT event counter for either the next response or the next set
  * of puts
@@ -184,7 +184,7 @@ int send_bw_alloc_tx(struct util_context *util)
 		rc = append_me(cxi->ini_rdzv_pte_cq, cxi->ini_rdzv_eq,
 			       cxi->ini_buf, 0, flags, cxi->ini_rdzv_pte->ptn,
 			       cxi->ini_rdzv_ct->ctn, rdzv_match_id,
-			       rdzv_match_bits, RDZV_IGNORE_BITS);
+			       rdzv_match_bits, RDZV_IGNORE_BITS, 0);
 		if (rc)
 			return rc;
 
@@ -255,11 +255,11 @@ int send_bw_alloc_rx(struct util_context *util)
 	if (opts->use_rdzv) {
 		rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
 			       cxi->tgt_pte->ptn, cxi->tgt_ct->ctn, initiator,
-			       MATCH_BITS, 0);
+			       MATCH_BITS, 0, 0);
 	} else {
 		flags |= C_LE_UNRESTRICTED_BODY_RO | C_LE_UNRESTRICTED_END_RO;
 		rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
-			       cxi->tgt_pte->ptn, cxi->tgt_ct->ctn);
+			       cxi->tgt_pte->ptn, cxi->tgt_ct->ctn, 0);
 	}
 	if (rc)
 		return rc;

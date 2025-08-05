@@ -165,6 +165,7 @@ struct cxi_context {
 	struct ctx_buffer *tgt_buf;
 	struct cxi_cq *tgt_cq;
 	struct cxil_pte *tgt_pte;
+	struct cxil_pte *tgt_final_lat_pte;
 	struct cxi_ct *tgt_ct;
 	struct cxi_cq *tgt_trig_cq;
 };
@@ -186,6 +187,7 @@ struct cxi_ctx_tgt_opts {
 	bool alloc_ct;
 	bool use_gpu_buf;
 	int gpu_id;
+	bool use_final_lat;
 	struct cxi_eq_attr eq_attr;
 	struct ctx_buf_opts buf_opts;
 	struct cxi_cq_alloc_opts cq_opts;
@@ -299,6 +301,8 @@ struct util_context {
 
 	/* send_bw/lat state */
 	enum iter_state istate;
+	bool final_lat_sent;
+	bool final_lat_recv;
 
 	union c_cmdu dma_cmd;
 	union c_cmdu idc_cmd;
@@ -357,8 +361,6 @@ int ctrl_close(struct ctrl_connection *ctrl);
 int ctrl_exchange_data(struct ctrl_connection *ctrl, const void *client_buf,
 		       size_t cbuf_size, void *server_buf, size_t sbuf_size);
 int ctrl_barrier(struct ctrl_connection *ctrl, uint64_t tmo_usec, char *label);
-int ctrl_barrier_msg(struct ctrl_connection *ctrl, uint64_t tmo_usec,
-	 char *label, uint8_t msg);
 
 /* CXI context functions */
 int ctx_alloc(struct cxi_context *ctx, uint32_t dev_id, uint32_t svc_id);
@@ -396,10 +398,12 @@ void inc_tx_buf_offsets(struct util_context *util, uint64_t *rmt,
 			uint64_t *loc);
 int enable_pte(struct cxi_cq *cq, struct cxi_eq *eq, uint16_t ptn);
 int append_le(struct cxi_cq *cq, struct cxi_eq *eq, struct ctx_buffer *ctx_buf,
-	      size_t offset, uint32_t flags, uint16_t ptlte_index, uint16_t ct);
+	      size_t offset, uint32_t flags, uint16_t ptlte_index, uint16_t ct,
+	      uint16_t buffer_id);
 int append_me(struct cxi_cq *cq, struct cxi_eq *eq, struct ctx_buffer *ctx_buf,
 	      size_t offset, uint32_t flags, uint16_t ptlte_index, uint16_t ct,
-	      uint32_t match_id, uint64_t match_bits, uint64_t ignore_bits);
+	      uint32_t match_id, uint64_t match_bits, uint64_t ignore_bits,
+	      uint16_t buffer_id);
 int set_to_dflt_cp(struct util_context *util, struct cxi_cq *cq);
 int set_to_hrp_cp(struct util_context *util, struct cxi_cq *cq);
 int alloc_ini(struct cxi_context *ctx, struct cxi_ctx_ini_opts *opts);
