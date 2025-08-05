@@ -89,7 +89,8 @@ int send_lat_alloc(struct util_context *util)
 
 	tgt_opts.cq_opts.count = 1;
 
-	tgt_opts.pt_opts.is_matching = 1; // TODO: Really?
+	if (opts->use_rdzv)
+		tgt_opts.pt_opts.is_matching = 1;
 	tgt_opts.use_final_lat = true;
 
 	/* Allocate */
@@ -105,7 +106,7 @@ int send_lat_alloc(struct util_context *util)
 				     cxi->dev->info.nid);
 
 	/* Match DMA Put command setup */
-	if (!opts->use_idc || opts->max_size > MAX_IDC_RESTRICTED_SIZE) {
+	if (!opts->use_idc || opts->max_size > MAX_IDC_UNRESTRICTED_SIZE) {
 		util->dma_cmd.command.cmd_type = C_CMD_TYPE_DMA;
 		if (opts->use_rdzv) {
 			util->dma_cmd.full_dma.command.opcode =
@@ -133,7 +134,7 @@ int send_lat_alloc(struct util_context *util)
 	}
 
 	/* IDC command setup */
-	if (opts->use_idc && opts->min_size <= MAX_IDC_RESTRICTED_SIZE) {
+	if (opts->use_idc && opts->min_size <= MAX_IDC_UNRESTRICTED_SIZE) {
 		/* C State */
 		c_st_cmd.c_state.command.opcode = C_CMD_CSTATE;
 		c_st_cmd.c_state.index_ext = cxi->index_ext;
@@ -207,7 +208,8 @@ static int do_single_send(struct util_context *util)
 	struct cxi_context *cxi = &util->cxi;
 	struct util_opts *opts = &util->opts;
 	const union c_event *event;
-	bool dma_used = !opts->use_idc || util->size > MAX_IDC_RESTRICTED_SIZE;
+	bool dma_used = !opts->use_idc ||
+		util->size > MAX_IDC_UNRESTRICTED_SIZE;
 
 	/* Enqueue TX command and ring doorbell */
 	if (dma_used) {
@@ -456,7 +458,7 @@ void usage(void)
 	printf("                          The maximum size is %lu\n",
 	       MAX_MSG_SIZE);
 	printf("      --no-idc            Do not use Immediate Data Cmds for sizes <= %u bytes\n",
-	       MAX_IDC_RESTRICTED_SIZE);
+	       MAX_IDC_UNRESTRICTED_SIZE);
 	printf("      --no-ll             Do not use Low-Latency command issuing\n");
 	printf("  -R, --rdzv              Use rendezvous PUTs\n");
 	printf("      --report-all        Report all latency measurements individually\n");
