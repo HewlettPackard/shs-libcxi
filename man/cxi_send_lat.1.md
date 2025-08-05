@@ -1,6 +1,6 @@
 ---
-title: CXI_SEND_LAT(1) Version 2.3.0 | CXI Diagnostics and Utilities
-date: 2023-08-19
+title: CXI_SEND_LAT(1) Version 2.4.0 | CXI Diagnostics and Utilities
+date: 2025-08-05
 ---
 
 # NAME

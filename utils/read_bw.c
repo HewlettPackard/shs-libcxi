@@ -26,7 +26,7 @@
 #define LIST_SIZE_DFLT 256
 
 static const char *name = "cxi_read_bw";
-static const char *version = "2.3.0";
+static const char *version = "2.4.0";
 
 /* Allocate RDMA Initiator resources */
 int read_bw_alloc_ini(struct util_context *util)
@@ -115,7 +115,7 @@ int read_bw_alloc_tgt(struct util_context *util)
 		C_LE_EVENT_UNLINK_DISABLE | C_LE_UNRESTRICTED_BODY_RO |
 		C_LE_UNRESTRICTED_END_RO | C_LE_OP_GET;
 	rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
-		       cxi->tgt_pte->ptn, 0);
+		       cxi->tgt_pte->ptn, 0, 0);
 	if (rc)
 		return rc;
 

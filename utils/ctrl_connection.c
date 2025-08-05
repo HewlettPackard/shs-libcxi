@@ -548,27 +548,3 @@ int ctrl_barrier(struct ctrl_connection *ctrl, uint64_t tmo_usec, char *label)
 
 	return rc;
 }
-
-/* Sync client and server */
-int ctrl_barrier_msg(struct ctrl_connection *ctrl, uint64_t tmo_usec,
-	char *label, uint8_t msg)
-{
-	int rc;
-	struct timeval tmo_tv;
-	uint8_t rmsg = 0;
-
-	if (!ctrl || !label)
-		return -EINVAL;
-
-	tmo_tv.tv_sec = tmo_usec / SEC2USEC;
-	tmo_tv.tv_usec = tmo_usec % SEC2USEC;
-
-	rc = __ctrl_exchange_data(ctrl, &msg, 1, &rmsg, 1, &tmo_tv);
-	if (rc < 0) {
-		fprintf(stderr, "%s handshake failed: %s\n", label,
-			strerror(-rc));
-		return rc;
-	}
-
-	return rmsg;
-}

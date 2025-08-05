@@ -377,6 +377,25 @@ int alloc_tgt(struct cxi_context *ctx, struct cxi_ctx_tgt_opts *opts)
 		return rc;
 	}
 
+	/* Separate endpoint for cxi_send_lat to signal completion */
+	if (opts->use_final_lat) {
+		rc = ctx_alloc_pte(ctx, ctx->tgt_eq, &opts->pt_opts,
+				   (opts->pte_index + 1),
+				   &ctx->tgt_final_lat_pte);
+		if (rc < 0) {
+			fprintf(stderr, "Failed to allocate and map PTE: %s\n",
+				strerror(-rc));
+			return rc;
+		}
+		rc = enable_pte(ctx->tgt_cq, ctx->tgt_eq,
+				ctx->tgt_final_lat_pte->ptn);
+		if (rc) {
+			fprintf(stderr, "Failed to enable PTE: %s\n",
+				strerror(-rc));
+			return rc;
+		}
+	}
+
 	if (opts->alloc_ct) {
 		/* event counter */
 		rc = ctx_alloc_ct(ctx, &ctx->tgt_ct);
@@ -626,6 +645,44 @@ int run_bw_passive(struct util_context *util)
 	return rc;
 }
 
+/* cxi_send_lat needs to ensure that neither peer completes before the other
+ * when running in duration mode. It does this by sending an "I'm done" signal
+ * by performing a final, unmeasured iteration that targets a different
+ * endpoint. This function flips the initiator between targeting one or the
+ * other endpoint.
+ */
+static int flip_final_lat_send(struct util_context *util)
+{
+	int rc = 0;
+	uint8_t index_ext;
+	struct cxi_context *cxi;
+	union c_cmdu c_st_cmd = { 0 };
+
+	cxi = &util->cxi;
+	if (util->final_lat_sent)
+		index_ext = cxi->index_ext;
+	else
+		index_ext = cxi->index_ext + 1;
+
+	util->dma_cmd.full_dma.index_ext = index_ext;
+
+	c_st_cmd.c_state.command.opcode = C_CMD_CSTATE;
+	c_st_cmd.c_state.index_ext = index_ext;
+	c_st_cmd.c_state.event_send_disable = 1;
+	c_st_cmd.c_state.event_success_disable = 1;
+	c_st_cmd.c_state.eq = cxi->ini_eq->eqn;
+	rc = cxi_cq_emit_c_state(cxi->ini_cq, &c_st_cmd.c_state);
+	if (rc) {
+		fprintf(stderr, "Failed to issue C State command: %s\n",
+			strerror(-rc));
+		return rc;
+	}
+	cxi_cq_ring(cxi->ini_cq);
+
+	util->final_lat_sent = !util->final_lat_sent;
+	return 0;
+}
+
 /* Repeatedly call the provided do_iter function until the specified number of
  * iterations or duration has passed. Then calculate latency.
  */
@@ -635,6 +692,7 @@ int run_lat_active(struct util_context *util,
 	int rc = 0;
 	struct ctrl_connection *ctrl;
 	struct util_opts *opts;
+	struct cxi_context *cxi;
 	uint64_t i;
 	uint64_t warmup_count;
 	uint64_t start_time;
@@ -653,6 +711,7 @@ int run_lat_active(struct util_context *util,
 
 	ctrl = &util->ctrl;
 	opts = &util->opts;
+	cxi = &util->cxi;
 
 	warmup_count = 0;
 	start_time = 0;
@@ -669,6 +728,19 @@ int run_lat_active(struct util_context *util,
 			err(1, "Failed to allocate results buffer");
 	}
 
+	/* Reset final_lat state when measuring multiple sizes (applies to
+	 * cxi_send_lat only)
+	 */
+	if (opts->duration && cxi->tgt_final_lat_pte) {
+		if (util->final_lat_sent) {
+			rc = flip_final_lat_send(util);
+			if (rc < 0)
+				goto done;
+		}
+		if (util->final_lat_recv)
+			util->final_lat_recv = false;
+	}
+
 	/* Measure latencies */
 	util->count = 0;
 	while (((!opts->duration && util->count < opts->iters) ||
@@ -678,7 +750,8 @@ int run_lat_active(struct util_context *util,
 			fprintf(stderr, "Iteration failed: %s\n",
 				strerror(-rc));
 			goto done;
-		} else if (rc == ENOTCONN) {
+		} else if (util->final_lat_recv) {
+			/* Peer is done (applies to cxi_send_lat only) */
 			break;
 		}
 		if (warmup_count < opts->warmup) {
@@ -710,9 +783,19 @@ int run_lat_active(struct util_context *util,
 			elapsed = get_time_usec(util->cxi.dev) - start_time;
 	}
 
-	if (ctrl->connected && rc != ENOTCONN) {
-		rc = ctrl_barrier_msg(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run",
-			ENOTCONN);
+	/* Let peer know that we're done (applies to cxi_send_lat only) */
+	if (opts->duration && !rc && cxi->tgt_final_lat_pte &&
+	    !util->final_lat_recv) {
+		rc = flip_final_lat_send(util);
+		if (rc < 0)
+			goto done;
+		rc = do_iter(util);
+		if (rc < 0)
+			goto done;
+	}
+
+	if (ctrl->connected) {
+		rc = ctrl_barrier(ctrl, DFLT_HANDSHAKE_TIMEOUT, "Post-run");
 		if (rc < 0)
 			goto done;
 	}
@@ -765,7 +848,7 @@ int run_lat_passive(struct util_context *util)
 	if (!util)
 		return -EINVAL;
 
-	rc = ctrl_barrier_msg(&util->ctrl, NO_TIMEOUT, "Post-run", 0);
+	rc = ctrl_barrier(&util->ctrl, NO_TIMEOUT, "Post-run");
 	if (rc < 0)
 		return rc;
 	else
@@ -1368,19 +1451,21 @@ int enable_pte(struct cxi_cq *cq, struct cxi_eq *eq, uint16_t ptn)
 
 /* Append a List Entry to the Priority List of the specified PTE */
 int append_le(struct cxi_cq *cq, struct cxi_eq *eq, struct ctx_buffer *ctx_buf,
-	      size_t offset, uint32_t flags, uint16_t ptlte_index, uint16_t ct)
+	      size_t offset, uint32_t flags, uint16_t ptlte_index, uint16_t ct,
+	      uint16_t buffer_id)
 {
 	/* Errata-2902: Setting ignore_bits[0]=1 to force Relaxed Ordering for
 	 * the last TLP of Restricted packets
 	 */
 	return append_me(cq, eq, ctx_buf, offset, flags, ptlte_index, ct, 0, 0,
-			 0x1);
+			 0x1, buffer_id);
 }
 
 /* Append a Matching List Entry to the Priority List of the specified PTE */
 int append_me(struct cxi_cq *cq, struct cxi_eq *eq, struct ctx_buffer *ctx_buf,
 	      size_t offset, uint32_t flags, uint16_t ptlte_index, uint16_t ct,
-	      uint32_t match_id, uint64_t match_bits, uint64_t ignore_bits)
+	      uint32_t match_id, uint64_t match_bits, uint64_t ignore_bits,
+	      uint16_t buffer_id)
 {
 	int rc;
 	union c_cmdu cmd = { 0 };
@@ -1405,6 +1490,7 @@ int append_me(struct cxi_cq *cq, struct cxi_eq *eq, struct ctx_buffer *ctx_buf,
 	addr = CXI_VA_TO_IOVA(ctx_buf->md, ctx_buf->buf) + offset;
 	cmd.target.start = addr;
 	cmd.target.length = ctx_buf->md->len - offset;
+	cmd.target.buffer_id = buffer_id;
 
 	rc = cxi_cq_emit_target(cq, &cmd);
 	if (rc) {

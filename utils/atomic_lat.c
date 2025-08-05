@@ -31,7 +31,7 @@
 #define TYPE_DFLT C_AMO_TYPE_UINT64_T
 
 static const char *name = "cxi_atomic_lat";
-static const char *version = "2.3.0";
+static const char *version = "2.4.0";
 
 /* Allocate INI resources */
 int atomic_lat_alloc_ini(struct util_context *util)
@@ -163,10 +163,10 @@ int atomic_lat_alloc_tgt(struct util_context *util)
 		flags |= C_LE_OP_GET;
 	if (opts->matching)
 		rc = append_me(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
-			       cxi->tgt_pte->ptn, 0, 0, match_bits, 0);
+			       cxi->tgt_pte->ptn, 0, 0, match_bits, 0, 0);
 	else
 		rc = append_le(cxi->tgt_cq, cxi->tgt_eq, cxi->tgt_buf, 0, flags,
-			       cxi->tgt_pte->ptn, 0);
+			       cxi->tgt_pte->ptn, 0, 0);
 	if (rc)
 		return rc;
 
