@@ -74,10 +74,10 @@ $MY_DIR/cxi_mgmt enable --rx-profile rx1
 $MY_DIR/cxi_mgmt create --tx-profile tx1
 $MY_DIR/cxi_mgmt set-vni --tx-profile tx1 $match $ignore $exclusive
 $MY_DIR/cxi_mgmt add-ac-entry --tx-profile tx1 ac 0 4
-$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 dedicated true
-$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 best_effort true
-$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 low_latency true
-$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 bulk_data true
+$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 dedicated 1
+$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 best_effort 1
+$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 low_latency 1
+$MY_DIR/cxi_mgmt set-tc --tx-profile tx1 bulk_data 1
 $MY_DIR/cxi_mgmt enable --tx-profile tx1
 
 #cat /sys/kernel/debug/cxi/cxi0/services
