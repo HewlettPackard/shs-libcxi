@@ -768,8 +768,8 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 	/* Show that another svc with le/tle reservations cannot be allocated */
 	svcs[num_svcs].resource_limits = true;
 	svcs[num_svcs].limits = param->limits;
-	svcs[num_svcs].num_vld_vnis = 1,
-	svcs[num_svcs].vnis[0] = 8,
+	svcs[num_svcs].num_vld_vnis = 1;
+	svcs[num_svcs].vnis[0] = 8;
 	rc = cxil_alloc_svc(dev, &svcs[num_svcs], NULL);
 	cr_assert_eq(rc, -ENOSPC);
 
