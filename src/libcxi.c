@@ -402,6 +402,119 @@ CXIL_API int cxil_get_svc_lpr(struct cxil_dev *dev_in, unsigned int svc_id)
 	return resp.value;
 }
 
+CXIL_API int cxil_svc_enable(struct cxil_dev *dev_in, unsigned int svc_id,
+			     bool enable)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_enable_cmd cmd = {
+		.op = CXI_OP_SVC_ENABLE,
+		.svc_id = svc_id,
+		.enable = enable,
+	};
+
+	if (!dev_in)
+		return -EINVAL;
+
+	if (svc_id < 1)
+		return -EINVAL;
+
+	return device_write(dev, &cmd, sizeof(cmd));
+}
+
+CXIL_API int cxil_svc_set_exclusive_cp(struct cxil_dev *dev_in,
+				       unsigned int svc_id,
+				       bool exclusive_cp)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_set_exclusive_cp_cmd cmd = {
+		.op = CXI_OP_SVC_SET_EXCLUSIVE_CP,
+		.svc_id = svc_id,
+		.exclusive_cp = exclusive_cp,
+	};
+
+	if (!dev_in)
+		return -EINVAL;
+
+	if (svc_id < 1)
+		return -EINVAL;
+
+	return device_write(dev, &cmd, sizeof(cmd));
+}
+
+CXIL_API int cxil_svc_get_exclusive_cp(struct cxil_dev *dev_in,
+				       unsigned int svc_id, bool *exclusive_cp)
+{
+	int rc;
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_get_value_resp resp = {};
+	struct cxi_svc_get_exclusive_cp_cmd cmd = {
+		.op = CXI_OP_SVC_GET_EXCLUSIVE_CP,
+		.svc_id = svc_id,
+		.resp = &resp,
+	};
+
+	if (!dev_in)
+		return -EINVAL;
+
+	rc = device_write(dev, &cmd, sizeof(cmd));
+	if (rc < 0)
+		return rc;
+
+	*exclusive_cp = resp.value;
+
+	return rc;
+}
+
+CXIL_API int cxil_svc_set_vni_range(struct cxil_dev *dev_in,
+				   unsigned int svc_id, uint16_t vni_min,
+				   uint16_t vni_max)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_vni_range_cmd cmd = {
+		.op = CXI_OP_SVC_SET_VNI_RANGE,
+		.svc_id = svc_id,
+		.vni_min = vni_min,
+		.vni_max = vni_max,
+	};
+
+	if (!dev_in)
+		return -EINVAL;
+
+	if (svc_id < 1)
+		return -EINVAL;
+
+	return device_write(dev, &cmd, sizeof(cmd));
+}
+
+CXIL_API int cxil_svc_get_vni_range(struct cxil_dev *dev_in,
+				   unsigned int svc_id, uint16_t *vni_min,
+				   uint16_t *vni_max)
+{
+	int rc;
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_get_vni_range_resp resp = {};
+	struct cxi_svc_vni_range_cmd cmd = {
+		.op = CXI_OP_SVC_GET_VNI_RANGE,
+		.svc_id = svc_id,
+		.resp = &resp,
+	};
+
+	if (!dev_in || !vni_min || !vni_max)
+		return -EINVAL;
+
+	if (svc_id < 1)
+		return -EINVAL;
+
+	rc = device_write(dev, &cmd, sizeof(cmd));
+	if (rc)
+		return rc;
+
+	*vni_min = resp.vni_min;
+	*vni_max = resp.vni_max;
+
+	return 0;
+}
+
 /* Allocate a CXI LNI */
 CXIL_API int cxil_alloc_lni(struct cxil_dev *dev_in, struct cxil_lni **lni,
 			    unsigned int svc_id)

@@ -332,6 +332,91 @@ CXIL_API int cxil_set_svc_lpr(struct cxil_dev *dev, unsigned int svc_id,
 CXIL_API int cxil_get_svc_lpr(struct cxil_dev *dev, unsigned int svc_id);
 
 /**
+ * @brief Enable or disable a service.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID of the service to update
+ * @param enable True to enable, false to disable
+ *
+ * @return On success, zero is returned.
+ *         Otherwise, a negative errno value is returned indicating the error.
+ */
+CXIL_API int cxil_svc_enable(struct cxil_dev *dev, unsigned int svc_id,
+			     bool enable);
+
+/**
+ * @brief Enable or disable exclusive_cp mode for a service.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID of the service to update
+ * @param exclusive_cp True to enable, false to disable
+ *
+ * @return On success, zero is returned.
+ *         Otherwise, a negative errno value is returned indicating the error.
+ */
+CXIL_API int cxil_svc_set_exclusive_cp(struct cxil_dev *dev,
+				       unsigned int svc_id,
+				       bool exclusive_cp);
+
+/**
+ * @brief Query whether exclusive_cp mode is enabled for a service.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID of the service to query
+ * @param exclusive_cp Pointer to bool to receive the exclusive_cp mode
+ *
+ * @return On success, zero is returned and exclusive_cp is set appropriately.
+ *         Otherwise, a negative errno value is returned indicating the error.
+ */
+CXIL_API int cxil_svc_get_exclusive_cp(struct cxil_dev *dev,
+				       unsigned int svc_id, bool *exclusive_cp);
+
+/**
+ * @brief Sets a VNI range for a service.
+ *
+ * The provided range must be exactly representable as a mask/match pair.
+ * Requirements:
+ *   - The number of values in the range must be a power of two
+ *     (1, 2, 4, 8, 16, ...).
+ *   - The first value in the range (vni_min) must be a multiple of the
+ *     range size.
+ *   - The svc must not have the restricted_vnis bit set.
+ *
+ * For example:
+ *   64–127: 64 values, starting value (64) is a multiple of the
+ *           range size (64), so the range is valid.
+ *   32–95 : 64 values, starting value (32) is not a multiple of the
+ *           range size (64), so the range is invalid.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID returned from cxil_svc_alloc
+ * @param vni_min Minimum VNI value (inclusive)
+ * @param vni_max Maximum VNI value (inclusive)
+ *
+ * @return On success, 0 is returned and the vni range will be set
+ *         in the service indicated by the svc_id. Otherwise, a negative
+ *         errno value is returned indicating the error.
+ *
+ */
+CXIL_API int cxil_svc_set_vni_range(struct cxil_dev *dev, unsigned int svc_id,
+				    uint16_t vni_min, uint16_t vni_max);
+
+/**
+ * @brief Gets a VNI range of a service.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID returned from cxil_svc_alloc
+ * @param_out vni_min Destination pointer for the minimum VNI value
+ * @param_out vni_max Destination pointer for the maximum VNI value
+ *
+ * @return On success, 0 is returned and the vni_min and vni_max will be
+ *         returned for svc_id. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_svc_get_vni_range(struct cxil_dev *dev, unsigned int svc_id,
+				    uint16_t *vni_min, uint16_t *vni_max);
+
+/**
  * @brief Allocates a CXI LNI (Logical Network Interface) object.  An LNI is a
  *        logical group of hardware resources on a single network device which
  *        belong to a single process.

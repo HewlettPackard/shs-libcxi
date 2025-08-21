@@ -108,4 +108,9 @@ global:
 LIBCXI_1.9 {
 global:
 	cxil_modify_cp;
+	cxil_svc_enable;
+	cxil_svc_set_exclusive_cp;
+	cxil_svc_get_exclusive_cp;
+	cxil_svc_set_vni_range;
+	cxil_svc_get_vni_range;
 } LIBCXI_1.8;
