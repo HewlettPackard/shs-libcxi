@@ -663,6 +663,58 @@ Test(svc, svc_max)
 		     svc_desc.svc_id, rc);
 }
 
+Test(svc, svc_vni_range)
+{
+	int rc;
+	uint16_t vni_min = 16;
+	uint16_t vni_max = 31;
+	uint16_t min;
+	uint16_t max;
+	bool exclusive = false;
+	struct cxi_svc_desc desc = {};
+
+	desc.limits.type[CXI_RSRC_TYPE_PTE].max = C_NUM_PTLTES;
+	desc.limits.type[CXI_RSRC_TYPE_TXQ].max = C_NUM_TRANSMIT_CQS;
+	desc.limits.type[CXI_RSRC_TYPE_TGQ].max = C_NUM_TARGET_CQS;
+	desc.limits.type[CXI_RSRC_TYPE_EQ].max = C_NUM_EQS - 1;
+	desc.limits.type[CXI_RSRC_TYPE_CT].max = C_NUM_CTS - 1;
+	desc.limits.type[CXI_RSRC_TYPE_LE].max = C_LPE_STS_LIST_ENTRIES_ENTRIES / C_PE_COUNT;
+	desc.limits.type[CXI_RSRC_TYPE_AC].max = C_ATU_CFG_AC_TABLE_ENTRIES - 2;
+
+	/* Using the default svc should fail */
+	rc = cxil_alloc_svc(dev, &desc, NULL);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc failed rc:%d", rc);
+	desc.svc_id = rc;
+
+	rc = cxil_svc_set_vni_range(dev, desc.svc_id, vni_min, vni_max);
+	cr_assert_eq(rc, 0, "cxil_svc_set_vni_range failed svc_id:%d rc: %d",
+		     desc.svc_id, rc);
+
+	rc = cxil_svc_get_vni_range(dev, desc.svc_id, &min, &max);
+	cr_assert_eq(rc, 0, "cxil_svc_get_vni_range failed svc_id:%d rc: %d",
+		     desc.svc_id, rc);
+	cr_assert(vni_min == min && vni_max == max,
+		     "vni_min:%d exp:%d vni_max:%d exp:%d",
+		     min, vni_min, max, vni_max);
+
+	rc = cxil_svc_set_exclusive_cp(dev, desc.svc_id, true);
+	cr_assert_eq(rc, 0, "cxil_svc_set_exclusive_cp failed svc_id:%d rc: %d",
+		     desc.svc_id, rc);
+
+	rc = cxil_svc_get_exclusive_cp(dev, desc.svc_id, &exclusive);
+	cr_assert_eq(rc, 0, "cxil_get_svc_exclusive_cp failed svc_id:%d rc: %d",
+		     desc.svc_id, rc);
+	cr_log_info("exclusive:%d\n", exclusive);
+
+	rc = cxil_svc_enable(dev, desc.svc_id, true);
+	cr_assert_eq(rc, 0, "cxil_svc_enable failed svc_id:%d rc: %d",
+		     desc.svc_id, rc);
+
+	rc = cxil_destroy_svc(dev, desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_destroy_svc(): Failed. Couldn't free svc: %d. rc: %d",
+		     desc.svc_id, rc);
+}
+
 Test(svc, svc_vni_overlap)
 {
 	int rc;
