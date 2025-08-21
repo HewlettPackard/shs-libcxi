@@ -2085,6 +2085,10 @@ static int start_rh(struct retry_handler *rh, unsigned int dev_id)
 	rh_printf(rh, LOG_DEBUG, "svc_id: %d\n", rh->svc_id);
 	rh_printf(rh, LOG_DEBUG, "euid: %d\n", svc_desc.members[0].svc_member.uid);
 
+	ret = cxil_svc_enable(rh->dev, rh->svc_id, true);
+	if (ret != 0)
+		fatal(rh, "enable svc failed: %d\n", ret);
+
 	ret = cxil_alloc_lni(rh->dev, &rh->lni, rh->svc_id);
 	if (ret != 0)
 		fatal(rh, "alloc lni failed: %d\n", ret);
