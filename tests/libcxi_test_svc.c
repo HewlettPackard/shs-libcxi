@@ -331,7 +331,148 @@ ParameterizedTest(struct svc_ugid_params *param, svc, svc_ugid)
 	rc = cxil_destroy_svc(dev, svc_desc.svc_id);
 	cr_assert_eq(rc, 0, "cxil_destroy_svc(): Failed. rc: %d",
 		     rc);
+}
 
+#define TEST_UID 200
+#define TEST_GID 300
+Test(svc, svc_profile_ignore)
+{
+	int rc;
+	struct cxi_svc_desc svc_desc = {
+		.restricted_members = 1,
+		.restricted_vnis = 1,
+		.num_vld_vnis = 1,
+		.vnis[0] = 8,
+	};
+
+	/* member[1].type is ignore therefore no ac entry */
+	svc_desc.members[0].svc_member.uid = TEST_UID;
+	svc_desc.members[0].type = CXI_SVC_MEMBER_UID;
+
+	/* Allocate SVC */
+	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d", rc);
+
+	svc_desc.svc_id = rc;
+
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, -EPERM, "cxil_alloc_lni Expected rc:%d received rc:%d",
+		      -EPERM, rc);
+
+	rc = seteuid(TEST_UID);
+	cr_assert_eq(rc, 0, "seteuid() failed");
+
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_alloc_lni Expected rc:0 received rc:%d", rc);
+
+	rc = cxil_destroy_lni(lni);
+	cr_assert_eq(rc, 0, "Destroy LNI failed rc: %d", rc);
+
+	/* Set back to root to destroy svc */
+	rc = seteuid(0);
+	cr_assert_eq(rc, 0, "seteuid() failed");
+
+	/* Destroy SVC */
+	rc = cxil_destroy_svc(dev, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_destroy_svc(): Failed. rc: %d",
+		     rc);
+}
+
+Test(svc, svc_member_perm)
+{
+	int rc;
+	struct cxi_svc_desc svc_desc = {
+		.restricted_members = 1,
+		.restricted_vnis = 1,
+		.num_vld_vnis = 1,
+		.vnis[0] = 8,
+	};
+
+	svc_desc.members[0].svc_member.uid = TEST_UID;
+	svc_desc.members[0].type = CXI_SVC_MEMBER_UID;
+	svc_desc.members[1].svc_member.uid = TEST_GID;
+	svc_desc.members[1].type = CXI_SVC_MEMBER_GID;
+
+	/* Allocate SVC */
+	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d", rc);
+
+	svc_desc.svc_id = rc;
+
+	/* Verify cannot allocate lni as root user */
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, -EPERM, "cxil_alloc_lni Expected rc:%d received rc:%d",
+		      -EPERM, rc);
+
+	/* Test with TEST uid */
+	rc = seteuid(TEST_UID);
+	cr_assert_eq(rc, 0, "seteuid() failed");
+
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_alloc_lni Expected rc:0 received rc:%d", rc);
+
+	rc = cxil_alloc_domain(lni, svc_desc.vnis[0], 10, &domain);
+	cr_assert_eq(rc, 0, "cxil_alloc_domain failed rc:%d", rc);
+
+	rc = cxil_destroy_domain(domain);
+	cr_assert_eq(rc, 0, "cxil_destroy_domain failed rc:%d", rc);
+
+	rc = cxil_alloc_cp(lni, svc_desc.vnis[0], CXI_TC_BEST_EFFORT,
+			   CXI_TC_TYPE_DEFAULT, &cp);
+	cr_assert_eq(rc, 0, "cxil_alloc_cp() failed %d", rc);
+	cr_assert_neq(cp, NULL);
+
+	rc = cxil_destroy_cp(cp);
+	cr_assert_eq(rc, 0, "Destroy CP failed %d", rc);
+
+	rc = cxil_destroy_lni(lni);
+	cr_assert_eq(rc, 0, "Destroy LNI failed rc: %d", rc);
+
+	/* Back to root uid */
+	rc = seteuid(0);
+	cr_assert_eq(rc, 0, "seteuid() failed");
+
+	/* Now test with TEST gid */
+	rc = setegid(TEST_GID);
+	cr_assert_eq(rc, 0, "setegid() failed");
+
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_alloc_lni Expected rc:0 received rc:%d", rc);
+
+	rc = cxil_alloc_domain(lni, svc_desc.vnis[0], 10, &domain);
+	cr_assert_eq(rc, 0, "cxil_alloc_domain failed rc:%d", rc);
+
+	rc = cxil_destroy_domain(domain);
+	cr_assert_eq(rc, 0, "cxil_destroy_domain failed rc:%d", rc);
+
+	rc = cxil_alloc_cp(lni, svc_desc.vnis[0], CXI_TC_BEST_EFFORT,
+			   CXI_TC_TYPE_DEFAULT, &cp);
+	cr_assert_eq(rc, 0, "cxil_alloc_cp() failed %d", rc);
+	cr_assert_neq(cp, NULL);
+
+	rc = cxil_destroy_cp(cp);
+	cr_assert_eq(rc, 0, "Destroy CP failed %d", rc);
+
+	/* gid back to root */
+	rc = setegid(0);
+	cr_assert_eq(rc, 0, "seteuid() failed");
+
+	rc = cxil_alloc_domain(lni, svc_desc.vnis[0], 10, &domain);
+	cr_assert_eq(rc, -EPERM, "cxil_alloc_domain expected:%d received:%d",
+		      -EPERM, rc);
+
+	rc = cxil_alloc_cp(lni, svc_desc.vnis[0], CXI_TC_BEST_EFFORT,
+			   CXI_TC_TYPE_DEFAULT, &cp);
+	cr_assert_eq(rc, -EPERM, "cxil_alloc_cp expected:%d received:%d",
+		      -EPERM, rc);
+
+	rc = cxil_destroy_lni(lni);
+	cr_assert_eq(rc, 0, "Destroy LNI failed rc: %d", rc);
+
+	/* Destroy SVC */
+	rc = cxil_destroy_svc(dev, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_destroy_svc(): Failed. rc: %d",
+		     rc);
 }
 
 /* Start as root, allocate an LNI, and change user to allocate an AC */
