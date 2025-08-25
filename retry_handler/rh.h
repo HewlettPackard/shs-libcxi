@@ -49,6 +49,7 @@ struct nid_entry {
 #define SPT_TRY_NUM_SIZE 8U
 
 #define ORDERED_PUT_LIMIT_MAX 2047U
+#define MAX_ONLY_NO_MATCHING_CONN_RETRY 1
 
 /* Highest possible value of max_spt_retries */
 #define MAX_SPT_RETRIES_LIMIT 7
@@ -394,6 +395,9 @@ struct sct_entry {
 
 	/* Were there only NO_MATCHING_CONN NACKs on this SCT */
 	bool only_no_matching_conn_nacks;
+
+	/* How many times the SCT has been retried for only_no_matching_conn_nacks flag */
+	unsigned int only_no_matching_conn_retry_cnt;
 
 	/* Did this SCT ever time out */
 	bool has_timed_out;
