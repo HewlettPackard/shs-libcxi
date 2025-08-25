@@ -294,8 +294,6 @@ ParameterizedTest(struct svc_ugid_params *param, svc, svc_ugid)
 
 	svc_desc.members[0].svc_member.gid = param->ugid;
 	svc_desc.members[0].type = param->type;
-	svc_desc.members[1].svc_member.gid = param->ugid;
-	svc_desc.members[1].type = param->type;
 
 	/* Allocate SVC */
 	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
