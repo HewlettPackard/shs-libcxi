@@ -19,7 +19,7 @@
 #include <libcxi.h>
 
 static const char *name = "cxi_service";
-static const char *version = "0.4.0";
+static const char *version = "0.5.0";
 
 static const char * const yaml_event_strs[] = {
 	[YAML_NO_EVENT] = "NO_EVENT",
@@ -76,6 +76,9 @@ struct parser_state {
 	struct cxi_svc_desc *desc;
 	enum cxi_rsrc_type rsrc_type;
 	enum cxi_svc_member_type member_type;
+	bool exclusive_cp;
+	uint16_t vni_min;
+	uint16_t vni_max;
 };
 
 void usage(void)
@@ -119,18 +122,41 @@ static void list_members(struct cxi_svc_desc *desc)
 	printf("\n");
 }
 
-static void list_vnis(struct cxi_svc_desc *desc)
+static void list_vnis(struct cxi_svc_desc *desc, struct util_opts *opts)
 {
 	int i;
+	int rc;
+	uint16_t vni_min;
+	uint16_t vni_max;
+	bool exclusive_cp;
 
-	printf("   ---> Valid VNIs    :");
+	printf("   VNIs               :");
 	if (!desc->restricted_vnis) {
-		printf(" All");
+		rc = cxil_svc_get_vni_range(opts->dev,
+					    desc->svc_id,
+					    &vni_min,
+					    &vni_max);
+		if (rc) {
+			printf("\n");
+			return;
+		}
+
+		printf(" %d-%d", vni_min, vni_max);
+		printf("\n");
+
+		rc = cxil_svc_get_exclusive_cp(opts->dev,
+					       desc->svc_id,
+					       &exclusive_cp);
+		if (rc)
+			return;
+
+		printf("   Exclusive CP       : %s\n",
+		       exclusive_cp ? "Yes" : "No");
 	} else {
 		for (i = 0; i < desc->num_vld_vnis; i++)
 			printf(" %d", desc->vnis[i]);
+		printf("\n");
 	}
-	printf("\n");
 }
 
 static void list_tcs(struct cxi_svc_desc *desc)
@@ -268,11 +294,8 @@ static void print_descriptor(struct cxi_svc_desc *desc,
 	       desc->restricted_members ? "Yes" : "No");
 	if (opts->verbose)
 		list_members(desc);
-
-	printf("   Restricted VNIs    : %s\n",
-		desc->restricted_vnis ? "Yes" : "No");
 	if (opts->verbose)
-		list_vnis(desc);
+		list_vnis(desc, opts);
 
 	printf("   Restricted TCs     : %s\n",
 	       desc->restricted_tcs ? "Yes" : "No");
@@ -390,18 +413,31 @@ int consume_event(struct parser_state *s, yaml_event_t *event,
 			    (strcmp((char *)event->data.scalar.value, "restricted_members") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "restricted_vnis") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "restricted_tcs") == 0) ||
+			    (strcmp((char *)event->data.scalar.value, "exclusive_cp") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "name") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "max") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "res") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "type") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "id") == 0) ||
-			    (strcmp((char *)event->data.scalar.value, "vni") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "tc") == 0)) {
 				s->state = ACCEPT_VALUE;
 				s->key = strdup((char *)event->data.scalar.value);
 			} else if ((strcmp((char *)event->data.scalar.value, "limits") == 0) ||
 				   (strcmp((char *)event->data.scalar.value, "members") == 0)) {
 				s->state = ACCEPT_SEQUENCE;
+			} else if ((strcmp((char *)event->data.scalar.value, "vni") == 0)) {
+				if (s->vni_min || s->vni_max)
+					errx(1, "vni range already specified\n");
+				s->state = ACCEPT_VALUE;
+				s->key = strdup((char *)event->data.scalar.value);
+				s->desc->restricted_vnis = 1;
+			} else if ((strcmp((char *)event->data.scalar.value, "vni_min") == 0) ||
+				   (strcmp((char *)event->data.scalar.value, "vni_max") == 0)) {
+				if (s->desc->vnis[0])
+					errx(1, "vni list already specified\n");
+				s->state = ACCEPT_VALUE;
+				s->key = strdup((char *)event->data.scalar.value);
+				s->desc->restricted_vnis = 0;
 			} else if ((strcmp((char *)event->data.scalar.value, "vnis") == 0) ||
 				   (strcmp((char *)event->data.scalar.value, "tcs") == 0)) {
 				s->state = ACCEPT_KEY;
@@ -483,6 +519,15 @@ int consume_event(struct parser_state *s, yaml_event_t *event,
 				if (i < 0 || i > 1)
 					errx(1, "Invalid value for 'restricted_tcs': %s", val);
 				s->desc->restricted_tcs = atoi(val);
+			} else if (strcmp(s->key, "exclusive_cp") == 0) {
+				i = atoi(val);
+				if (i < 0 || i > 1)
+					errx(1, "Invalid value for 'exclusive_cp': %s", val);
+				s->exclusive_cp = atoi(val);
+			} else if (strcmp(s->key, "vni_min") == 0) {
+				s->vni_min = atoi(val);
+			} else if (strcmp(s->key, "vni_max") == 0) {
+				s->vni_max = atoi(val);
 			} else if (strcmp(s->key, "name") == 0) {
 				for (i = 0; i < CXI_RSRC_TYPE_MAX; i++) {
 					if (strcmp(cxi_rsrc_type_strs[i],
@@ -547,6 +592,7 @@ int consume_event(struct parser_state *s, yaml_event_t *event,
 }
 
 static void desc_from_yaml(struct cxi_svc_desc *desc,
+			   struct parser_state *state,
 			   struct util_opts *opts)
 {
 	int rc;
@@ -555,13 +601,9 @@ static void desc_from_yaml(struct cxi_svc_desc *desc,
 	FILE *file;
 	yaml_parser_t parser;
 	yaml_event_t event;
-	struct parser_state state = {
-		.state = START,
-		.member_idx = 0,
-		.vni_idx = 0,
-		.tc_idx = 0,
-		.desc = desc
-	};
+
+	state->state = START;
+	state->desc = desc;
 
 	file = fopen(opts->yaml_file, "r");
 	if (!file)
@@ -576,7 +618,7 @@ static void desc_from_yaml(struct cxi_svc_desc *desc,
 	while (!done) {
 		if (!yaml_parser_parse(&parser, &event))
 			errx(1, "Error parsing yaml: %s\n", parser.problem);
-		if (!consume_event(&state, &event, opts))
+		if (!consume_event(state, &event, opts))
 			errx(1, "Error consuming event\n");
 		done = (event.type == YAML_STREAM_END_EVENT);
 		yaml_event_delete(&event);
@@ -587,15 +629,51 @@ static void desc_from_yaml(struct cxi_svc_desc *desc,
 static void create_service(struct cxi_svc_desc *desc,
 			   struct util_opts *opts)
 {
+	int rc;
 	int svc_id;
 	struct cxi_svc_fail_info fail_info = {};
 	struct cxi_rsrc_use rsrc_use = {};
+	struct parser_state p_state = {};
 
-	desc_from_yaml(desc, opts);
+	desc_from_yaml(desc, &p_state, opts);
 	svc_id = cxil_alloc_svc(opts->dev, desc, &fail_info);
 	if (svc_id < 0) {
 		/* TODO provide more detailed info from fail_info */
 		errx(1, "Failed to create service: %s\n", strerror(-svc_id));
+	}
+
+	if (!desc->restricted_vnis) {
+		rc = cxil_svc_set_vni_range(opts->dev,
+					    svc_id,
+					    p_state.vni_min,
+					    p_state.vni_max);
+		if (rc) {
+			errx(1, "Failed to set vni range: %d-%d %s\n",
+			     p_state.vni_min, p_state.vni_max, strerror(-rc));
+
+			rc = cxil_destroy_svc(opts->dev, svc_id);
+			if (rc)
+				errx(1, "Failed to destroy service with ID %d: %s\n",
+				     svc_id, strerror(-rc));
+		}
+
+		if (p_state.exclusive_cp) {
+			rc = cxil_svc_enable(opts->dev, svc_id, false);
+			if (rc)
+				errx(1, "Failed to disable service: %s\n",
+					strerror(-rc));
+
+			rc = cxil_svc_set_exclusive_cp(opts->dev, svc_id,
+						       p_state.exclusive_cp);
+			if (rc)
+				errx(1, "Failed to set exclusive cp: %s\n",
+					strerror(-rc));
+
+			rc = cxil_svc_enable(opts->dev, svc_id, true);
+			if (rc)
+				errx(1, "Failed to enable service: %s\n",
+					strerror(-rc));
+		}
 	}
 
 	desc->svc_id = svc_id;
@@ -610,6 +688,7 @@ static void update_service(struct cxi_svc_desc *desc,
 	struct cxi_svc_fail_info fail_info = {};
 	struct cxi_svc_desc new_desc;
 	struct cxi_rsrc_use rsrc_use = {}; /* Todo could report the real deal */
+	struct parser_state p_state = {};
 
 	if (opts->lnis_per_rgid) {
 		if (!opts->dry_run) {
@@ -621,7 +700,7 @@ static void update_service(struct cxi_svc_desc *desc,
 			return;
 		}
 	} else if (opts->cmd == CMD_UPDATE) {
-		desc_from_yaml(&new_desc, opts);
+		desc_from_yaml(&new_desc, &p_state, opts);
 
 		/* Updating resource_limits is not supported. For now always
 		 * copy the limit info from the original descriptor.

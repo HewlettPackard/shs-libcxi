@@ -1,9 +1,8 @@
----
 # Valid Values are 0 or 1
 resource_limits: 1
 restricted_members: 1
-restricted_vnis: 1
 restricted_tcs: 1
+exclusive_cp: 1
 
 ## Ignored if resource_limits is set to false.
 # If a resource is not listed below, max/res will be set to 0 for said resource.
@@ -32,15 +31,17 @@ limits:
   - name: TLEs
     max: 9
     res: 9
-#
-## Ignored if restricted_vnis is set to false
+
+#vnis:
+#  vni_min: 64
+#  vni_max: 127
+
 vnis:
-    vni: 1
-    vni: 2
-    vni: 3
-    vni: 4
-#
-## Ignored if restricted_members is set to false
+  vni: 2
+  vni: 3
+  vni: 4
+  vni: 5
+
 members:
 # Type can be 'uid' or 'gid'
   - type: uid
