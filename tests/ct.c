@@ -126,6 +126,13 @@ void device_ct_setup(void)
 
 	data_xfer_setup();
 
+	ret = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+				 CXI_TC_TYPE_DEFAULT, TRIG_LCID, &trig_cp);
+	cr_assert_eq(ret, 0, "cxil_alloc_cp() failed %d", ret);
+	cr_assert_neq(trig_cp, NULL);
+	cr_assert_eq(trig_cp->lcid, 0, "lcid for triggered CQ %d not 0",
+		     trig_cp->lcid);
+
 	/* Use the transmit EQ for trigger CMDQ. */
 	ret = cxil_alloc_cmdq(lni, transmit_evtq, &cq_opts, &trig_cmdq);
 	cr_assert_eq(ret, 0, "Triggered cxil_alloc_cmdq() failed %d", ret);
@@ -138,6 +145,10 @@ void device_ct_teardown(void)
 
 	ret = cxil_destroy_cmdq(trig_cmdq);
 	cr_assert_eq(ret, 0, "Destroy Trigger CQ Failed %d", ret);
+
+	ret = cxil_destroy_cp(trig_cp);
+	cr_assert_eq(ret, 0, "Destroy Trig CP failed %d", ret);
+	trig_cp = NULL;
 
 	data_xfer_teardown();
 }

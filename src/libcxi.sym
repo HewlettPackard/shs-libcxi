@@ -113,4 +113,5 @@ global:
 	cxil_svc_get_exclusive_cp;
 	cxil_svc_set_vni_range;
 	cxil_svc_get_vni_range;
+	cxil_alloc_trig_cp;
 } LIBCXI_1.8;

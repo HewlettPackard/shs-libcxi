@@ -467,6 +467,36 @@ CXIL_API int cxil_alloc_cp(struct cxil_lni *lni, unsigned int vni,
 			   struct cxi_cp **cp);
 
 /**
+ * @brief Allocate a communication profile indicating it is for a triggered
+ *        or a non-triggered cmdq. Communication profiles can be used to
+ *        allocate a transmit command queue or to change the communication
+ *        profile for active transmit command queues by using the LCID
+ *        embedded within the communication profile structure. Users
+ *        should manage which transmit command queues are using which
+ *        communication profile. The CP type indicates the type of cmdq
+ *        it will be used for:
+ *        TRIG_LCID - A triggered cmdq
+ *        NON_TRIG_LCID - A non-triggered cmdq
+ *        ANY_LCID - Either type for backward compatibility
+ *
+ * @param lni LNI of communication profile
+ * @param vni VNI of communication profile
+ * @param tc Traffic Class label of communication profile
+ * @param tc_type Traffic Class label type of communication profile
+ * @param cp_type CP type - one of LCID_TRIG, LCID_NON_TRIG or LCID_ANY
+ * @param cp New CXI communication profile object
+ *
+ * @return On success, zero is returned and the new communication profile is
+ *         pointed to by the cp parameter.  Otherwise, a negative errno value
+ *         is returned indicating the error.
+ */
+CXIL_API int cxil_alloc_trig_cp(struct cxil_lni *lni, unsigned int vni,
+				enum cxi_traffic_class tc,
+				enum cxi_traffic_class_type tc_type,
+				enum cxi_trig_cp cp_type,
+				struct cxi_cp **cp);
+
+/**
  * @brief Destroy a communication profile.
  *
  * @param cp CXI communication profile object to destroy
