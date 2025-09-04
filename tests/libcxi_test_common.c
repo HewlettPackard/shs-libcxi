@@ -47,6 +47,7 @@ int test_data_len;
 
 /* Counting event and trigger ops stuff. */
 struct cxi_ct *ct;
+struct cxi_cp *trig_cp;
 struct cxi_cq *trig_cmdq;
 struct c_ct_writeback *wb;
 
@@ -272,6 +273,13 @@ void counting_event_setup(void)
 	wb = aligned_alloc(8, sizeof(*wb));
 	cr_assert_neq(wb, NULL, "Failed to allocated memory");
 
+	ret = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+				 CXI_TC_TYPE_DEFAULT, TRIG_LCID, &trig_cp);
+	cr_assert_eq(ret, 0, "cxil_alloc_trig_cp() failed %d", ret);
+	cr_assert_neq(trig_cp, NULL);
+	cr_assert_eq(trig_cp->lcid, 0, "lcid for triggered CQ %d not 0",
+		     trig_cp->lcid);
+
 	/* Use the transmit EQ for trigger CMDQ. */
 	ret = cxil_alloc_cmdq(lni, transmit_evtq, &cq_opts, &trig_cmdq);
 	cr_assert_eq(ret, 0, "Triggered cxil_alloc_cmdq() failed %d", ret);
@@ -291,6 +299,10 @@ void counting_event_teardown(void)
 	cr_assert_eq(ret, 0, "Destroy Trigger CQ Failed %d", ret);
 
 	free(wb);
+
+	ret = cxil_destroy_cp(trig_cp);
+	cr_assert_eq(ret, 0, "Destroy Trig CP failed %d", ret);
+	trig_cp = NULL;
 
 	data_xfer_teardown();
 }

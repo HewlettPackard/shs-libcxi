@@ -420,7 +420,7 @@ ParameterizedTestParameters(ucxi_cmdq, cmdq_alloc)
 		 .with_resp = true,
 		 .destroy = 1,
 		 .destroy_hndl_off = 0,
-		 .write_rc = sizeof(struct cxi_cq_alloc_cmd),
+		 .write_rc = -1,
 		 .write_errno = 0,
 		 .lcid = 13},
 	};
@@ -447,6 +447,9 @@ ParameterizedTest(const struct cmdq_alloc_params *param, ucxi_cmdq, cmdq_alloc)
 	/* -1 means use allocated LCID */
 	if (param->lcid == -1)
 		cmdq_alloc.opts.lcid = cp->lcid;
+
+	if (param->lcid > 0)
+		cmdq_alloc.opts.lcid = param->lcid;
 
 	rc = write(pdev->fd, &cmdq_alloc, param->write_sz);
 	cr_assert_eq(rc, param->write_rc,

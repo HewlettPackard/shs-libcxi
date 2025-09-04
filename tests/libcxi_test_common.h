@@ -81,6 +81,7 @@ extern struct cxil_pte *rx_pte;
 extern struct cxil_pte_map *rx_pte_map;
 extern struct cxil_test_data *test_data;
 extern struct cxi_ct *ct;
+extern struct cxi_cp *trig_cp;
 extern struct cxi_cq *trig_cmdq;
 extern struct c_ct_writeback *wb;
 
@@ -210,6 +211,5 @@ int check_huge_pg_free(size_t hp_size, uint32_t npg_needed);
 int huge_pg_setup(size_t hp_size, uint32_t npg);
 bool is_vm(void);
 extern int s_page_size;
-
 
 #endif /* __LIBCXI_TEST_COMMON_H__ */

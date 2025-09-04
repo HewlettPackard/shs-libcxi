@@ -575,14 +575,15 @@ CXIL_API int cxil_destroy_lni(struct cxil_lni *lni)
 	return 0;
 }
 
-/* Allocate a CXI communication profile */
-CXIL_API int cxil_alloc_cp(struct cxil_lni *lni, unsigned int vni,
-			   enum cxi_traffic_class tc,
-			   enum cxi_traffic_class_type tc_type,
-			   struct cxi_cp **cp)
+/* Allocate a CXI communication profile with CP type */
+CXIL_API int cxil_alloc_trig_cp(struct cxil_lni *lni, unsigned int vni,
+				enum cxi_traffic_class tc,
+				enum cxi_traffic_class_type tc_type,
+				enum cxi_trig_cp cp_type,
+				struct cxi_cp **cp)
 {
 	struct cxi_cp_alloc_resp resp;
-	struct cxi_cp_alloc_cmd cmd = {};
+	struct cxi_trig_cp_alloc_cmd cmd = {};
 	int rc;
 	struct cxil_cp_priv *cp_priv;
 	struct cxil_lni_priv *lni_priv;
@@ -596,12 +597,13 @@ CXIL_API int cxil_alloc_cp(struct cxil_lni *lni, unsigned int vni,
 	if (!cp_priv)
 		return -errno;
 
-	cmd.op = CXI_OP_CP_ALLOC;
+	cmd.op = CXI_OP_TRIG_CP_ALLOC;
 	cmd.resp = &resp;
 	cmd.lni = lni->id;
 	cmd.vni = vni;
 	cmd.tc = tc;
 	cmd.tc_type = tc_type;
+	cmd.cp_type = cp_type;
 
 	rc = device_write(lni_priv->dev, &cmd, sizeof(cmd));
 	if (rc)
@@ -621,6 +623,15 @@ CXIL_API int cxil_alloc_cp(struct cxil_lni *lni, unsigned int vni,
 free_cp:
 	free(cp_priv);
 	return rc;
+}
+
+/* Allocate a CXI communication profile */
+CXIL_API int cxil_alloc_cp(struct cxil_lni *lni, unsigned int vni,
+			   enum cxi_traffic_class tc,
+			   enum cxi_traffic_class_type tc_type,
+			   struct cxi_cp **cp)
+{
+	return cxil_alloc_trig_cp(lni, vni, tc, tc_type, ANY_LCID, cp);
 }
 
 /* Destroy a CXI communication profile */
