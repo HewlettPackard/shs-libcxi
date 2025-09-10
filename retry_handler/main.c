@@ -2055,6 +2055,8 @@ static int start_rh(struct retry_handler *rh, unsigned int dev_id)
 		.limits = limits,
 		.resource_limits = true,
 		.restricted_members = true,
+		.restricted_vnis = true,
+		.num_vld_vnis = 0,
 		.is_system_svc = true,
 		.members[0] = {
 			.type = CXI_SVC_MEMBER_UID,
