@@ -84,7 +84,7 @@ Commands:
  list                  List all services for a device
 
 $ cxi_service -V
-cxi_service version: 0.3.0
+cxi_service version: 0.5.0
 
 $ cxi_service list -d cxi1
 cxi1
@@ -124,62 +124,62 @@ cxi0
  TLEs: 2048
  --------------------------
  ID: 1 (DEFAULT)
+   LNIs/RGID          : 1
    Enabled            : Yes
    System Service     : No
    Restricted Members : No
    ---> Valid Members : All uids/gids
-   Restricted VNIs    : No
-   ---> Valid VNIs    : All
-   Restricted TCs     : No
-   ---> Valid TCs     : All
-   Resource Limits    : No
-   ---> Max           : Max
-   ---> Reserved      : None
-          -----------
-          |  In Use |
-          -----------
-     ACs  |  0      |
-     CTs  |  0      |
-     EQs  |  0      |
-     LEs  |  0      |
-     PTEs |  0      |
-     TGQs |  0      |
-     TXQs |  0      |
-     TLEs |  0      |
-          -----------
- --------------------------
- ID: 2
-   Enabled            : Yes
-   System Service     : No
-   Restricted Members : No
-   ---> Valid Members : uid=0 gid=0
-   Restricted VNIs    : No
-   ---> Valid VNIs    : All
+   VNIs               : 1 10
    Restricted TCs     : No
    ---> Valid TCs     : All
    Resource Limits    : Yes
           ---------------------------------
           |  Max    |  Reserved |  In Use |
           ---------------------------------
+     ACs  |  1022   |   0       |  0      |
+     CTs  |  2047   |   0       |  0      |
+     EQs  |  2047   |   0       |  0      |
+     LEs  |  16384  |   0       |  0      |
+     PTEs |  2048   |   0       |  0      |
+     TGQs |  512    |   0       |  0      |
+     TXQs |  1024   |   0       |  0      |
+     TLEs |  512    |   512     |  0      |
+          ---------------------------------
+ ------------------------------------------
+ ID: 2
+   LNIs/RGID          : 1
+   Enabled            : Yes
+   System Service     : No
+   Restricted Members : Yes
+   ---> Valid Members : uid=1 gid=2
+   VNIs               : 64-127
+   Exclusive CP       : Yes
+   Restricted TCs     : Yes
+   ---> Valid TCs     : DEDICATED_ACCESS LOW_LATENCY BULK_DATA BEST_EFFORT
+   Resource Limits    : Yes
+          ---------------------------------
+          |  Max    |  Reserved |  In Use |
+          ---------------------------------
      ACs  |  1      |   1       |  0      |
-     CTs  |  10     |   10      |  0      |
-     EQs  |  10     |   10      |  0      |
-     LEs  |  0      |   0       |  0      |
-     PTEs |  10     |   10      |  0      |
-     TGQs |  10     |   10      |  0      |
-     TXQs |  10     |   10      |  0      |
-     TLEs |  0      |   0       |  0      |
+     CTs  |  1      |   1       |  0      |
+     EQs  |  1      |   1       |  0      |
+     LEs  |  1      |   1       |  0      |
+     PTEs |  1      |   1       |  0      |
+     TGQs |  1      |   1       |  0      |
+     TXQs |  1      |   1       |  0      |
+     TLEs |  9      |   9       |  0      |
           ---------------------------------
 
 $ cxi_service list --svc_id 1
  --------------------------
  ID: 1 (DEFAULT)
+   LNIs/RGID          : 1
    Enabled            : Yes
    System Service     : No
    Restricted Members : No
-   Restricted VNIs    : No
    Restricted TCs     : No
-   Resource Limits    : No
+   Resource Limits    : Yes
+
 
 $ cxi_service delete -s 1
 cxi_service: Default service cannot be deleted.

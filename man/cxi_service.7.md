@@ -57,6 +57,16 @@ _cxil_get_svc_rsrc_list()_ - Get resource usage information for all services.
 
 _cxil_free_svc_rsrc_list()_ - Free list allocated by cxil_get_svc_rsrc_list().
 
+_cxil_svc_enable()_ - Enable/Disable a CXI Service.
+
+_cxil_svc_set_exclusive_cp()_ - Set the exclusive_cp bit for the CXI Service.
+
+_cxil_svc_get_exclusive_cp()_ - Get the exclusive_cp bit for the CXI Service.
+
+_cxil_svc_set_vni_range()_ - Set a VNI range for a CXI service.
+
+_cxil_svc_get_vni_range()_ - Get the VNI range for a CXI service.
+
 1. **Default service**
 
 The Cassini driver provides a "default service" (ID: 1), which provides
@@ -216,7 +226,29 @@ svc_desc.tcs[CXI_TC_DEDICATED_ACCESS] = true;
 svc_desc.tcs[CXI_TC_BEST_EFFORT] = true;
 ```
 
-2.1.3 **Restricting VNIs**
+2.1.3 **VNIs**
+
+A service can either specify up to 4 distinct VNIs or 1 VNI "Range". The "restricted_vnis" bit in the CXI Service descriptor controls this behavior.
+
+2.1.3.1 **VNI Range**
+
+A VNI Range is a contiguous block of VNIs that can be used for communication.
+
+Workflow/Requirements to set a VNI range:
+
+ - The number of values in the range must be a power of two (1, 2, 4, 8, 16, ...).
+
+ - The first value in the range (vni_min) must be a multiple of the range size.
+
+ - VNI Range size is (vni_max - vni_min + 1).
+
+ - The CXI Service should be set up with restricted_vnis=0. This will result in a
+   CXI Service that is created in a disabled state.
+
+ - A subsequent call to cxil_svc_set_vni_range() sets the desired VNI range and enables
+   the CXI Service.
+
+2.1.3.2 **Restricting VNI**
 
 A service can be created that limits access to certain VNIs.
 Up to CXI_SVC_MAX_VNIS VNIs can be specified.
@@ -311,6 +343,11 @@ Unlike other resources, LE and TLE reservations are backed by a
 limited number of HW "pools". There are 16 LE pools and 4 TLE pools.
 This means only 16 services can be created that reserve LEs, and only
 4 services can be created that reserve TLEs.
+
+2.1.5 **Exclusive CP**
+
+The exclusive_cp bit disables sharing of Communication Profiles (CP).
+Exclusive CP is not allowed if "restricted_vnis" bit is set in the CXI service descriptor.
 
 2.2 **Fail info** - _cxi_fail_info_
 
@@ -466,6 +503,69 @@ rc = cxil_get_svc_list(dev, &rsrc_list);
 
 ```
 void cxil_free_svc_rsrc_list(struct cxil_svc_rsrc_list *rsrc_list)
+```
+
+11. **Enable/disable the CXI Service** - _cxil_svc_enable()_
+
+```
+int cxil_svc_enable(struct cxil_dev *dev_in, unsigned int svc_id,
+                    bool enable)
+```
+
+To enable set the "enable" bool to true.
+```
+int rc;
+rc = cxil_svc_enable(dev, svc_id, true);
+```
+
+To disable set the "enable" bool to false.
+```
+int rc;
+rc = cxil_svc_enable(dev, svc_id, false);
+```
+
+12. **Set exclusive_cp bit for a CXI Service** - _cxil_svc_set_exclusive_cp()_
+
+Set the "exclusive_cp" bit for a service.
+
+```
+int cxil_svc_set_exclusive_cp(struct cxil_dev *dev_in,
+                              unsigned int svc_id,
+                              bool exclusive_cp)
+```
+
+13. **Get exclusive_cp bit for a CXI Service** - _cxil_svc_get_exclusive_cp()_
+
+Get the "exclusive_cp" bit for a service.
+
+```
+int cxil_svc_get_exclusive_cp(struct cxil_dev *dev_in,
+                              unsigned int svc_id, bool *exclusive_cp)
+```
+
+14. **Set a VNI range for a CXI Service** - _cxil_svc_set_vni_range()_
+
+Service ID of service to be updated.
+Minimum VNI value (inclusive)
+Maximum VNI value (inclusive)
+
+```
+int cxil_svc_set_vni_range(struct cxil_dev *dev_in,
+                           unsigned int svc_id, uint16_t vni_min,
+                           uint16_t vni_max)
+```
+
+15. **Get the VNI range for a CXI Service** - _cxil_svc_get_vni_range()_
+
+Get the VNI range associated with a service.
+Service ID of service to query.
+Pointer to store minimum VNI value (inclusive)
+Pointer to store maximum VNI value (inclusive)
+
+```
+int cxil_svc_get_vni_range(struct cxil_dev *dev_in,
+                           unsigned int svc_id, uint16_t *vni_min,
+                           uint16_t *vni_max)
 ```
 
 # FILES
