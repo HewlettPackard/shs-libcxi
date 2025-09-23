@@ -630,6 +630,7 @@ static void create_service(struct cxi_svc_desc *desc,
 			   struct util_opts *opts)
 {
 	int rc;
+	int ret;
 	int svc_id;
 	struct cxi_svc_fail_info fail_info = {};
 	struct cxi_rsrc_use rsrc_use = {};
@@ -648,13 +649,13 @@ static void create_service(struct cxi_svc_desc *desc,
 					    p_state.vni_min,
 					    p_state.vni_max);
 		if (rc) {
+			ret = cxil_destroy_svc(opts->dev, svc_id);
+			if (ret)
+				errx(1, "Failed to destroy service with ID %d: %s\n",
+				     svc_id, strerror(-ret));
+
 			errx(1, "Failed to set vni range: %d-%d %s\n",
 			     p_state.vni_min, p_state.vni_max, strerror(-rc));
-
-			rc = cxil_destroy_svc(opts->dev, svc_id);
-			if (rc)
-				errx(1, "Failed to destroy service with ID %d: %s\n",
-				     svc_id, strerror(-rc));
 		}
 
 		if (p_state.exclusive_cp) {
