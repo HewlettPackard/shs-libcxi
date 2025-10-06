@@ -87,7 +87,6 @@ void usage(void)
 		"cxi_service - CXI Service Utility\n\n"
 		"Usage: cxi_service <COMMAND> [options]\n"
 		" -d --device=DEV       CXI device. Default is cxi0\n"
-		" -D --dry-run          Used with 'update' to perofrm a trial run with no changes made\n"
 		" -h --help             Show this help\n"
 		" -s --svc-id           Only apply commands to this specific svc_id\n"
 		" -V --version          Print the version and exit\n"
@@ -98,8 +97,7 @@ void usage(void)
 		" delete                Delete the service specified by the -s flag\n"
 		" disable               Disable the service specified by the -s flag\n"
 		" enable                Enable the service specified by the -s flag\n"
-		" list                  List all services for a device\n"
-		" update                Update a service\n");
+		" list                  List all services for a device\n");
 }
 
 static void list_members(struct cxi_svc_desc *desc)
@@ -682,61 +680,15 @@ static void create_service(struct cxi_svc_desc *desc,
 	print_descriptor(desc, &rsrc_use, opts);
 }
 
-static void update_service(struct cxi_svc_desc *desc,
-			   struct util_opts *opts)
+static void enable_service(struct cxi_svc_desc *desc,
+			   struct util_opts *opts, bool enable)
 {
 	int rc;
-	struct cxi_svc_fail_info fail_info = {};
-	struct cxi_svc_desc new_desc;
-	struct cxi_rsrc_use rsrc_use = {}; /* Todo could report the real deal */
-	struct parser_state p_state = {};
 
-	if (opts->lnis_per_rgid) {
-		if (!opts->dry_run) {
-			rc = cxil_set_svc_lpr(opts->dev, desc->svc_id,
-					      opts->lnis_per_rgid);
-			if (rc)
-				errx(1, "Failed to set lnis_per_rgid: %s\n",
-				     strerror(-rc));
-			return;
-		}
-	} else if (opts->cmd == CMD_UPDATE) {
-		desc_from_yaml(&new_desc, &p_state, opts);
-
-		/* Updating resource_limits is not supported. For now always
-		 * copy the limit info from the original descriptor.
-		 */
-		new_desc.resource_limits = desc->resource_limits;
-		new_desc.limits = desc->limits;
-
-		/* Copy in the allocated svc_id */
-		new_desc.svc_id = desc->svc_id;
-		new_desc.enable = desc->enable;
-		new_desc.is_system_svc = desc->is_system_svc;
-		/* cntr_pool_id not yet used */
-
-		if (opts->dry_run || opts->verbose) {
-			/* Turn on verbosity for printing descriptors */
-			opts->verbose = true;
-			printf(" Original Service\n");
-			print_descriptor(desc, &rsrc_use, opts);
-			printf(" Updated Service\n");
-			print_descriptor(&new_desc, &rsrc_use, opts);
-			if (opts->dry_run)
-				return;
-		}
-		if (!opts->dry_run)
-			desc = &new_desc;
-	}
-
-	/* Write value to enable field */
-	if (opts->cmd == CMD_ENABLE ||
-	    opts->cmd == CMD_DISABLE)
-		desc->enable = opts->enable;
-
-	rc = cxil_update_svc(opts->dev, desc, &fail_info);
+	rc = cxil_svc_enable(opts->dev, opts->svc_id, enable);
 	if (rc)
-		errx(1, "Failed to update_svc: %s\n", strerror(-rc));
+		errx(1, "Could not %s service %d: %s",
+		     enable ? "enable" : "disable", opts->svc_id, strerror(-rc));
 }
 
 int main(int argc, char *argv[])
@@ -834,7 +786,7 @@ int main(int argc, char *argv[])
 			opts.cmd = CMD_DISABLE;
 			opts.enable = 0;
 		} else if (!strcmp(argv[optind], "update")) {
-			opts.cmd = CMD_UPDATE;
+			errx(1, "update command is deprecated");
 		} else if (!strcmp(argv[optind], "create")) {
 			opts.cmd = CMD_CREATE;
 		} else {
@@ -859,12 +811,6 @@ int main(int argc, char *argv[])
 		errx(1, "Enable command requires -s / --svc_id");
 	if (opts.cmd == CMD_DISABLE && !opts.svc_id)
 		errx(1, "Disable command requires -s / --svc_id");
-	if (opts.cmd == CMD_UPDATE) {
-		if (!opts.yaml_file && !opts.lnis_per_rgid)
-			errx(1, "Update command requires -y / --yaml_file");
-		if (!opts.svc_id)
-			errx(1, "Update command requires -s / --svc_id");
-	}
 	if (opts.cmd == CMD_CREATE) {
 		if (!opts.yaml_file)
 			errx(1, "Create command requires -y / --yaml_file");
@@ -903,18 +849,12 @@ int main(int argc, char *argv[])
 		printf("Successfully deleted service: %d\n", opts.svc_id);
 		break;
 	case CMD_ENABLE:
-		update_service(&desc, &opts);
+		enable_service(&desc, &opts, true);
 		printf("Successfully enabled service: %d\n", opts.svc_id);
 		break;
 	case CMD_DISABLE:
-		update_service(&desc, &opts);
+		enable_service(&desc, &opts, false);
 		printf("Successfully disabled service: %d\n", opts.svc_id);
-		break;
-	case CMD_UPDATE:
-		update_service(&desc, &opts);
-		if (!opts.dry_run)
-			printf("Successfully updated service: %d\n",
-			       opts.svc_id);
 		break;
 	case CMD_CREATE:
 		create_service(&desc, &opts);
