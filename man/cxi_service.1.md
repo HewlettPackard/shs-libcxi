@@ -35,17 +35,11 @@ CXI Services.
 **list**
 : Output a list of all CXI devices
 
-**update**
-: Update the service specified by the -s flag. Updates are specified in the yaml file specified by the -y flag. Updating resource limits is not currently supported.
-
 # OPTIONS
 
 **-d, \-\-device**=*DEV*
 : The Cassini NIC device name to report. When unspecified, cxi0 is chosen
 by default.
-
-**-D, \-\-dry-run**
-: Used with 'update' to perform a trial run with no changes made
 
 **-h, \-\-help**
 : Display the help text and exit.
@@ -188,63 +182,6 @@ $ cxi_service delete -s 2
 Successfully deleted service: 2
 
 $ cxi_service create -y $PATH_TO_YAML_FILE
-
-$ cxi_service update -s 1
-cxi_service: Update command requires -y / --yaml_file
-
-$ cxi_service update -s 1 -y install/share/cxi/test.yaml
-Successfully updated service: 1
-
-$ cxi_service update -s 1 -y install/share/cxi/test.yaml --dry-run
- Original Service
- --------------------------
- ID: 1 (DEFAULT)
-   Enabled            : Yes
-   System Service     : No
-   Restricted Members : No
-   ---> Valid Members : All uids/gids
-   Restricted VNIs    : Yes
-   ---> Valid VNIs    : 1 10
-   Restricted TCs     : No
-   ---> Valid TCs     : All
-   Resource Limits    : Yes
-          ---------------------------------
-          |  Max    |  Reserved |  In Use |
-          ---------------------------------
-     ACs  |  1022   |   0       |  0      |
-     CTs  |  2047   |   0       |  0      |
-     EQs  |  2047   |   0       |  0      |
-     LEs  |  16384  |   0       |  0      |
-     PTEs |  2048   |   0       |  0      |
-     TGQs |  512    |   0       |  0      |
-     TXQs |  1024   |   0       |  0      |
-     TLEs |  512    |   512     |  0      |
-          ---------------------------------
-Updated Service
- --------------------------
- ID: 1 (DEFAULT)
-   Enabled            : Yes
-   System Service     : No
-   Restricted Members : No
-   ---> Valid Members : All uids/gids
-   Restricted VNIs    : Yes
-   ---> Valid VNIs    : 20 40
-   Restricted TCs     : Yes
-   ---> Valid TCs     : 0 1 2 3
-   Resource Limits    : Yes
-          ---------------------------------
-          |  Max    |  Reserved |  In Use |
-          ---------------------------------
-     ACs  |  1022   |   0       |  0      |
-     CTs  |  2047   |   0       |  0      |
-     EQs  |  2047   |   0       |  0      |
-     LEs  |  16384  |   0       |  0      |
-     PTEs |  2048   |   0       |  0      |
-     TGQs |  512    |   0       |  0      |
-     TXQs |  1024   |   0       |  0      |
-     TLEs |  512    |   512     |  0      |
-          ---------------------------------
-```
 
 # FILES
 
