@@ -103,7 +103,11 @@ Requires(pre):  (kmod-sl-driver or sl-driver-dkms)
 Dracut initramfs support for CXI software stack
 
 %prep
+%if 0%{?rhel} == 10
+%setup
+%else
 %setup -n libcxi-%{version}
+%endif
 
 %build
 ./autogen.sh
@@ -182,9 +186,10 @@ install -D --target-directory=%{buildroot}/%{_presetdir}/ 99-cxi_rh.preset
 %files dracut
 %{_sysconfdir}/dracut.conf.d/*.conf
 
-%exclude
-%{_libdir}/libcxi.la
-%{_libdir}/libcxiutils.la
+%if 0%{?rhel} < 10
+%exclude %{_libdir}/libcxi.la
+%exclude %{_libdir}/libcxiutils.la
+%endif
 
 %if 0%{?rhel}
 %post retry-handler
