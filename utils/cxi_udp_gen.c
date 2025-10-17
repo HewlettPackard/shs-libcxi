@@ -336,7 +336,8 @@ static void test_setup(unsigned int num_threads)
 	rc = cxil_alloc_lni(dev, &lni, CXI_DEFAULT_SVC_ID);
 	assert(rc == 0);
 
-	rc = cxil_alloc_cp(lni, 0, CXI_TC_ETH, CXI_TC_TYPE_DEFAULT, &cp);
+	rc = cxil_alloc_trig_cp(lni, 0, CXI_TC_ETH, CXI_TC_TYPE_DEFAULT,
+				NON_TRIG_LCID, &cp);
 	assert(rc == 0);
 
 	eq_bufs = calloc(num_threads, sizeof(*eq_bufs));

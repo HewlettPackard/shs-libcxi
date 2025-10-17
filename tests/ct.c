@@ -128,7 +128,7 @@ void device_ct_setup(void)
 
 	ret = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
 				 CXI_TC_TYPE_DEFAULT, TRIG_LCID, &trig_cp);
-	cr_assert_eq(ret, 0, "cxil_alloc_cp() failed %d", ret);
+	cr_assert_eq(ret, 0, "cxil_alloc_trig_cp() failed %d", ret);
 	cr_assert_neq(trig_cp, NULL);
 	cr_assert_eq(trig_cp->lcid, 0, "lcid for triggered CQ %d not 0",
 		     trig_cp->lcid);

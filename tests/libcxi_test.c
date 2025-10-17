@@ -459,14 +459,14 @@ ParameterizedTest(struct alloc_cps_params *param, cps, alloc_cps)
 		else
 			cp = &cps[i];
 
-		rc = cxil_alloc_cp(cp_lni, param->vni + i, param->tc,
-				   param->tc_type, cp);
+		rc = cxil_alloc_trig_cp(cp_lni, param->vni + i, param->tc,
+					param->tc_type, NON_TRIG_LCID, cp);
 
 		if ((i + 1) == param->count) {
-			cr_assert_eq(rc, param->rc, "cxil_alloc_cp(), expected: %d received %d",
+			cr_assert_eq(rc, param->rc, "cxil_alloc_trig_cp(), expected: %d received %d",
 				     param->rc, rc);
 		} else {
-			cr_assert_eq(rc, 0, "cxil_alloc_cp(), expected: %d received %d",
+			cr_assert_eq(rc, 0, "cxil_alloc_trig_cp(), expected: %d received %d",
 				     0, rc);
 		}
 
@@ -548,8 +548,9 @@ ParameterizedTest(struct cmdq_alloc_params *param, cmdq, cmdq_alloc)
 
 
 	if ((param->opts.flags & CXI_CQ_IS_TX) && param->alloc_cp) {
-		rc = cxil_alloc_cp(lni, vni, CXI_TC_BEST_EFFORT,
-				   CXI_TC_TYPE_DEFAULT, &cp);
+		rc = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+					CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID,
+					&cp);
 		cr_assert_eq(rc, 0, "Failed to allocate comm profile: %d\n",
 			     rc);
 

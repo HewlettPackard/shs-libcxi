@@ -177,8 +177,8 @@ void cntr_alloc(void)
 	ret = cxil_alloc_lni(dev, &lni, CXI_DEFAULT_SVC_ID);
 	assert(!ret);
 
-	ret = cxil_alloc_cp(lni, vni, CXI_TC_BEST_EFFORT,
-			    CXI_TC_TYPE_DEFAULT, &cp);
+	ret = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+			    CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &cp);
 	assert(!ret);
 
 	ret = cxil_alloc_domain(lni, vni, pid, &dom);
