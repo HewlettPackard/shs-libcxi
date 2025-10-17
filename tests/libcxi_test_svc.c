@@ -506,9 +506,9 @@ Test(svc, svc_change_uid)
 	cr_assert_eq(rc, 0, "cxil_alloc_lni() Failed. Expected rc: 0 received rc: %d", rc);
 
 	/* Setup cp */
-	rc = cxil_alloc_cp(lni, vni, CXI_TC_BEST_EFFORT, CXI_TC_TYPE_DEFAULT,
-			   &cp);
-	cr_assert_eq(rc, 0, "cxil_alloc_cp() failed %d", rc);
+	rc = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+				CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &cp);
+	cr_assert_eq(rc, 0, "cxil_alloc_trig_cp() failed %d", rc);
 	cr_assert_neq(cp, NULL);
 	cr_log_info("assigned LCID: %u\n", cp->lcid);
 
@@ -616,9 +616,9 @@ Test(svc, svc_max)
 		     0, rc);
 
 	/* Setup cp */
-	rc = cxil_alloc_cp(lni, vni, CXI_TC_BEST_EFFORT, CXI_TC_TYPE_DEFAULT,
-			   &cp);
-	cr_assert_eq(rc, 0, "cxil_alloc_cp() failed %d", rc);
+	rc = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+				CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &cp);
+	cr_assert_eq(rc, 0, "cxil_alloc_trig_cp() failed %d", rc);
 	cr_assert_neq(cp, NULL);
 	cr_log_info("assigned LCID: %u\n", cp->lcid);
 

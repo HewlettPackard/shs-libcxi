@@ -122,9 +122,9 @@ void cp_setup(void)
 	lni_setup();
 
 	/* Set up Communication Profile */
-	ret = cxil_alloc_cp(lni, vni, CXI_TC_BEST_EFFORT, CXI_TC_TYPE_DEFAULT,
-			    &cp);
-	cr_assert_eq(ret, 0, "cxil_alloc_cp() failed %d", ret);
+	ret = cxil_alloc_trig_cp(lni, vni, CXI_TC_BEST_EFFORT,
+				 CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &cp);
+	cr_assert_eq(ret, 0, "cxil_alloc_trig_cp() failed %d", ret);
 	cr_assert_neq(cp, NULL);
 	cr_log_info("assigned LCID: %u\n", cp->lcid);
 }

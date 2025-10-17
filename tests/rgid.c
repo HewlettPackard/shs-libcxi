@@ -122,9 +122,9 @@ void rgid_setup(struct rgid_objs *obj)
 	cr_assert_neq(obj->lni, NULL);
 
 	/* Set up Communication Profile */
-	ret = cxil_alloc_cp(obj->lni, vni, CXI_TC_BEST_EFFORT,
-			    CXI_TC_TYPE_DEFAULT, &obj->cp);
-	cr_assert_eq(ret, 0, "cxil_alloc_cp() failed %d", ret);
+	ret = cxil_alloc_trig_cp(obj->lni, vni, CXI_TC_BEST_EFFORT,
+				 CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &obj->cp);
+	cr_assert_eq(ret, 0, "cxil_alloc_trig_cp() failed %d", ret);
 	cr_assert_neq(obj->cp, NULL);
 	cr_log_info("assigned LCID: %u\n", obj->cp->lcid);
 

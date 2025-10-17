@@ -106,9 +106,9 @@ void rma_put_with_cp_modify(void)
 	excp_profile_setup();
 
 	/* Set up Exclusive Communication Profile*/
-	ret = cxil_alloc_cp(lni, vni_excp, CXI_TC_BEST_EFFORT,
-			    CXI_TC_TYPE_DEFAULT, &excp);
-	cr_assert_eq(ret, 0, "cxil_alloc_cp() failed %d", ret);
+	ret = cxil_alloc_trig_cp(lni, vni_excp, CXI_TC_BEST_EFFORT,
+				 CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &excp);
+	cr_assert_eq(ret, 0, "cxil_alloc_trig_cp() failed %d", ret);
 	cr_assert_neq(excp, NULL);
 	cr_log_info("assigned LCID: %u\n", excp->lcid);
 
