@@ -190,7 +190,7 @@ int ctx_alloc_cp(struct cxi_context *ctx, enum cxi_traffic_class tc,
 		return -EINVAL;
 
 	rc = cxil_alloc_trig_cp(ctx->lni, ctx->vni, tc, tc_type,
-				NON_TRIG_LCID, &cp_tmp);
+				ANY_LCID, &cp_tmp);
 	if (rc < 0) {
 		fprintf(stderr,
 			"Failed to allocate Communication Profile: %s\n",
