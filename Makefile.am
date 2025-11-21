@@ -59,6 +59,9 @@ bin_PROGRAMS = \
 	utils/cxi_gpu_loopback_bw utils/cxi_udp_gen utils/cxi_service \
 	utils/cxi_dump_csrs
 
+bin_SCRIPTS = \
+	utils/dgchscore.sh utils/dgchsget utils/dgchsset utils/dgchsdump
+
 utils_cxi_send_lat_SOURCES = utils/send_lat.c
 utils_cxi_send_lat_LDADD = $(lib_LTLIBRARIES) -lm
 

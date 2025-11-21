@@ -179,6 +179,10 @@ install -D --target-directory=%{buildroot}/%{_presetdir}/ 99-cxi_rh.preset
 %{_bindir}/cxi_service
 %{_bindir}/cxi_gpu_loopback_bw
 %{_bindir}/cxi_dump_csrs
+%{_bindir}/dgchscore.sh
+%{_bindir}/dgchsget
+%{_bindir}/dgchsset
+%{_bindir}/dgchsdump
 %{_mandir}/man1/*
 %{_mandir}/man7/*
 %{_datadir}/cxi/cxi_service_template.yaml

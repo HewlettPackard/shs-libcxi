@@ -1,0 +1,106 @@
+#!/bin/bash
+# Copyright 2025 Hewlett Packard Enterprise Development LP
+
+# Headshell Device i2cget helper script on Cassini
+
+. dgchscore.sh
+
+function help_exit {
+cat<<END_HERE_DOC
+$CMD_NAME [-h] [-p page] [-b bank] <DEV> <data-address> [mode]
+
+Selects and reads I2C data from a specific DEV using i2cget.
+
+Options
+    -h              Print this help text.
+    -p              Set page select byte
+    -b              Set bank select byte
+Parameters
+    DEV             Device name (cxi0, cxi1, cxi2, etc.)
+    data-address    Register address
+    mode            b  read byte data (default)
+                    w  read word data
+                    c  write byte/read byte
+                    Append p for SMBus PEC
+Returns
+    0 on success, non-zero on error
+
+Example (reading byte 1 from DEV 2):
+$CMD_NAME cxi2 0x01
+
+END_HERE_DOC
+
+    exit 1
+}
+
+# Identify any commandline flags first
+while getopts "h?p:b:" flag
+do
+    case "$flag" in
+        [h\?]) help_exit ;;
+        p    ) PAGE=$OPTARG ;;
+        b    ) BANK=$OPTARG ;;
+    esac
+done
+shift $((OPTIND-1))
+
+DEV="$1"
+if [ -z "$DEV" ]; then
+    echo "Must give a DEV identifier"
+    help_exit
+fi
+
+if [ -z "$PAGE" ] ; then
+    # Page Select Byte will not be set
+    PAGE=-1
+else
+    validate_page_parm
+fi
+
+if [ -z "$BANK" ] ; then
+    # Bank Select Byte will not be set
+    BANK=-1
+else
+    validate_bank_parm
+fi
+
+# Shift so remaining parameters can be passed to the i2c command
+shift
+
+# Ensure we have a valid DEV number
+if ! dev_index_valid $DEV ; then
+    echo "Invalid DEV identifier"
+    help_exit
+fi
+
+get_i2cbus_from_dev $DEV
+
+lock_retry_count=0
+lock_retry_interval="0.1"
+# Wait for exclusive access to the I2C bus we need.
+while [ $lock_retry_count -lt 30 ] ; do
+    lock_retry_count=$((lock_retry_count + 1))
+
+    # Open file descriptor 200 on the i2c-bus-specific file for
+    # use by flock in hs_i2c_transact
+    hs_i2c_transact $DEV $I2CBUS $PAGE $BANK i2cget -y -f $I2CBUS $DEVADDR $@ 200>/dev/i2c-${I2CBUS}
+    rc=$?
+
+    # If we couldn't get the lock, keep waiting
+    if [ $rc -eq 99 ] ; then
+        #if [ $lock_retry_count -eq 1 ] ; then
+        #    echo "I2C bus in use. Waiting..."
+        #fi
+        sleep $lock_retry_interval
+        continue
+    elif [ $rc -ne 0 ] ; then
+        exit $rc
+    else
+        break
+    fi
+done
+
+if [ $rc -eq 99 ] ; then
+    echo "Failed: Timeout waiting for access to I2C bus"
+    exit 2
+fi
