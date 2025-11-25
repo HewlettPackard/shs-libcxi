@@ -135,6 +135,8 @@ static void list_vnis(struct cxi_svc_desc *desc, struct util_opts *opts)
 					    &vni_min,
 					    &vni_max);
 		if (rc) {
+			if (rc == -EOPNOTSUPP)
+				printf(" N/A (rgroup)");
 			printf("\n");
 			return;
 		}
