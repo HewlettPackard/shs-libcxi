@@ -103,11 +103,7 @@ Requires(pre):  (kmod-sl-driver or sl-driver-dkms)
 Dracut initramfs support for CXI software stack
 
 %prep
-%if 0%{?rhel} == 10
-%setup
-%else
 %setup -n libcxi-%{version}
-%endif
 
 %build
 ./autogen.sh
