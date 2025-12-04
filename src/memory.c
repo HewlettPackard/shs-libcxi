@@ -38,6 +38,13 @@
  * this file under the Linux-OpenIB license provided above.
  */
 
+/* This code has been modified from the original state found here:
+ *   https://github.com/linux-rdma/rdma-core/blob/master/libibverbs/memory.c
+ *
+ * Alterations to this code are purely cosmetic to fit with the naming
+ * requirements of this project.
+ */
+
 #include <config.h>
 
 #include <errno.h>
@@ -57,18 +64,18 @@
 #include <netlink/msg.h>
 #include "libcxi_priv.h"
 
-struct ibv_mem_node {
+struct cxil_mem_node {
 	enum {
-		IBV_RED,
-		IBV_BLACK
+		CXIL_RED,
+		CXIL_BLACK
 	}			color;
-	struct ibv_mem_node    *parent;
-	struct ibv_mem_node    *left, *right;
+	struct cxil_mem_node    *parent;
+	struct cxil_mem_node    *left, *right;
 	uintptr_t		start, end;
 	int			refcnt;
 };
 
-static struct ibv_mem_node *mm_root;
+static struct cxil_mem_node *mm_root;
 static pthread_mutex_t mm_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int page_size;
 static int huge_page_enabled;
@@ -335,7 +342,7 @@ int cxil_fork_init(void)
 	mm_root->parent = NULL;
 	mm_root->left   = NULL;
 	mm_root->right  = NULL;
-	mm_root->color  = IBV_BLACK;
+	mm_root->color  = CXIL_BLACK;
 	mm_root->start  = 0;
 	mm_root->end    = UINTPTR_MAX;
 	mm_root->refcnt = 0;
@@ -347,7 +354,7 @@ unlock:
 	return ret;
 }
 
-static struct ibv_mem_node *__mm_prev(struct ibv_mem_node *node)
+static struct cxil_mem_node *__mm_prev(struct cxil_mem_node *node)
 {
 	if (node->left) {
 		node = node->left;
@@ -363,7 +370,7 @@ static struct ibv_mem_node *__mm_prev(struct ibv_mem_node *node)
 	return node;
 }
 
-static struct ibv_mem_node *__mm_next(struct ibv_mem_node *node)
+static struct cxil_mem_node *__mm_next(struct cxil_mem_node *node)
 {
 	if (node->right) {
 		node = node->right;
@@ -379,9 +386,9 @@ static struct ibv_mem_node *__mm_next(struct ibv_mem_node *node)
 	return node;
 }
 
-static void __mm_rotate_right(struct ibv_mem_node *node)
+static void __mm_rotate_right(struct cxil_mem_node *node)
 {
-	struct ibv_mem_node *tmp;
+	struct cxil_mem_node *tmp;
 
 	tmp = node->left;
 
@@ -403,9 +410,9 @@ static void __mm_rotate_right(struct ibv_mem_node *node)
 	node->parent = tmp;
 }
 
-static void __mm_rotate_left(struct ibv_mem_node *node)
+static void __mm_rotate_left(struct cxil_mem_node *node)
 {
-	struct ibv_mem_node *tmp;
+	struct cxil_mem_node *tmp;
 
 	tmp = node->right;
 
@@ -428,7 +435,7 @@ static void __mm_rotate_left(struct ibv_mem_node *node)
 }
 
 #if 0
-static int verify(struct ibv_mem_node *node)
+static int verify(struct cxil_mem_node *node)
 {
 	int hl, hr;
 
@@ -443,10 +450,10 @@ static int verify(struct ibv_mem_node *node)
 	if (hl != hr)
 		return 0;
 
-	if (node->color == IBV_RED) {
-		if (node->left && node->left->color != IBV_BLACK)
+	if (node->color == CXIL_RED) {
+		if (node->left && node->left->color != CXIL_BLACK)
 			return 0;
-		if (node->right && node->right->color != IBV_BLACK)
+		if (node->right && node->right->color != CXIL_BLACK)
 			return 0;
 		return hl;
 	}
@@ -455,21 +462,21 @@ static int verify(struct ibv_mem_node *node)
 }
 #endif
 
-static void __mm_add_rebalance(struct ibv_mem_node *node)
+static void __mm_add_rebalance(struct cxil_mem_node *node)
 {
-	struct ibv_mem_node *parent, *gp, *uncle;
+	struct cxil_mem_node *parent, *gp, *uncle;
 
-	while (node->parent && node->parent->color == IBV_RED) {
+	while (node->parent && node->parent->color == CXIL_RED) {
 		parent = node->parent;
 		gp     = node->parent->parent;
 
 		if (parent == gp->left) {
 			uncle = gp->right;
 
-			if (uncle && uncle->color == IBV_RED) {
-				parent->color = IBV_BLACK;
-				uncle->color  = IBV_BLACK;
-				gp->color     = IBV_RED;
+			if (uncle && uncle->color == CXIL_RED) {
+				parent->color = CXIL_BLACK;
+				uncle->color  = CXIL_BLACK;
+				gp->color     = CXIL_RED;
 
 				node = gp;
 			} else {
@@ -479,18 +486,18 @@ static void __mm_add_rebalance(struct ibv_mem_node *node)
 					parent = node->parent;
 				}
 
-				parent->color = IBV_BLACK;
-				gp->color     = IBV_RED;
+				parent->color = CXIL_BLACK;
+				gp->color     = CXIL_RED;
 
 				__mm_rotate_right(gp);
 			}
 		} else {
 			uncle = gp->left;
 
-			if (uncle && uncle->color == IBV_RED) {
-				parent->color = IBV_BLACK;
-				uncle->color  = IBV_BLACK;
-				gp->color     = IBV_RED;
+			if (uncle && uncle->color == CXIL_RED) {
+				parent->color = CXIL_BLACK;
+				uncle->color  = CXIL_BLACK;
+				gp->color     = CXIL_RED;
 
 				node = gp;
 			} else {
@@ -500,20 +507,20 @@ static void __mm_add_rebalance(struct ibv_mem_node *node)
 					parent = node->parent;
 				}
 
-				parent->color = IBV_BLACK;
-				gp->color     = IBV_RED;
+				parent->color = CXIL_BLACK;
+				gp->color     = CXIL_RED;
 
 				__mm_rotate_left(gp);
 			}
 		}
 	}
 
-	mm_root->color = IBV_BLACK;
+	mm_root->color = CXIL_BLACK;
 }
 
-static void __mm_add(struct ibv_mem_node *new)
+static void __mm_add(struct cxil_mem_node *new)
 {
-	struct ibv_mem_node *node, *parent = NULL;
+	struct cxil_mem_node *node, *parent = NULL;
 
 	node = mm_root;
 	while (node) {
@@ -533,13 +540,13 @@ static void __mm_add(struct ibv_mem_node *new)
 	new->left   = NULL;
 	new->right  = NULL;
 
-	new->color = IBV_RED;
+	new->color = CXIL_RED;
 	__mm_add_rebalance(new);
 }
 
-static void __mm_remove(struct ibv_mem_node *node)
+static void __mm_remove(struct cxil_mem_node *node)
 {
-	struct ibv_mem_node *child, *parent, *sib, *tmp;
+	struct cxil_mem_node *child, *parent, *sib, *tmp;
 	int nodecol;
 
 	if (node->left && node->right) {
@@ -592,38 +599,38 @@ static void __mm_remove(struct ibv_mem_node *node)
 
 	free(node);
 
-	if (nodecol == IBV_RED)
+	if (nodecol == CXIL_RED)
 		return;
 
-	while ((!child || child->color == IBV_BLACK) && child != mm_root) {
+	while ((!child || child->color == CXIL_BLACK) && child != mm_root) {
 		if (parent->left == child) {
 			sib = parent->right;
 
-			if (sib->color == IBV_RED) {
-				parent->color = IBV_RED;
-				sib->color    = IBV_BLACK;
+			if (sib->color == CXIL_RED) {
+				parent->color = CXIL_RED;
+				sib->color    = CXIL_BLACK;
 				__mm_rotate_left(parent);
 				sib = parent->right;
 			}
 
-			if ((!sib->left  || sib->left->color  == IBV_BLACK) &&
-			    (!sib->right || sib->right->color == IBV_BLACK)) {
-				sib->color = IBV_RED;
+			if ((!sib->left  || sib->left->color  == CXIL_BLACK) &&
+			    (!sib->right || sib->right->color == CXIL_BLACK)) {
+				sib->color = CXIL_RED;
 				child  = parent;
 				parent = child->parent;
 			} else {
-				if (!sib->right || sib->right->color == IBV_BLACK) {
+				if (!sib->right || sib->right->color == CXIL_BLACK) {
 					if (sib->left)
-						sib->left->color = IBV_BLACK;
-					sib->color = IBV_RED;
+						sib->left->color = CXIL_BLACK;
+					sib->color = CXIL_RED;
 					__mm_rotate_right(sib);
 					sib = parent->right;
 				}
 
 				sib->color    = parent->color;
-				parent->color = IBV_BLACK;
+				parent->color = CXIL_BLACK;
 				if (sib->right)
-					sib->right->color = IBV_BLACK;
+					sib->right->color = CXIL_BLACK;
 				__mm_rotate_left(parent);
 				child = mm_root;
 				break;
@@ -631,31 +638,31 @@ static void __mm_remove(struct ibv_mem_node *node)
 		} else {
 			sib = parent->left;
 
-			if (sib->color == IBV_RED) {
-				parent->color = IBV_RED;
-				sib->color    = IBV_BLACK;
+			if (sib->color == CXIL_RED) {
+				parent->color = CXIL_RED;
+				sib->color    = CXIL_BLACK;
 				__mm_rotate_right(parent);
 				sib = parent->left;
 			}
 
-			if ((!sib->left  || sib->left->color  == IBV_BLACK) &&
-			    (!sib->right || sib->right->color == IBV_BLACK)) {
-				sib->color = IBV_RED;
+			if ((!sib->left  || sib->left->color  == CXIL_BLACK) &&
+			    (!sib->right || sib->right->color == CXIL_BLACK)) {
+				sib->color = CXIL_RED;
 				child  = parent;
 				parent = child->parent;
 			} else {
-				if (!sib->left || sib->left->color == IBV_BLACK) {
+				if (!sib->left || sib->left->color == CXIL_BLACK) {
 					if (sib->right)
-						sib->right->color = IBV_BLACK;
-					sib->color = IBV_RED;
+						sib->right->color = CXIL_BLACK;
+					sib->color = CXIL_RED;
 					__mm_rotate_left(sib);
 					sib = parent->left;
 				}
 
 				sib->color    = parent->color;
-				parent->color = IBV_BLACK;
+				parent->color = CXIL_BLACK;
 				if (sib->left)
-					sib->left->color = IBV_BLACK;
+					sib->left->color = CXIL_BLACK;
 				__mm_rotate_right(parent);
 				child = mm_root;
 				break;
@@ -664,12 +671,12 @@ static void __mm_remove(struct ibv_mem_node *node)
 	}
 
 	if (child)
-		child->color = IBV_BLACK;
+		child->color = CXIL_BLACK;
 }
 
-static struct ibv_mem_node *__mm_find_start(uintptr_t start, uintptr_t end)
+static struct cxil_mem_node *__mm_find_start(uintptr_t start, uintptr_t end)
 {
-	struct ibv_mem_node *node = mm_root;
+	struct cxil_mem_node *node = mm_root;
 
 	while (node) {
 		if (node->start <= start && node->end >= start)
@@ -684,8 +691,8 @@ static struct ibv_mem_node *__mm_find_start(uintptr_t start, uintptr_t end)
 	return node;
 }
 
-static struct ibv_mem_node *merge_ranges(struct ibv_mem_node *node,
-					 struct ibv_mem_node *prev)
+static struct cxil_mem_node *merge_ranges(struct cxil_mem_node *node,
+					 struct cxil_mem_node *prev)
 {
 	prev->end = node->end;
 	prev->refcnt = node->refcnt;
@@ -694,10 +701,10 @@ static struct ibv_mem_node *merge_ranges(struct ibv_mem_node *node,
 	return prev;
 }
 
-static struct ibv_mem_node *split_range(struct ibv_mem_node *node,
+static struct cxil_mem_node *split_range(struct cxil_mem_node *node,
 					uintptr_t cut_line)
 {
-	struct ibv_mem_node *new_node = NULL;
+	struct cxil_mem_node *new_node = NULL;
 
 	new_node = malloc(sizeof *new_node);
 	if (!new_node)
@@ -711,10 +718,10 @@ static struct ibv_mem_node *split_range(struct ibv_mem_node *node,
 	return new_node;
 }
 
-static struct ibv_mem_node *get_start_node(uintptr_t start, uintptr_t end,
+static struct cxil_mem_node *get_start_node(uintptr_t start, uintptr_t end,
 					   int inc)
 {
-	struct ibv_mem_node *node, *tmp = NULL;
+	struct cxil_mem_node *node, *tmp = NULL;
 
 	node = __mm_find_start(start, end);
 	if (node->start < start)
@@ -731,10 +738,10 @@ static struct ibv_mem_node *get_start_node(uintptr_t start, uintptr_t end,
  * This function is called if madvise() fails to undo merging/splitting
  * operations performed on the node.
  */
-static struct ibv_mem_node *undo_node(struct ibv_mem_node *node,
+static struct cxil_mem_node *undo_node(struct cxil_mem_node *node,
 				      uintptr_t start, int inc)
 {
-	struct ibv_mem_node *tmp = NULL;
+	struct cxil_mem_node *tmp = NULL;
 
 	/*
 	 * This condition can be true only if we merged this
@@ -783,10 +790,10 @@ static int do_madvise(void *addr, size_t length, int advice,
 	return 0;
 }
 
-static int ibv_madvise_range(void *base, size_t size, int advice)
+static int cxil_madvise_range(void *base, size_t size, int advice)
 {
 	uintptr_t start, end;
-	struct ibv_mem_node *node, *tmp;
+	struct cxil_mem_node *node, *tmp;
 	int inc;
 	int rolling_back = 0;
 	int ret = 0;
@@ -880,7 +887,7 @@ out:
 int cxil_dontfork_range(void *base, size_t size)
 {
 	if (mm_root)
-		return ibv_madvise_range(base, size, MADV_DONTFORK);
+		return cxil_madvise_range(base, size, MADV_DONTFORK);
 	else {
 		too_late = 1;
 		return 0;
@@ -890,7 +897,7 @@ int cxil_dontfork_range(void *base, size_t size)
 int cxil_dofork_range(void *base, size_t size)
 {
 	if (mm_root)
-		return ibv_madvise_range(base, size, MADV_DOFORK);
+		return cxil_madvise_range(base, size, MADV_DOFORK);
 	else {
 		too_late = 1;
 		return 0;
