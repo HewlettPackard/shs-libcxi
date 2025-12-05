@@ -33,8 +33,8 @@ static const char *version = "2.4.0";
 int write_lat_alloc_ini(struct util_context *util)
 {
 	int rc;
-	struct cxi_ctx_ini_opts ini_opts = { 0 };
-	union c_cmdu c_st_cmd = { 0 };
+	struct cxi_ctx_ini_opts ini_opts = {};
+	union c_cmdu c_st_cmd = {};
 	struct cxi_context *cxi = &util->cxi;
 	struct util_opts *opts = &util->opts;
 
@@ -108,7 +108,7 @@ int write_lat_alloc_ini(struct util_context *util)
 int write_lat_alloc_tgt(struct util_context *util)
 {
 	int rc;
-	struct cxi_ctx_tgt_opts tgt_opts = { 0 };
+	struct cxi_ctx_tgt_opts tgt_opts = {};
 	struct cxi_context *cxi = &util->cxi;
 	struct util_opts *opts = &util->opts;
 	uint32_t flags;
@@ -245,7 +245,7 @@ int main(int argc, char **argv)
 {
 	int c;
 	int rc;
-	struct util_context util = { 0 };
+	struct util_context util = {};
 	struct ctrl_connection *ctrl = &util.ctrl;
 	struct cxi_context *cxi = &util.cxi;
 	struct util_opts *opts = &util.opts;

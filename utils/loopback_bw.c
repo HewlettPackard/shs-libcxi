@@ -30,7 +30,7 @@ static const char *version = "1.5.1";
 int bw_alloc_tx(struct util_context *util)
 {
 	int rc;
-	struct cxi_ctx_ini_opts ini_opts = { 0 };
+	struct cxi_ctx_ini_opts ini_opts = {};
 	struct cxi_context *cxi = &util->cxi;
 	struct util_opts *opts = &util->opts;
 
@@ -87,7 +87,7 @@ int bw_alloc_tx(struct util_context *util)
 int bw_alloc_rx(struct util_context *util)
 {
 	int rc;
-	struct cxi_ctx_tgt_opts tgt_opts = { 0 };
+	struct cxi_ctx_tgt_opts tgt_opts = {};
 	struct cxi_context *cxi = &util->cxi;
 	struct util_opts *opts = &util->opts;
 	uint32_t flags;
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 	int c;
 	int rc;
 	char *endptr;
-	struct util_context util = { 0 };
+	struct util_context util = {};
 	struct cxi_context *cxi = &util.cxi;
 	struct util_opts *opts = &util.opts;
 	int count;

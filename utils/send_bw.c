@@ -72,8 +72,8 @@ int inc_put_ct(struct util_context *util, bool rsp_is_next)
 int send_bw_alloc_tx(struct util_context *util)
 {
 	int rc;
-	struct cxi_ctx_ini_opts ini_opts = { 0 };
-	union c_cmdu c_st_cmd = { 0 };
+	struct cxi_ctx_ini_opts ini_opts = {};
+	union c_cmdu c_st_cmd = {};
 	struct cxi_context *cxi = &util->cxi;
 	struct ctrl_connection *ctrl = &util->ctrl;
 	struct util_opts *opts = &util->opts;
@@ -200,7 +200,7 @@ int send_bw_alloc_tx(struct util_context *util)
 int send_bw_alloc_rx(struct util_context *util)
 {
 	int rc;
-	struct cxi_ctx_tgt_opts tgt_opts = { 0 };
+	struct cxi_ctx_tgt_opts tgt_opts = {};
 	struct cxi_context *cxi = &util->cxi;
 	struct ctrl_connection *ctrl = &util->ctrl;
 	struct util_opts *opts = &util->opts;
@@ -644,7 +644,7 @@ int main(int argc, char **argv)
 {
 	int c;
 	int rc;
-	struct util_context util = { 0 };
+	struct util_context util = {};
 	struct ctrl_connection *ctrl = &util.ctrl;
 	struct cxi_context *cxi = &util.cxi;
 	struct util_opts *opts = &util.opts;

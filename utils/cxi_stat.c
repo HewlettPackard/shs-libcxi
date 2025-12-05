@@ -703,7 +703,7 @@ int main(int argc, char *argv[])
 	int num_devs = 0;
 	char *endptr;
 	struct cxi_dev *cdev = NULL;
-	struct stat_opts opts = { 0 };
+	struct stat_opts opts = {};
 
 	opts.dev_id = -1;
 	opts.pause = DEFAULT_PAUSE;

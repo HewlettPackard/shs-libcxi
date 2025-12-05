@@ -656,7 +656,7 @@ static int flip_final_lat_send(struct util_context *util)
 	int rc = 0;
 	uint8_t index_ext;
 	struct cxi_context *cxi;
-	union c_cmdu c_st_cmd = { 0 };
+	union c_cmdu c_st_cmd = {};
 
 	cxi = &util->cxi;
 	if (util->final_lat_sent)
@@ -1468,7 +1468,7 @@ int append_me(struct cxi_cq *cq, struct cxi_eq *eq, struct ctx_buffer *ctx_buf,
 	      uint16_t buffer_id)
 {
 	int rc;
-	union c_cmdu cmd = { 0 };
+	union c_cmdu cmd = {};
 	uint64_t addr;
 
 	if (!cq || !ctx_buf || !ctx_buf->buf || !ctx_buf->md)

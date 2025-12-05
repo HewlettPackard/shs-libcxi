@@ -472,10 +472,10 @@ int heatsink_alloc(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 {
 	int rc;
 	int i;
-	struct cxi_ctx_ini_opts ini_opts = { 0 };
-	struct cxi_ctx_tgt_opts tgt_opts = { 0 };
+	struct cxi_ctx_ini_opts ini_opts = {};
+	struct cxi_ctx_tgt_opts tgt_opts = {};
 	struct cxi_context *cxi = &ctx->cxi;
-	union c_cmdu c_st_cmd = { 0 };
+	union c_cmdu c_st_cmd = {};
 	uint32_t flags;
 	size_t buf_len;
 	size_t eq_len;
@@ -1666,8 +1666,8 @@ int main(int argc, char **argv)
 	int c;
 	char *endptr;
 	int option_index;
-	struct heatsink_opts opts = { 0 };
-	struct heatsink_ctx ctx = { 0 };
+	struct heatsink_opts opts = {};
+	struct heatsink_ctx ctx = {};
 	uint32_t dev_id = 0;
 	uint32_t svc_id = CXI_DEFAULT_SVC_ID;
 	cpu_set_t mask;

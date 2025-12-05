@@ -49,7 +49,7 @@ static int ctrl_getaddrinfo(const char *node, uint16_t port,
 /* Initialize client and connect */
 static int ctrl_init_client(struct ctrl_connection *ctrl)
 {
-	struct sockaddr_in addr_in = { 0 };
+	struct sockaddr_in addr_in = {};
 	struct addrinfo *res;
 	struct addrinfo *next_res;
 	int last_errno = 0;
@@ -105,7 +105,7 @@ static int ctrl_init_client(struct ctrl_connection *ctrl)
 /* Initialize server and wait for client to connect */
 static int ctrl_init_server(struct ctrl_connection *ctrl)
 {
-	struct sockaddr_in addr_in = { 0 };
+	struct sockaddr_in addr_in = {};
 	int optval = 1;
 	int fd;
 	int rc;
