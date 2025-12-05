@@ -238,10 +238,10 @@ static int ctrl_exchange_config(struct ctrl_connection *ctrl, const char *name,
 	int rc;
 	char peer_buf[MAX_CTRL_DATA_BYTES];
 	size_t buf_len;
-	int maj;
-	int min;
-	int peer_maj;
-	int peer_min;
+	unsigned int maj;
+	unsigned int min;
+	unsigned int peer_maj;
+	unsigned int peer_min;
 	bool vers_match;
 	struct util_opts *peer_opts;
 
