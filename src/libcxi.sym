@@ -121,3 +121,8 @@ global:
 	cxil_svc_set_netns;
 	cxil_svc_get_netns;
 } LIBCXI_1.9;
+
+LIBCXI_1.11 {
+global:
+	cxil_alloc_buf_cmdq;
+} LIBCXI_1.10;

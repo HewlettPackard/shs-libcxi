@@ -954,12 +954,13 @@ CXIL_API int cxil_destroy_ct(struct cxi_ct *ct)
 };
 
 /* Allocate a CXI CMDQ */
-CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
-			     const struct cxi_cq_alloc_opts *opts,
-			     struct cxi_cq **cmdq)
+CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
+				 const struct cxi_cq_alloc_opts_buf *opts_in,
+				 struct cxi_cq **cmdq)
 {
-	struct cxi_cq_alloc_cmd cmd = {};
+	struct cxi_cq_alloc_buf_cmd cmd = {};
 	struct cxi_cq_alloc_resp resp;
+	const struct cxi_cq_alloc_opts *opts = &opts_in->opts;
 	int rc;
 	struct cxil_cq *ccq;
 	struct cxil_lni_priv *lni_priv;
@@ -974,11 +975,11 @@ CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 		return -errno;
 
 	/* Get a CMDQ */
-	cmd.op = CXI_OP_CQ_ALLOC;
+	cmd.op = CXI_OP_CQ_ALLOC_BUF;
 	cmd.resp = &resp;
 	cmd.lni = lni->id;
 	cmd.eq = evtq ? evtq->eqn : C_EQ_NONE;
-	cmd.opts = *opts;
+	cmd.opts = *opts_in;
 
 	rc = device_write(lni_priv->dev, &cmd, sizeof(cmd));
 	if (rc)
@@ -991,13 +992,20 @@ CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 	ccq->csr_len = resp.wp_addr.size;
 	ccq->flags = opts->flags;
 
+	if (opts_in->buf)
+		ccq->user_buffer = true;
+
 	/* mmaping queue */
-	ccq->cmds = mmap(NULL, resp.cmds.size,
-			 PROT_READ | PROT_WRITE, MAP_SHARED, lni_priv->dev->fd,
-			 resp.cmds.offset);
-	if (ccq->cmds == MAP_FAILED) {
-		rc = -errno;
-		goto free_cmdq;
+	if (ccq->user_buffer) {
+		ccq->cmds = opts_in->buf;
+	} else {
+		ccq->cmds = mmap(NULL, resp.cmds.size,
+				 PROT_READ | PROT_WRITE, MAP_SHARED,
+				 lni_priv->dev->fd, resp.cmds.offset);
+		if (ccq->cmds == MAP_FAILED) {
+			rc = -errno;
+			goto free_cmdq;
+		}
 	}
 
 	/* mmaping csr block */
@@ -1017,12 +1025,29 @@ CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 	return 0;
 
 unmap_cmds:
-	munmap(ccq->cmds, ccq->cmds_len);
+	if (!ccq->user_buffer)
+		munmap(ccq->cmds, ccq->cmds_len);
 free_cmdq:
 	free_cmdq(lni_priv->dev, resp.cq);
 free_ccq:
 	free(ccq);
 	return rc;
+}
+
+CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
+			     const struct cxi_cq_alloc_opts *opts_in,
+			     struct cxi_cq **cmdq)
+{
+	const struct cxi_cq_alloc_opts_buf opts = {
+		.opts.count = opts_in->count,
+		.opts.policy = opts_in->policy,
+		.opts.stat_cnt_pool = opts_in->stat_cnt_pool,
+		.opts.flags = opts_in->flags,
+		.opts.lcid = opts_in->lcid,
+		.opts.lpe_cdt_thresh_id = opts_in->lpe_cdt_thresh_id,
+	};
+
+	return cxil_alloc_buf_cmdq(lni, evtq, &opts, cmdq);
 }
 
 /* Destroy a CXI CMDQ */
@@ -1053,7 +1078,7 @@ CXIL_API int cxil_destroy_cmdq(struct cxi_cq *cmdq)
 		return -errno;
 	ccq->csr = NULL;
 
-	if (ccq->cmds && munmap(ccq->cmds, ccq->cmds_len))
+	if (ccq->cmds && !ccq->user_buffer && munmap(ccq->cmds, ccq->cmds_len))
 		return -errno;
 	ccq->cmds = NULL;
 

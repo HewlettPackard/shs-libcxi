@@ -618,6 +618,24 @@ CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 			     struct cxi_cq **cmdq);
 
 /**
+ * @brief Allocates a Cassini Command Queue (CMDQ) object. CMDQs are used for
+ *        scheduling transmit and receive side DMA operations to a CXI NIC.
+ *        A physically contiguous user buffer can be supplied via the opts
+ *        parameter.
+ *
+ * @param lni The LNI object used to allocate the CMDQ
+ * @param evtq Optional event queue, to receive CQ command errors.
+ * @param opts Command queue options (size, type of CQ, user buffer, ...)
+ * @param cmdq The new CMDQ object.
+ *
+ * @return On success, zero is returned and the new CMDQ is pointed to by the
+ *         cmdq parameter.  Otherwise, a negative errno value is returned
+ *         indicating the error.
+ */
+CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
+				 const struct cxi_cq_alloc_opts_buf *opts,
+				 struct cxi_cq **cmdq);
+/**
  * @brief Destroys a Cassini Command Queue (CMDQ) object.
  *
  * @param cmdq The CMDQ object to destroy

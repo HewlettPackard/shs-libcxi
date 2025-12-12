@@ -1,3 +1,6 @@
+1.9.0
+Added interface cxil_alloc_buf_cmdq
+
 1.8.0
 Added interface cxil_get_svc_lpr
 Added interface cxil_svc_enable

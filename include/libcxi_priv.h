@@ -55,6 +55,7 @@ struct cxil_cq {
 	size_t csr_len;
 	struct cxi_cq hw;
 	unsigned int flags;
+	bool user_buffer;
 };
 
 /* Userspace CXI Event Queue structure */
