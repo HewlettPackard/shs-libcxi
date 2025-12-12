@@ -107,6 +107,8 @@ void test_data_teardown(void);
 
 /* Used by data transfer tests */
 void data_xfer_setup(void);
+void cq_buf_data_xfer_setup(size_t user_buffer_len);
+void cq_buf_data_xfer_teardown(void);
 void data_xfer_teardown(void);
 void ptlte_setup(uint32_t pid_idx, bool matching, bool exclusive_cp);
 void ptlte_teardown(void);

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <poll.h>
+#include <sys/mman.h>
 #include <sched.h>
 #include <time.h>
 #include <sys/types.h>
@@ -44,6 +45,8 @@ struct cxil_pte *rx_pte;
 struct cxil_pte_map *rx_pte_map;
 struct cxil_test_data *test_data;
 int test_data_len;
+uint8_t *tx_cq_buf;
+size_t cq_buf_len;
 
 /* Counting event and trigger ops stuff. */
 struct cxi_ct *ct;
@@ -166,27 +169,68 @@ void domain_teardown(void)
 	cp_teardown();
 }
 
-void data_xfer_setup(void)
+void *alloc_cq_buf(size_t len)
+{
+	int order = ffs(len) - 1;
+	void *buffer;
+	int prot = PROT_WRITE | PROT_READ;
+	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB;
+
+	if (order < 21) {
+		buffer = aligned_alloc(s_page_size, len);
+		cr_assert_neq(buffer, NULL, "Failed to allocated memory");
+		return buffer;
+	}
+
+	huge_pg_setup(TWO_MB, 1);
+	mmap_flags |= order << MAP_HUGE_SHIFT;
+	buffer = mmap(NULL, len, prot, mmap_flags, 0, 0);
+	cr_assert_not_null(buffer, "mmap failed. %p", buffer);
+
+	/* skip test if hugepages are unavailable */
+	if (buffer == MAP_FAILED)
+		cr_skip_test("mmap failed. ret:%p errno:%d", buffer, -errno);
+
+	return buffer;
+}
+
+void cq_setup(size_t user_buffer_len)
+{
+	int rc;
+	struct cxi_cq_alloc_opts_buf cq_opts = {};
+
+	if (user_buffer_len) {
+		cq_buf_len = user_buffer_len;
+		tx_cq_buf = alloc_cq_buf(cq_buf_len);
+
+		memset(tx_cq_buf, 0, cq_buf_len);
+		cq_opts.opts.count = cq_buf_len / C_CQ_CMD_SIZE;
+		cq_opts.buf = tx_cq_buf;
+	} else {
+		cq_buf_len = 0;
+		cq_opts.opts.count = 1024;
+	}
+
+	cq_opts.opts.flags = CXI_CQ_IS_TX;
+	cq_opts.opts.lcid = cp->lcid;
+
+	rc = cxil_alloc_buf_cmdq(lni, NULL, &cq_opts, &transmit_cmdq);
+	cr_assert_eq(rc, 0, "cxil_alloc_buf_cmdq failed %d", rc);
+
+	cq_opts.opts.flags = 0;
+	cq_opts.opts.count = 1024;
+	cq_opts.buf = NULL;
+	rc = cxil_alloc_buf_cmdq(lni, NULL, &cq_opts, &target_cmdq);
+	cr_assert_eq(rc, 0, "RX cxil_alloc_buf_cmdq() failed %d", rc);
+
+}
+
+void final_setup(void)
 {
 	int ret;
-	struct cxi_cq_alloc_opts cq_opts;
-
-	domain_setup();
 
 	transmit_eq_buf_len = s_page_size;
 	target_eq_buf_len = s_page_size * 2;
-
-	/* Allocate CMDQs */
-	memset(&cq_opts, 0, sizeof(cq_opts));
-	cq_opts.count = 1024;
-	cq_opts.flags = CXI_CQ_IS_TX;
-	cq_opts.lcid = cp->lcid;
-	ret = cxil_alloc_cmdq(lni, NULL, &cq_opts, &transmit_cmdq);
-	cr_assert_eq(ret, 0, "TX cxil_alloc_cmdq() failed %d", ret);
-
-	cq_opts.flags = 0;
-	ret = cxil_alloc_cmdq(lni, NULL, &cq_opts, &target_cmdq);
-	cr_assert_eq(ret, 0, "RX cxil_alloc_cmdq() failed %d", ret);
 
 	/* Allocate wait object */
 	ret = cxil_alloc_wait_obj(lni, &wait_obj);
@@ -228,6 +272,20 @@ void data_xfer_setup(void)
 	cr_assert_eq(ret, 0, "Allocate RX EQ Failed %d", ret);
 }
 
+void data_xfer_setup(void)
+{
+	domain_setup();
+	cq_setup(0);
+	final_setup();
+}
+
+void cq_buf_data_xfer_setup(size_t user_buffer_len)
+{
+	domain_setup();
+	cq_setup(user_buffer_len);
+	final_setup();
+}
+
 void data_xfer_teardown(void)
 {
 	int ret;
@@ -258,6 +316,20 @@ void data_xfer_teardown(void)
 	cr_assert_eq(ret, 0, "Destroy TX CQ Failed %d", ret);
 
 	domain_teardown();
+}
+
+void cq_buf_data_xfer_teardown(void)
+{
+	data_xfer_teardown();
+
+	if (cq_buf_len) {
+		if (cq_buf_len < (1 << 21))
+			free(tx_cq_buf);
+		else
+			munmap(tx_cq_buf, cq_buf_len);
+
+		cq_buf_len = 0;
+	}
 }
 
 void counting_event_setup(void)

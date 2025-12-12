@@ -21,6 +21,7 @@
 const char *script_path = "profile.sh";
 
 TestSuite(rma, .init = data_xfer_setup, .fini = data_xfer_teardown);
+TestSuite(rma_cq, .fini = cq_buf_data_xfer_teardown);
 
 void excp_profile_teardown(void)
 {
@@ -207,6 +208,18 @@ void rma_put_with_cp_modify(void)
 	excp = NULL;
 
 	excp_profile_teardown();
+}
+
+Test(rma_cq, page, .timeout = 15, .disabled = PUT_DISABLED)
+{
+	cq_buf_data_xfer_setup(1 << 12);
+	rma_simple_put();
+}
+
+Test(rma_cq, hugepage, .timeout = 15, .disabled = PUT_DISABLED)
+{
+	cq_buf_data_xfer_setup(1 << 21);
+	rma_simple_put();
 }
 
 Test(rma, simple_put, .timeout = 15, .disabled = PUT_DISABLED)
