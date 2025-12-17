@@ -57,7 +57,7 @@ bin_PROGRAMS = \
 	utils/cxi_stat utils/cxi_write_lat utils/cxi_read_bw utils/cxi_read_lat \
 	utils/cxi_atomic_bw utils/cxi_atomic_lat utils/cxi_send_bw \
 	utils/cxi_gpu_loopback_bw utils/cxi_udp_gen utils/cxi_service \
-	utils/cxi_dump_csrs
+	utils/cxi_dump_csrs utils/dgchs_fw
 
 bin_SCRIPTS = \
 	utils/dgchscore.sh utils/dgchsget utils/dgchsset utils/dgchsdump
@@ -110,6 +110,9 @@ utils_cxi_dump_csrs_LDADD = src/libcxi.la
 utils/cxi_dump_csrs.c: utils/cxi_dump_csrs.h
 utils/cxi_dump_csrs.h: utils/cxi_dump_csrs.py
 	utils/cxi_dump_csrs.py > utils/cxi_dump_csrs.h
+
+utils_dgchs_fw_SOURCES = utils/dgchs_fw.c \
+	utils/dgchs_i2c.c
 
 utils_MANS = \
 	man/man1/cxi_atomic_bw.1 \

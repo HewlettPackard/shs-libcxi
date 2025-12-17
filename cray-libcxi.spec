@@ -7,7 +7,7 @@
 %endif
 
 Name:       cray-libcxi
-Version:    1.0.2
+Version:    1.0.3
 Release:    %(echo ${BUILD_METADATA})
 Summary:    Cassini userspace library
 License:    Dual LGPL-2.1/BSD-3-Clause
@@ -183,6 +183,7 @@ install -D --target-directory=%{buildroot}/%{_presetdir}/ 99-cxi_rh.preset
 %{_bindir}/dgchsget
 %{_bindir}/dgchsset
 %{_bindir}/dgchsdump
+%{_bindir}/dgchs_fw
 %{_mandir}/man1/*
 %{_mandir}/man7/*
 %{_datadir}/cxi/cxi_service_template.yaml
