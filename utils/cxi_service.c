@@ -19,7 +19,7 @@
 #include <libcxi.h>
 
 static const char *name = "cxi_service";
-static const char *version = "0.5.0";
+static const char *version = "0.6.0";
 
 static const char * const yaml_event_strs[] = {
 	[YAML_NO_EVENT] = "NO_EVENT",
@@ -79,6 +79,8 @@ struct parser_state {
 	bool exclusive_cp;
 	uint16_t vni_min;
 	uint16_t vni_max;
+	uint32_t netns;
+	uint8_t netns_type;
 };
 
 void usage(void)
@@ -100,9 +102,10 @@ void usage(void)
 		" list                  List all services for a device\n");
 }
 
-static void list_members(struct cxi_svc_desc *desc)
+static void list_members(struct cxi_svc_desc *desc,  struct util_opts *opts)
 {
 	int i;
+	unsigned int netns = 0;
 
 	printf("   ---> Valid Members :");
 	if (!desc->restricted_members) {
@@ -116,6 +119,8 @@ static void list_members(struct cxi_svc_desc *desc)
 				printf(" gid=%u",
 				       desc->members[i].svc_member.gid);
 		}
+		if (cxil_svc_get_netns(opts->dev, desc->svc_id, &netns) == 0)
+			printf(" netns=%u", netns);
 	}
 	printf("\n");
 }
@@ -293,7 +298,7 @@ static void print_descriptor(struct cxi_svc_desc *desc,
 	printf("   Restricted Members : %s\n",
 	       desc->restricted_members ? "Yes" : "No");
 	if (opts->verbose)
-		list_members(desc);
+		list_members(desc, opts);
 	if (opts->verbose)
 		list_vnis(desc, opts);
 
@@ -546,11 +551,18 @@ int consume_event(struct parser_state *s, yaml_event_t *event,
 					s->desc->members[s->member_idx].type = CXI_SVC_MEMBER_UID;
 				else if (strcmp(val, "gid") == 0)
 					s->desc->members[s->member_idx].type = CXI_SVC_MEMBER_GID;
+				else if (strcmp(val, "netns") == 0)
+					s->netns_type = CXI_SVC_MEMBER_NET_NS;
 				else
-					errx(1, "Invalid input for Service Member 'type'\n");
+					errx(1,
+					     "Invalid input for Service Member 'type' %s\n",
+					     val);
 			} else if (strcmp(s->key, "id") == 0) {
-				s->desc->members[s->member_idx].svc_member.gid =
-					(uid_t)(atoi(val));
+				if (s->netns_type == CXI_SVC_MEMBER_NET_NS)
+					s->netns = (uint32_t)atoi(val);
+				else
+					s->desc->members[s->member_idx]
+					.svc_member.gid = (uid_t)(atoi(val));
 				s->member_idx++;
 			} else if (strcmp(s->key, "vni") == 0) {
 				if (s->vni_idx >= CXI_SVC_MAX_VNIS)
@@ -640,7 +652,37 @@ static void create_service(struct cxi_svc_desc *desc,
 	svc_id = cxil_alloc_svc(opts->dev, desc, &fail_info);
 	if (svc_id < 0) {
 		/* TODO provide more detailed info from fail_info */
-		errx(1, "Failed to create service: %s\n", strerror(-svc_id));
+		errx(1, "Failed to create service: %s\n",
+		     strerror(-svc_id));
+	}
+
+	if (p_state.netns_type == CXI_SVC_MEMBER_NET_NS) {
+		if (!desc->restricted_members)
+			errx(1,
+			     "Failed to set netns:(restricted_members must be set to 1)\n");
+
+		/* netns with uid/git not supported */
+		for (int i = 0; i < CXI_SVC_MAX_MEMBERS; i++) {
+			if (desc->members[i].type == CXI_SVC_MEMBER_UID ||
+				desc->members[i].type == CXI_SVC_MEMBER_GID) {
+				errx(1,
+				     "Failed to set netns: (netns based service with uid/gid not supported)\n");
+			}
+		}
+
+		rc = cxil_svc_enable(opts->dev, svc_id, false);
+		if (rc)
+			errx(1, "Failed to disable service: %s\n",
+			     strerror(-rc));
+
+		rc = cxil_svc_set_netns(opts->dev, svc_id, p_state.netns);
+		if (rc)
+			errx(1, "Failed to set netns ID: %s\n", strerror(-rc));
+
+		rc = cxil_svc_enable(opts->dev, svc_id, true);
+		if (rc)
+			errx(1, "Failed to enable service: %s\n",
+			     strerror(-rc));
 	}
 
 	if (!desc->restricted_vnis) {

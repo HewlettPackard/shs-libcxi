@@ -115,3 +115,9 @@ global:
 	cxil_svc_get_vni_range;
 	cxil_alloc_trig_cp;
 } LIBCXI_1.8;
+
+LIBCXI_1.10 {
+global:
+	cxil_svc_set_netns;
+	cxil_svc_get_netns;
+} LIBCXI_1.9;

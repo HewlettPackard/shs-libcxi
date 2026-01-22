@@ -67,6 +67,10 @@ _cxil_svc_set_vni_range()_ - Set a VNI range for a CXI service.
 
 _cxil_svc_get_vni_range()_ - Get the VNI range for a CXI service.
 
+_cxil_svc_set_netns()_ - Set the Network Namespace ID in existing CXI Service
+
+_cxil_svc_get_netns()_ - Get the Network Namespace ID associated with existing CXI Service
+
 1. **Default service**
 
 The Cassini driver provides a "default service" (ID: 1), which provides
@@ -162,7 +166,7 @@ Common settings that can be requested when allocating a service are described be
 
 2.1.1 **Restricting members**
 
-A service can be allocated that limits access to specific UIDs or GIDs.
+A service can be allocated that limits access to specific UIDs, GIDs, or Network Namespace ID.
 A combination of CXI_SVC_MAX_MEMBERS UIDs or GIDs may be provided.
 To do so, set "restricted_members=1" and fill out the "members" structure.
 
@@ -348,6 +352,43 @@ This means only 16 services can be created that reserve LEs, and only
 
 The exclusive_cp bit disables sharing of Communication Profiles (CP).
 Exclusive CP is not allowed if "restricted_vnis" bit is set in the CXI service descriptor.
+
+2.1.6 **Update CXI Service access restriction for a Specific Network Namespace ID** _cxil_svc_set_netns_
+
+```
+cxil_svc_set_netns(struct cxil_dev *dev, unsigned int svc_id, unsigned int netns);
+```
+This function updates an existing CXI service so that it can be accessed only from a designated
+Network Namespace ID. It is intended for scenarios where an administrator needs to deploy multiple
+CXI services and associate each one with a specific virtual machine.This enforces container or tenant
+isolation by ensuring that only RDMA applications running inside the designated namespace can access
+the service. Using this API allows the admin to:
+
+- Maintain isolated CXI services for different VMs
+- Control which Network Namespace ID is permitted to access each service
+
+To create a CXI service that is restricted to a specific Network Namespace ID, the user must first
+call _cxil_alloc_svc() without specifying a UID or GID to obtain a service ID. After the service
+is created, the _cxil_svc_set_netns() API is used to associate the service ID with the desired
+Network Namespace ID and update the access list.
+
+cxil_svc_get_netns is used to fetch the Network Namespace ID associated to the specific service ID.
+Upon success valid namespace ID is returned. Otherwise a negative errno value is returned indicating the error.
+
+**Note**
+- The Service must be disabled before calling _cxil_svc_set_netns(), and can be re-enabled afterward as needed.
+- Services configured for network-namespace access cannot be combined with **UID/GID** and **restricted_members** must
+be set to 1.
+
+2.1.7 **Get associated Network Namespace ID for a given Service** _cxil_svc_get_netns_
+
+```
+int
+cxil_svc_get_netns(struct cxil_dev *dev, unsigned int svc_id, unsigned int &netns);
+```
+This function retrieves the Network Namespace ID associated with a given CXI service. If the service is not
+configured for network-namespace-based access, or if no valid namespace ID is present, the function returns
+-EINVAL. Upon success, 0 is returned and netns value will be updated with the valid namespace id.
 
 2.2 **Fail info** - _cxi_fail_info_
 

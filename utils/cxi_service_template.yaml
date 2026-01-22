@@ -43,11 +43,15 @@ vnis:
   vni: 5
 
 members:
-# Type can be 'uid' or 'gid'
+# Type can be 'uid','gid', or 'netns'
+# Note: 'netns' is not supported along with 'uid' or 'gid'.
+#
   - type: uid
     id: 1
   - type: gid
     id: 2
+# - type: netns
+#   id: 4026532000
 #
 ## Ignored if restricted_tcs is set to false
 #tcs:

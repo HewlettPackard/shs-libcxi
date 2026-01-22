@@ -1,3 +1,16 @@
+1.8.0
+Added interface cxil_get_svc_lpr
+Added interface cxil_svc_enable
+Added interface cxil_svc_set_exclusive_cp
+Added interface cxil_svc_get_exclusive_cp
+Added interface cxil_svc_set_vni_range
+Added interface cxil_svc_get_vni_range
+Added interface cxil_alloc_trig_cp
+Added interface cxil_destroy_cp
+Added interface cxil_modify_cp
+Added interface cxil_svc_set_netns
+Added interface cxil_svc_get_netns
+
 1.7.0
 Added interface cxil_update_md
 

@@ -515,6 +515,51 @@ CXIL_API int cxil_svc_get_vni_range(struct cxil_dev *dev_in,
 	return 0;
 }
 
+CXIL_API int cxil_svc_set_netns(struct cxil_dev *dev_in,
+				unsigned int svc_id, unsigned int netns)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_set_netns_cmd cmd = {
+		.op = CXI_OP_SVC_SET_NETNS,
+		.svc_id = svc_id,
+		.netns = netns,
+	};
+
+	if (!dev_in)
+		return -EINVAL;
+
+	if (svc_id < 1)
+		return -EINVAL;
+
+	return device_write(dev, &cmd, sizeof(cmd));
+}
+
+CXIL_API int cxil_svc_get_netns(struct cxil_dev *dev_in,
+				unsigned int svc_id, unsigned int *netns)
+{
+	int rc;
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	unsigned int resp_netns = 0;
+	struct cxi_svc_get_netns_cmd cmd = {
+		.op = CXI_OP_SVC_GET_NETNS,
+		.svc_id = svc_id,
+		.resp = &resp_netns,
+	};
+
+	if (!dev_in || !netns)
+		return -EINVAL;
+
+	if (svc_id < 1)
+		return -EINVAL;
+
+	rc = device_write(dev, &cmd, sizeof(cmd));
+	if (rc)
+		return rc;
+
+	*netns = resp_netns;
+	return 0;
+}
+
 /* Allocate a CXI LNI */
 CXIL_API int cxil_alloc_lni(struct cxil_dev *dev_in, struct cxil_lni **lni,
 			    unsigned int svc_id)

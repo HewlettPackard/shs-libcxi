@@ -333,6 +333,181 @@ ParameterizedTest(struct svc_ugid_params *param, svc, svc_ugid)
 		     rc);
 }
 
+
+struct svc_netns_params {
+	bool pass;
+	bool su;
+	enum cxi_svc_member_type type;
+	unsigned int netns;
+	uint8_t restricted_members;
+	uid_t ugid;
+};
+
+/* Test cases to validate if lnid is created for netns based service */
+/* CURRENT flag is to indicate the test to use  valid netns of the test VM */
+#define CURRENT 1
+
+/* Considering that the test VMs never assign netns inode 0 */
+#define INVALID 0
+
+ParameterizedTestParameters(svc, svc_netns)
+{
+	size_t param_sz;
+	static struct svc_netns_params params[] = {
+		/* Valid cases */
+		/* NETNS only - current netns as root */
+		{
+			.pass = true,
+			.su = false,
+			.type = CXI_SVC_MEMBER_NET_NS,
+			.netns = CURRENT,
+			.restricted_members = 1,
+		},
+		/* NETNS only - current netns as user */
+		{
+			.pass = true,
+			.su = true,
+			.type = CXI_SVC_MEMBER_NET_NS,
+			.netns = CURRENT,
+			.ugid = 6565,
+			.restricted_members = 1,
+		},
+		/* Invalid cases */
+		/* NETNS only - invalid netns */
+		{
+			.pass = false,
+			.su = false,
+			.type = CXI_SVC_MEMBER_NET_NS,
+			.netns = INVALID,
+			.restricted_members = 1,
+		},
+		/* uid as root and netns as a current netns */
+		{
+			.pass = true,
+			.su = false,
+			.type = CXI_SVC_MEMBER_UID,
+			.ugid = 0,
+			.netns = CURRENT,
+			.restricted_members = 1,
+		},
+		/* uid as user and netns as a current netns */
+		{
+			.pass = true,
+			.su = true,
+			.type = CXI_SVC_MEMBER_UID,
+			.ugid = 200,
+			.netns = CURRENT,
+			.restricted_members = 1,
+		},
+		/* gid as user and netns as a current netns */
+		{
+			.pass = true,
+			.su = false,
+			.type = CXI_SVC_MEMBER_GID,
+			.ugid = 0,
+			.netns = CURRENT,
+			.restricted_members = 1,
+		},
+		/* Set restricted_members as 0 and netns as a current */
+		{
+			.pass = true,
+			.su = true,
+			.type = CXI_SVC_MEMBER_NET_NS,
+			.netns = CURRENT,
+			.restricted_members = 0,
+		},
+	};
+	param_sz = ARRAY_SIZE(params);
+	return cr_make_param_array(struct svc_netns_params, params,
+				   param_sz);
+}
+
+ParameterizedTest(struct svc_netns_params *param, svc, svc_netns)
+{
+	int rc;
+	struct cxi_svc_desc svc_desc = {
+		.restricted_vnis = 1,
+		.num_vld_vnis = 1,
+		.vnis[0] = 8,
+	};
+
+	svc_desc.restricted_members = param->restricted_members;
+	/* Creating failure case where svc_id is created with uid/gid first */
+	if (param->type == CXI_SVC_MEMBER_UID) {
+		svc_desc.members[0].svc_member.uid = param->ugid;
+		svc_desc.members[0].type = param->type;
+	} else if (param->type == CXI_SVC_MEMBER_GID) {
+		svc_desc.members[0].svc_member.gid = param->ugid;
+		svc_desc.members[0].type = param->type;
+	}
+
+	/* Allocate SVC */
+	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d", rc);
+
+	/* Save off svc_id */
+	svc_desc.svc_id = rc;
+
+	if (param->netns == CURRENT)
+		param->netns = get_network_namespace();
+
+	rc = cxil_svc_enable(dev, svc_desc.svc_id, false);
+	cr_assert_eq(rc, 0,
+		     "cxil_svc_enable failed to disable service. Expected rc: 0 received rc: %d",
+		     rc);
+
+	/* Setting netns fails when UID/GID is already assigned
+	 * to the servive or restricted_members is set to 0
+	 */
+	rc = cxil_svc_set_netns(dev, svc_desc.svc_id, param->netns);
+	if (param->type == CXI_SVC_MEMBER_UID ||
+		param->type == CXI_SVC_MEMBER_GID || !param->restricted_members)
+		cr_assert_eq(rc, -EEXIST,
+			     "cxil_svc_set_netns() Failed. Expected rc: -EEXIST received rc: %d",
+			     rc);
+	else /* PASS case */
+		cr_assert_eq(rc, 0,
+			     "cxil_svc_set_netns() Failed. Expected rc: 0 received rc: %d",
+			     rc);
+
+	rc = cxil_svc_enable(dev, svc_desc.svc_id, true);
+	cr_assert_eq(rc, 0,
+		     "cxil_svc_enable Failed to enable service. Expected rc: 0 received rc: %d",
+		     rc);
+
+	if (param->su) {
+		rc = seteuid(param->ugid);
+		cr_assert_eq(rc, 0, "seteuid() failed");
+	}
+
+	/* Allocate LNI */
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	if (param->pass) {
+		cr_assert_eq(rc, 0,
+			     "cxil_alloc_lni() Failed. Expected rc: 0 received rc: %d",
+			     rc);
+	} else
+		cr_assert_neq(rc, 0,
+			      "Shouldn't have been able to allocate LNI. expected: %d received %d",
+			      -EPERM,	rc);
+
+	/* Revert to root if needed */
+	if (param->su) {
+		rc = seteuid(0);
+		cr_assert_eq(rc, 0, "seteuid() failed");
+	}
+
+	/* Destroy LNI if it was allocated */
+	if (param->pass) {
+		rc = cxil_destroy_lni(lni);
+		cr_assert_eq(rc, 0, "Destroy LNI failed rc: %d", rc);
+	}
+
+	/* Destroy SVC */
+	rc = cxil_destroy_svc(dev, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_destroy_svc(): Failed. rc: %d", rc);
+}
+
 #define TEST_UID 200
 #define TEST_GID 300
 Test(svc, svc_profile_ignore)

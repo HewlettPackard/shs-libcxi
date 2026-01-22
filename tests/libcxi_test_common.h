@@ -186,6 +186,7 @@ void free_unmap_devicebuf(struct mem_window *win);
 void memcpy_device_to_host(void *dest, struct mem_window *win);
 void memcpy_host_to_device(struct mem_window *win, void *src);
 void memset_device(struct mem_window *win, int value, size_t count);
+unsigned int get_network_namespace(void);
 
 int gpu_lib_init(void);
 void gpu_lib_fini(void);
