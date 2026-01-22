@@ -417,6 +417,35 @@ CXIL_API int cxil_svc_get_vni_range(struct cxil_dev *dev, unsigned int svc_id,
 				    uint16_t *vni_min, uint16_t *vni_max);
 
 /**
+ * @brief Sets a Network namespace id for a given service.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID returned from cxil_svc_alloc
+ * @param netns The Network Namespace ID
+ *
+ * @return On success, 0 is returned and the namespace id will be set
+ *         in the service indicated by the svc_id. Otherwise, a negative
+ *         errno value is returned indicating the error.
+ *
+ */
+CXIL_API int cxil_svc_set_netns(struct cxil_dev *dev, unsigned int svc_id,
+				unsigned int netns);
+
+/**
+ * @brief Gets Network Namespace ID associated with the given service.
+ *
+ * @param dev The CXI Device
+ * @param svc_id The ID returned from cxil_svc_alloc
+ * @param_out netns The Network Namespace ID
+ *
+ * @return On success, 0 is returned and netns value will be updated with the
+ *         Network Namespace ID. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_svc_get_netns(struct cxil_dev *dev, unsigned int svc_id,
+				unsigned int *netns);
+
+/**
  * @brief Allocates a CXI LNI (Logical Network Interface) object.  An LNI is a
  *        logical group of hardware resources on a single network device which
  *        belong to a single process.

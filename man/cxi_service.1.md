@@ -163,6 +163,29 @@ cxi0
      TXQs |  1      |   1       |  0      |
      TLEs |  9      |   9       |  0      |
           ---------------------------------
+-------------------------------------------
+ ID: 3
+   LNIs/RGID          : 1
+   Enabled            : No
+   System Service     : No
+   Restricted Members : Yes
+   ---> Valid Members : netns=4026532000
+   VNIs               : 19 20 21 22
+   Restricted TCs     : Yes
+   ---> Valid TCs     : DEDICATED_ACCESS LOW_LATENCY BULK_DATA BEST_EFFORT
+   Resource Limits    : Yes
+          ---------------------------------
+          |  Max    |  Reserved |  In Use |
+          ---------------------------------
+     ACs  |  512    |   1       |  0      |
+     CTs  |  512    |   1       |  0      |
+     EQs  |  512    |   1       |  0      |
+     LEs  |  512    |   1       |  0      |
+     PTEs |  512    |   1       |  0      |
+     TGQs |  512    |   1       |  0      |
+     TXQs |  512    |   1       |  0      |
+     TLEs |  512    |   9       |  0      |
+          ---------------------------------
 
 $ cxi_service list --svc_id 1
  --------------------------

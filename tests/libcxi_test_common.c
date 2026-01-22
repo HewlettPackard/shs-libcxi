@@ -937,6 +937,19 @@ int huge_pg_setup(size_t hp_size, uint32_t npg)
 	return orig;
 }
 
+unsigned int get_network_namespace(void)
+{
+	struct stat st;
+
+	if (stat("/proc/self/ns/net", &st) < 0) {
+		cr_skip_test(
+			"failed to stat /proc/self/ns/net (no namespace support or none set?): %d:%s\n",
+			errno, strerror(errno));
+		return -1;
+	}
+	return st.st_ino; /* inode uniquely identifies the netns */
+}
+
 bool is_vm(void) {
 	int hypervisor_count;
 	FILE *fp = popen("lscpu | grep -c Hypervisor", "r");
