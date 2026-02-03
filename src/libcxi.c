@@ -35,22 +35,28 @@
  * @param cmd Command pointer
  * @param len Length of command
  * @return On success, 0. Else, negative errno.
+ * @note This function has been modified to improve readability and efficiency.
+ * - Use ssize_t for rc:
+ * 		The write system call returns a ssize_t, 
+ * 		which should be matched for type consistency.
+ * - Combine conditions for readability and efficiency:
+ * 	  By handling negative values (rc < 0) first, 
+ * 	  the condition rc != len is simpler and only applies to successful writes.
  */
 static int device_write(const struct cxil_dev_priv *dev,
-			const void *cmd, size_t len)
+						const void *cmd, size_t len) 
 {
-	int rc;
+    ssize_t rc = write(dev->fd, cmd, len);
 
-	rc = write(dev->fd, cmd, len);
-	if (rc != len) {
-		if (rc < 0)
-			return -errno;
+    if (rc < 0) {
+        return -errno; // Return the negative error code directly.
+    }
 
-		/* Truncated writes shouldn't occur. Thus, treat as an error. */
-		return -EIO;
-	}
+    if ((size_t)rc != len) {
+        return -EIO; // Handle truncated writes as an error.
+    }
 
-	return 0;
+    return 0; // Success.
 }
 
 /* Open a CXI Device */
