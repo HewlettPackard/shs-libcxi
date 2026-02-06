@@ -27,7 +27,7 @@ modprobe configfs
 mount -t configfs none /sys/kernel/config
 modprobe ptp
 modprobe iommu_v2 || modprobe amd_iommu_v2
-insmod $TOP_DIR/slingshot_base_link/cxi-sbl.ko
+insmod $TOP_DIR/slingshot_base_link/drivers/net/ethernet/hpe/sbl/cxi-sbl.ko
 insmod $TOP_DIR/sl-driver/drivers/net/ethernet/hpe/sl/cxi-sl.ko
 insmod $TOP_DIR/cxi-driver/$KO_PATH/cxi-ss1.ko disable_default_svc=0 active_qos_profile=1
 insmod $TOP_DIR/cxi-driver/$KO_PATH/cxi-user.ko
