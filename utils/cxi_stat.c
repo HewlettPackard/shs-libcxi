@@ -99,7 +99,7 @@ struct rate_cntr {
 	struct timespec ts[NUM_CNTR_READS];
 };
 
-void usage(void)
+static void usage(void)
 {
 	fprintf(stderr,
 		"cxi_stat - CXI device status utility\n"
@@ -116,7 +116,7 @@ void usage(void)
 		" -V --version          Print the version and exit\n", DEFAULT_PAUSE);
 }
 
-int copy_data_from_file(char *filename, char *param)
+static int copy_data_from_file(char *filename, char *param)
 {
 	int rc = 0;
 	FILE *fp;
@@ -139,7 +139,7 @@ int copy_data_from_file(char *filename, char *param)
 /* Searches for search_str in buffer. If it is found, strip off newline and
  * return pointer to first buffer character after search string.
  */
-const char *field_parse(char *buffer, char *search_str, char *end_str)
+static const char *field_parse(char *buffer, char *search_str, char *end_str)
 {
 	char *tmp = NULL;
 	char *idx;
@@ -238,7 +238,7 @@ static void get_port_status(struct cxi_dev *cd)
 	free(base_path);
 }
 
-float cntr_rate(struct rate_cntr r)
+static float cntr_rate(struct rate_cntr r)
 {
 	uint64_t c_delta;
 	float t_delta;
@@ -259,7 +259,7 @@ float cntr_rate(struct rate_cntr r)
 	return rate;
 }
 
-float rate_to_ber(float rate, char *speed)
+static float rate_to_ber(float rate, char *speed)
 {
 	float ber = 0;
 
@@ -288,7 +288,7 @@ float rate_to_ber(float rate, char *speed)
 	return ber;
 }
 
-int copy_file(char *f_aer, char **param)
+static int copy_file(char *f_aer, char **param)
 {
 	int rc = 0;
 	FILE *fp;
@@ -314,7 +314,7 @@ int copy_file(char *f_aer, char **param)
 	return rc;
 }
 
-int get_aer(struct cxi_dev *cd, int num_devs)
+static int get_aer(struct cxi_dev *cd, int num_devs)
 {
 	int i;
 	int rc = 0;
@@ -365,7 +365,7 @@ int get_aer(struct cxi_dev *cd, int num_devs)
 	return rc2;
 }
 
-void get_port_rates(int dev_id, struct cxi_dev *cd, unsigned int pause)
+static void get_port_rates(int dev_id, struct cxi_dev *cd, unsigned int pause)
 {
 	int i;
 	int j;
@@ -436,7 +436,7 @@ void get_port_rates(int dev_id, struct cxi_dev *cd, unsigned int pause)
 	}
 }
 
-void get_pcie_slot(struct cxi_dev *cd)
+static void get_pcie_slot(struct cxi_dev *cd)
 {
 	char buf[MAX_LEN];
 	char tp[MAX_LENX2];
@@ -456,7 +456,7 @@ void get_pcie_slot(struct cxi_dev *cd)
 	}
 }
 
-void get_network_device(struct cxi_dev *cd, int num_devs)
+static void get_network_device(struct cxi_dev *cd, int num_devs)
 {
 	glob_t globbuf;
 	int rc;
@@ -515,7 +515,7 @@ free_glob:
 	globfree(&globbuf);
 }
 
-struct cxi_dev *get_cxi_dev_status(int *n_devs, struct stat_opts opts)
+static struct cxi_dev *get_cxi_dev_status(int *n_devs, struct stat_opts opts)
 {
 	unsigned int i;
 	int n = 0;
@@ -587,7 +587,7 @@ struct cxi_dev *get_cxi_dev_status(int *n_devs, struct stat_opts opts)
 	return cdev;
 }
 
-void print_aer(char *astr)
+static void print_aer(char *astr)
 {
 	int i = 0;
 
@@ -609,7 +609,8 @@ void print_aer(char *astr)
 	}
 }
 
-void print_cxi_status(struct cxi_dev *cdev, int num_devs, struct stat_opts opts)
+static void print_cxi_status(struct cxi_dev *cdev, int num_devs,
+			     struct stat_opts opts)
 {
 	int i;
 	int j;
@@ -685,7 +686,8 @@ void print_cxi_status(struct cxi_dev *cdev, int num_devs, struct stat_opts opts)
 	}
 }
 
-void print_cxi_devs_or_macs(struct cxi_dev *cdev, int num_devs, bool print_macs)
+static void print_cxi_devs_or_macs(struct cxi_dev *cdev, int num_devs,
+				   bool print_macs)
 {
 	int i;
 

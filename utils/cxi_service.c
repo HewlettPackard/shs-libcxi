@@ -83,7 +83,7 @@ struct parser_state {
 	uint8_t netns_type;
 };
 
-void usage(void)
+static void usage(void)
 {
 	fprintf(stderr,
 		"cxi_service - CXI Service Utility\n\n"
@@ -378,8 +378,8 @@ again:
  *    value = SCALAR
  *
  */
-int consume_event(struct parser_state *s, yaml_event_t *event,
-		  struct util_opts *opts)
+static int consume_event(struct parser_state *s, yaml_event_t *event,
+			 struct util_opts *opts)
 {
 	char *val;
 	int i;

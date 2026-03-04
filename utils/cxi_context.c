@@ -39,7 +39,7 @@ static int clean_hdl_count;
 
 int s_page_size;
 
-int get_page_size(void)
+static int get_page_size(void)
 {
 	if (!s_page_size)
 		s_page_size = sysconf(_SC_PAGE_SIZE);

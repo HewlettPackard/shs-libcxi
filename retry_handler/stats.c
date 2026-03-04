@@ -327,7 +327,7 @@ const struct fuse_operations ops = {
 	.truncate	= stats_truncate,
 };
 
-void *stats_fs(void *arg)
+static void *stats_fs(void *arg)
 {
 	fuse_loop(fs_rh->stats_fuse);
 

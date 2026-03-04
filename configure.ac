@@ -53,6 +53,7 @@ pkg_CFLAGS="\
 -Wpointer-arith \
 -Wstrict-prototypes \
 -Wtype-limits \
+-Wmissing-prototypes \
 -Werror \
 "
 AC_SUBST([pkg_CFLAGS])

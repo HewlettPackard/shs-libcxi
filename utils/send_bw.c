@@ -40,7 +40,7 @@ static const char *version = "2.4.0";
 /* Increment the PUT event counter for either the next response or the next set
  * of puts
  */
-int inc_put_ct(struct util_context *util, bool rsp_is_next)
+static int inc_put_ct(struct util_context *util, bool rsp_is_next)
 {
 	int rc = 0;
 	struct cxi_context *cxi = &util->cxi;
@@ -69,7 +69,7 @@ int inc_put_ct(struct util_context *util, bool rsp_is_next)
 }
 
 /* Allocate TX resources */
-int send_bw_alloc_tx(struct util_context *util)
+static int send_bw_alloc_tx(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_ini_opts ini_opts = {};
@@ -197,7 +197,7 @@ int send_bw_alloc_tx(struct util_context *util)
 }
 
 /* Allocate RDMA RX resources */
-int send_bw_alloc_rx(struct util_context *util)
+static int send_bw_alloc_rx(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_tgt_opts tgt_opts = {};
@@ -297,7 +297,7 @@ int send_bw_alloc_rx(struct util_context *util)
 }
 
 /* Send list_size ops and wait for their ACKs/REPLYs */
-int do_single_send(struct util_context *util)
+static int do_single_send(struct util_context *util)
 {
 	int rc = 0;
 	struct cxi_context *cxi = &util->cxi;
@@ -394,7 +394,7 @@ resume_send:
 }
 
 /* Wait for single PUT response to confirm target reception of PUTs */
-int do_single_recv_rsp(struct util_context *util)
+static int do_single_recv_rsp(struct util_context *util)
 {
 	int rc = 0;
 	struct cxi_context *cxi = &util->cxi;
@@ -425,7 +425,7 @@ int do_single_recv_rsp(struct util_context *util)
 }
 
 /* Receive list_size PUTs and send PUT response to confirm reception */
-int do_single_recv(struct util_context *util)
+static int do_single_recv(struct util_context *util)
 {
 	int rc = 0;
 	struct cxi_context *cxi = &util->cxi;
@@ -531,7 +531,7 @@ int do_single_recv(struct util_context *util)
 }
 
 /* Send list_size ops and wait for their ACKs/REPLYs */
-int do_single_iteration(struct util_context *util)
+static int do_single_iteration(struct util_context *util)
 {
 	int rc = 0;
 	struct ctrl_connection *ctrl = &util->ctrl;
@@ -561,7 +561,7 @@ int do_single_iteration(struct util_context *util)
 }
 
 /* Complete any unfinished RDZV transfers */
-int wait_for_rdzv_done(struct util_context *util)
+static int wait_for_rdzv_done(struct util_context *util)
 {
 	int rc = 0;
 	int retries = 0;
@@ -597,7 +597,7 @@ int wait_for_rdzv_done(struct util_context *util)
 	return rc;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("Usage:\n");
 	printf("  cxi_send_bw [-d DEV] [-p PORT]\n");

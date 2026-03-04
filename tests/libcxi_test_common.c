@@ -169,7 +169,7 @@ void domain_teardown(void)
 	cp_teardown();
 }
 
-void *alloc_cq_buf(size_t len)
+static void *alloc_cq_buf(size_t len)
 {
 	int order = ffs(len) - 1;
 	void *buffer;
@@ -194,7 +194,7 @@ void *alloc_cq_buf(size_t len)
 	return buffer;
 }
 
-void cq_setup(size_t user_buffer_len)
+static void cq_setup(size_t user_buffer_len)
 {
 	int rc;
 	struct cxi_cq_alloc_opts_buf cq_opts = {};
@@ -225,7 +225,7 @@ void cq_setup(size_t user_buffer_len)
 
 }
 
-void final_setup(void)
+static void final_setup(void)
 {
 	int ret;
 

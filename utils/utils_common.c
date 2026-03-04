@@ -513,51 +513,6 @@ static int print_bw_results(struct util_context *util, uint64_t elapsed)
 	return rc;
 }
 
-/*
- * Calculate a reasonable post-run timeout value based on elapsed run time.
- * Allow the default post-run timeout to be overridden by specifying the
- * CXIUTIL_POST_RUN_TIMEOUT environment variable.
- */
-uint64_t get_post_run_timeout(uint64_t elapsed)
-{
-	uint64_t postrun_timeout;
-	char *pr_timeout_str;
-	char *endptr;
-	long pr_timeout_secs;
-
-	/*
-	 * Use a reasonable timeout that allows enough time for
-	 * short running jobs to complete while limiting the
-	 * time to wait for long running jobs to 20% of elapsed time.
-	 */
-	pr_timeout_str = getenv("CXIUTIL_POST_RUN_TIMEOUT");
-	if (pr_timeout_str) {
-		errno = 0;
-		pr_timeout_secs = (uint64_t)strtol(pr_timeout_str, &endptr, 10);
-		if (*endptr != 0 || errno != 0 || pr_timeout_secs < 0 || pr_timeout_secs > INT_MAX) {
-			postrun_timeout = DFLT_HANDSHAKE_TIMEOUT;
-			fprintf(stderr,
-				"Invalid CXIUTIL_POST_RUN_TIMEOUT value found: %s.\n",
-				pr_timeout_str);
-			fprintf(stderr,
-				"Using the default timeout of %ld usec.\n",
-				postrun_timeout);
-		} else if (pr_timeout_secs == 0) {
-			postrun_timeout = NO_TIMEOUT;
-			fprintf(stdout, "Disabling post-run timeout.\n");
-		} else {
-			postrun_timeout = pr_timeout_secs * SEC2USEC;
-			fprintf(stdout,
-				"Overriding default post-run timeout to %ld usec.\n",
-				postrun_timeout);
-		}
-	} else {
-		postrun_timeout = fmax(DFLT_HANDSHAKE_TIMEOUT, elapsed/5);
-	}
-
-	return postrun_timeout;
-}
-
 /* Repeatedly call the provided do_iter function until the specified number of
  * iterations or duration has passed. Then calculate bandwidth.
  */
@@ -1108,7 +1063,7 @@ int get_hugepage_type(char *type)
 }
 
 /* Return the number of free hugepages of size hp_size_in_bytes */
-uint32_t get_free_hugepages(size_t hp_size_in_bytes)
+static uint32_t get_free_hugepages(size_t hp_size_in_bytes)
 {
 	int rc;
 	uint32_t total = 0;

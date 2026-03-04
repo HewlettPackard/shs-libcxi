@@ -1669,7 +1669,7 @@ cdb_query_device(struct cmis_fw_update *fwu)
 
 /* Display usage information
  */
-void help(const char *path)
+static void help(const char *path)
 {
 	printf("%s Version %s\n", path, APPLICATION_VERSION);
 	printf("CMIS CDB Firmware Update Utility for Slingshot NICs\n");

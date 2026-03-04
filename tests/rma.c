@@ -23,7 +23,7 @@ const char *script_path = "profile.sh";
 TestSuite(rma, .init = data_xfer_setup, .fini = data_xfer_teardown);
 TestSuite(rma_cq, .fini = cq_buf_data_xfer_teardown);
 
-void excp_profile_teardown(void)
+static void excp_profile_teardown(void)
 {
 	char script_cmd[256];
 	int return_code;
@@ -35,7 +35,7 @@ void excp_profile_teardown(void)
 		     "excp_profile_teardown() failed %d", return_code);
 }
 
-void excp_profile_setup(void)
+static void excp_profile_setup(void)
 {
 	char script_cmd[256];
 	int return_code;
@@ -48,7 +48,7 @@ void excp_profile_setup(void)
 }
 
 /* Test basic RMA Put command */
-void rma_simple_put(void)
+static void rma_simple_put(void)
 {
 	struct mem_window src_mem;
 	struct mem_window dst_mem;
@@ -96,7 +96,7 @@ void rma_simple_put(void)
 }
 
 /* Test to validate RMA Put command after an exclusive cp modify call */
-void rma_put_with_cp_modify(void)
+static void rma_put_with_cp_modify(void)
 {
 	struct mem_window src_mem;
 	struct mem_window dst_mem;
@@ -280,7 +280,7 @@ Test(rma, simple_get, .timeout = 15, .disabled = GET_DISABLED)
 	free_iobuf(&src_mem);
 }
 
-void data_xfer_setup_eqpt(void)
+static void data_xfer_setup_eqpt(void)
 {
 	transmit_eq_attr.flags = target_eq_attr.flags = CXI_EQ_PASSTHROUGH;
 	data_xfer_setup();

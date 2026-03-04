@@ -29,7 +29,7 @@ static const char *name = "cxi_write_bw";
 static const char *version = "2.4.0";
 
 /* Allocate RDMA Initiator resources */
-int write_bw_alloc_ini(struct util_context *util)
+static int write_bw_alloc_ini(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_ini_opts ini_opts = {};
@@ -121,7 +121,7 @@ int write_bw_alloc_ini(struct util_context *util)
 }
 
 /* Allocate RDMA Target resources */
-int write_bw_alloc_tgt(struct util_context *util)
+static int write_bw_alloc_tgt(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_tgt_opts tgt_opts = {};
@@ -159,7 +159,7 @@ int write_bw_alloc_tgt(struct util_context *util)
 }
 
 /* Send list_size writes and wait for their ACKs */
-int do_single_iteration(struct util_context *util)
+static int do_single_iteration(struct util_context *util)
 {
 	int rc = 0;
 	int i;
@@ -220,7 +220,7 @@ int do_single_iteration(struct util_context *util)
 	return rc;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("Usage:\n");
 	printf("  cxi_write_bw [-d DEV] [-p PORT]\n");

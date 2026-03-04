@@ -56,13 +56,13 @@ static uint64_t get_odp_request_diff(void)
 	return diff;
 }
 
-void odp_setup(void)
+static void odp_setup(void)
 {
 	data_xfer_setup();
 	odp_request_count = get_odp_request_count();
 }
 
-void odp_teardown(void)
+static void odp_teardown(void)
 {
 	data_xfer_teardown();
 }
@@ -160,7 +160,7 @@ static void alloc_map_buf(size_t len, struct mem_window *win, int flags)
 	cr_assert_eq(rc, 0, "cxil_map() failed %d", rc);
 }
 
-void do_transfer(struct mem_window *src, struct mem_window *dest)
+static void do_transfer(struct mem_window *src, struct mem_window *dest)
 {
 	int i;
 	int ret;
@@ -217,7 +217,7 @@ void do_transfer(struct mem_window *src, struct mem_window *dest)
 	ptlte_teardown();
 }
 
-void odp_check_event_rc(struct cxi_eq *evtq, int rc)
+static void odp_check_event_rc(struct cxi_eq *evtq, int rc)
 {
 	const union c_event *event;
 
@@ -596,7 +596,7 @@ error:
 
 int pagemap_fd;
 
-void is_hp(void *ptr, int hp_order)
+static void is_hp(void *ptr, int hp_order)
 {
 	int i;
 	uint64_t ent;
@@ -643,7 +643,7 @@ void is_hp(void *ptr, int hp_order)
 	cr_log_info("mmap'd %d hugepage\n", hp_order);
 }
 
-int thp(int nr_hugepages)
+static int thp(int nr_hugepages)
 {
 	int rc;
 	void *ptr;
@@ -1091,7 +1091,7 @@ Test(map_xfer, hugepage)
 	huge_pg_setup(ONE_GB, hp_cnt);
 }
 
-void hugepage_test(int page_shift, int huge_shift, void *addr)
+static void hugepage_test(int page_shift, int huge_shift, void *addr)
 {
 	int rc;
 	size_t len = 8UL * 1024 * 1024;
@@ -1187,7 +1187,8 @@ Test(map_hp, hugepage_suite, .timeout = 15)
 	data_xfer_teardown();
 }
 
-void mmap_map(struct mem_window *win, size_t len, int hp_order, int map_flags)
+static void mmap_map(struct mem_window *win, size_t len,
+		     int hp_order, int map_flags)
 {
 	int rc;
 	int prot = PROT_WRITE | PROT_READ;
@@ -1213,7 +1214,7 @@ void mmap_map(struct mem_window *win, size_t len, int hp_order, int map_flags)
 	cr_assert_eq(rc, 0, "cxil_map() failed %d", rc);
 }
 
-void unmap_mem(struct mem_window *win)
+static void unmap_mem(struct mem_window *win)
 {
 	int rc = cxil_unmap(win->md);
 
@@ -1264,7 +1265,7 @@ Test(map_hp, hugepage_suite2, .timeout = 15)
 #define HIGH_BASE 0x30000000000
 #define HIGH_BPTR ((void *)HIGH_BASE)
 
-int mmap_hp(struct mem_window *win, void *addr, int prot, size_t len,
+static int mmap_hp(struct mem_window *win, void *addr, int prot, size_t len,
 	    int hp_order, bool touch)
 {
 	int hp_cnt = 0;
@@ -1304,7 +1305,8 @@ int mmap_hp(struct mem_window *win, void *addr, int prot, size_t len,
 	return hp_cnt;
 }
 
-void reg_win(struct mem_window *win, struct cxi_md_hints *hints, int flags)
+static void reg_win(struct mem_window *win, struct cxi_md_hints *hints,
+		    int flags)
 {
 	int rc;
 
@@ -1458,7 +1460,7 @@ Test(map_hp, odp_hp2)
 	data_xfer_teardown();
 }
 
-void dump_vma_range(const uintptr_t addr, size_t len)
+static void dump_vma_range(const uintptr_t addr, size_t len)
 {
 	int ret;
 	FILE *file;
@@ -1993,7 +1995,7 @@ Test(map_xfer, odp_fault4)
 	munmap(dst_mem.buffer, dst_mem.length);
 }
 
-size_t get_ac_size(void)
+static size_t get_ac_size(void)
 {
 	int fd;
 	int ret;

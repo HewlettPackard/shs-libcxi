@@ -128,7 +128,7 @@ static size_t header_len;
 
 volatile sig_atomic_t run_finished;
 
-void sigusr1_handler(int signum)
+static void sigusr1_handler(int signum)
 {
 	run_finished = 1;
 }
@@ -193,7 +193,7 @@ struct sensor_readings {
 };
 
 /* Use two semaphores to synchronize the parent and children processes */
-int synchronize(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
+static int synchronize(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 {
 	int rc = 0;
 	int i;
@@ -244,7 +244,7 @@ int synchronize(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 	return rc;
 }
 
-int get_board_type(uint32_t dev_id)
+static int get_board_type(uint32_t dev_id)
 {
 	int rc = 0;
 	char path[MAX_LEN];
@@ -285,8 +285,8 @@ int get_board_type(uint32_t dev_id)
 	return rc;
 }
 
-sensors_subfeature const *get_subfeature(sensors_chip_name const *chip,
-					 sensors_feature const *feat)
+static sensors_subfeature const *get_subfeature(sensors_chip_name const *chip,
+						sensors_feature const *feat)
 {
 	/* Match found, process getting sub feature  */
 	sensors_subfeature const *subf;
@@ -300,13 +300,13 @@ sensors_subfeature const *get_subfeature(sensors_chip_name const *chip,
 	return NULL;
 }
 
-int failed_get_subfeature(const char *name)
+static int failed_get_subfeature(const char *name)
 {
 	fprintf(stderr, "Failed to get subfeature %s\n", name);
 	return -1;
 }
 
-int open_sensor_files(struct heatsink_ctx *ctx, uint32_t dev_id)
+static int open_sensor_files(struct heatsink_ctx *ctx, uint32_t dev_id)
 {
 	int rc = 0;
 	char sensor[MAX_LEN];
@@ -462,13 +462,13 @@ int open_sensor_files(struct heatsink_ctx *ctx, uint32_t dev_id)
 	return rc;
 }
 
-void close_sensor_files(struct heatsink_ctx *ctx)
+static void close_sensor_files(struct heatsink_ctx *ctx)
 {
 	sensors_cleanup();
 }
 
 /* Allocate resources */
-int heatsink_alloc(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
+static int heatsink_alloc(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 {
 	int rc;
 	int i;
@@ -642,8 +642,9 @@ int heatsink_alloc(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 }
 
 /* Send list_size writes and wait for their ACKs */
-int do_single_iteration(struct heatsink_ctx *ctx, struct heatsink_opts *opts,
-			uint64_t buf_granularity)
+static int do_single_iteration(struct heatsink_ctx *ctx,
+			       struct heatsink_opts *opts,
+			       uint64_t buf_granularity)
 {
 	int rc = 0;
 	struct cxi_context *cxi = &ctx->cxi;
@@ -782,7 +783,8 @@ int do_single_iteration(struct heatsink_ctx *ctx, struct heatsink_opts *opts,
 }
 
 /* Get response count for calculating bandwidth */
-uint64_t get_pkt_count(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
+static uint64_t get_pkt_count(struct heatsink_ctx *ctx,
+			      struct heatsink_opts *opts)
 {
 	int rc;
 	uint64_t count = 0;
@@ -807,9 +809,9 @@ uint64_t get_pkt_count(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 }
 
 /* Read a single sensor reading sensors data */
-int get_sensor_reading(sensors_chip_name const *chip,
-		       sensors_subfeature const *subf, int *rd,
-		       const char *name, bool skip_err)
+static int get_sensor_reading(sensors_chip_name const *chip,
+			      sensors_subfeature const *subf, int *rd,
+			      const char *name, bool skip_err)
 {
 	int rc = 0;
 	double val;
@@ -828,7 +830,8 @@ int get_sensor_reading(sensors_chip_name const *chip,
 }
 
 /* Get the latest sensor readings */
-int get_sensor_readings(struct heatsink_ctx *ctx, struct sensor_readings *rd)
+static int get_sensor_readings(struct heatsink_ctx *ctx,
+			       struct sensor_readings *rd)
 {
 	int rc;
 
@@ -910,8 +913,8 @@ int get_sensor_readings(struct heatsink_ctx *ctx, struct sensor_readings *rd)
 }
 
 /* Print results and return 0 if passing or 1 if failing */
-int print_results(struct sensor_readings max, long double bw_avg,
-		  int board_type)
+static int print_results(struct sensor_readings max, long double bw_avg,
+			 int board_type)
 {
 	int rc = 0;
 	char criteria[MAX_LEN];
@@ -1041,7 +1044,7 @@ int print_results(struct sensor_readings max, long double bw_avg,
 /* Monitor temperature and power sensors as well as Put bandwidth. Exit early if
  * the temperature gets too high.
  */
-int monitor_sensors(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
+static int monitor_sensors(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 {
 	int rc;
 	uint64_t start_time;
@@ -1212,7 +1215,8 @@ int monitor_sensors(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 /* For children processes, perform writes until signalled by the parent to stop.
  * For the parent process, monitor sensors for the given duration.
  */
-int run_heatsink_check(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
+static int run_heatsink_check(struct heatsink_ctx *ctx,
+			      struct heatsink_opts *opts)
 {
 	int rc = 0;
 	uint64_t buf_granularity;
@@ -1238,7 +1242,7 @@ int run_heatsink_check(struct heatsink_ctx *ctx, struct heatsink_opts *opts)
 /* Parse the user-provided processor affinities. We assume the user only
  * provided online processors.
  */
-int parse_proc_affinities(char *cpu_list, int nprocs, int **affinities)
+static int parse_proc_affinities(char *cpu_list, int nprocs, int **affinities)
 {
 	long range_start;
 	long num;
@@ -1302,7 +1306,7 @@ error:
 	return 0;
 }
 
-int compare_ints(const void *a, const void *b)
+static int compare_ints(const void *a, const void *b)
 {
 	int arg1 = *(const int *)a;
 	int arg2 = *(const int *)b;
@@ -1314,8 +1318,8 @@ int compare_ints(const void *a, const void *b)
 	return 0;
 }
 
-int maybe_read_int_from_file(const char *path_fmt, int path_arg, int *output,
-			     bool allow_zero_matches)
+static int maybe_read_int_from_file(const char *path_fmt, int path_arg,
+				    int *output, bool allow_zero_matches)
 {
 	int rc = 0;
 	char path[MAX_LEN];
@@ -1345,7 +1349,7 @@ int maybe_read_int_from_file(const char *path_fmt, int path_arg, int *output,
 	return rc;
 }
 
-int read_int_from_file(const char *path_fmt, int path_arg, int *output)
+static int read_int_from_file(const char *path_fmt, int path_arg, int *output)
 {
 	return maybe_read_int_from_file(path_fmt, path_arg, output, false);
 }
@@ -1366,8 +1370,8 @@ int read_int_from_file(const char *path_fmt, int path_arg, int *output)
  * cxi2: 16, 20, 24, 28, 18, 22, 26, 30
  * cxi3: 17, 21, 25, 29, 19, 23, 27, 31
  */
-int get_proc_affinities(uint32_t dev_id, int nprocs, int **affinities,
-			char *aff_str)
+static int get_proc_affinities(uint32_t dev_id, int nprocs, int **affinities,
+			       char *aff_str)
 {
 	int rc;
 	int dev_numa;
@@ -1611,7 +1615,7 @@ done:
 	return aff_len;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("Monitor Cassini NIC temperature and power consumption while stressing\n");
 	printf("the chip with RDMA writes.\n");

@@ -97,7 +97,7 @@ static int h_memcpy(void *dst, const void *src, size_t count,
 	return 0;
 }
 
-int h_put_dmabuf_fd(int dmabuf_fd)
+static int h_put_dmabuf_fd(int dmabuf_fd)
 {
 	hsa_status_t rc;
 

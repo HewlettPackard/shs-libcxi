@@ -420,7 +420,6 @@ void parse_common_opt(char c, struct util_opts *opts, const char *name,
 void parse_server_addr(int argc, char **argv, struct ctrl_connection *ctrl,
 		       uint16_t port);
 int get_hugepage_type(char *type);
-uint32_t get_free_hugepages(size_t hp_size_in_bytes);
 int get_hugepages_needed(struct util_opts *opts, bool ini_buf, bool tgt_buf);
 void print_loc_opts(struct util_opts *opts, bool is_server);
 void print_hugepage_opts(struct util_opts *opts, int num_hp);

@@ -29,7 +29,7 @@ static const char *name = "cxi_read_bw";
 static const char *version = "2.4.0";
 
 /* Allocate RDMA Initiator resources */
-int read_bw_alloc_ini(struct util_context *util)
+static int read_bw_alloc_ini(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_ini_opts ini_opts = {};
@@ -85,7 +85,7 @@ int read_bw_alloc_ini(struct util_context *util)
 }
 
 /* Allocate RDMA Target resources */
-int read_bw_alloc_tgt(struct util_context *util)
+static int read_bw_alloc_tgt(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_tgt_opts tgt_opts = {};
@@ -123,7 +123,7 @@ int read_bw_alloc_tgt(struct util_context *util)
 }
 
 /* Send list_size reads and wait for their REPLY events */
-int do_single_iteration(struct util_context *util)
+static int do_single_iteration(struct util_context *util)
 {
 	int rc = 0;
 	int i;
@@ -165,7 +165,7 @@ int do_single_iteration(struct util_context *util)
 	return rc;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("Usage:\n");
 	printf("  cxi_read_bw [-d DEV] [-p PORT]\n");

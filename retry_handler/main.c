@@ -1851,8 +1851,8 @@ static void stop_rh(struct retry_handler *rh)
  * C_PCT_CFG_TIMING. Returned timeout is in microseconds, with a
  * minimum of 1.
  */
-unsigned int get_epoch_timeout(struct retry_handler *rh,
-			       unsigned int epoch_sel)
+static unsigned int get_epoch_timeout(struct retry_handler *rh,
+				      unsigned int epoch_sel)
 {
 	float timeout;
 
@@ -1880,7 +1880,7 @@ unsigned int get_epoch_timeout(struct retry_handler *rh,
  * estimate their values in microseconds. Also sets up
  * some internal RH time values.
  */
-void setup_timing(struct retry_handler *rh)
+static void setup_timing(struct retry_handler *rh)
 {
 
 	union c_pct_cfg_timing pct_cfg_timing;

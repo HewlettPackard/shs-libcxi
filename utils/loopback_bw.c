@@ -27,7 +27,7 @@ static const char *name = "cxi_gpu_loopback_bw";
 static const char *version = "1.5.1";
 
 /* Allocate TX resources */
-int bw_alloc_tx(struct util_context *util)
+static int bw_alloc_tx(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_ini_opts ini_opts = {};
@@ -84,7 +84,7 @@ int bw_alloc_tx(struct util_context *util)
 }
 
 /* Allocate RX resources */
-int bw_alloc_rx(struct util_context *util)
+static int bw_alloc_rx(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_tgt_opts tgt_opts = {};
@@ -124,7 +124,7 @@ int bw_alloc_rx(struct util_context *util)
 }
 
 /* Send cmds_per_iter writes and wait for their ACKs */
-int do_single_iteration(struct util_context *util)
+static int do_single_iteration(struct util_context *util)
 {
 	int rc = 0;
 	struct cxi_context *cxi = &util->cxi;
@@ -157,7 +157,7 @@ int do_single_iteration(struct util_context *util)
 	return rc;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("Usage:\n");
 	printf("  cxi_loopback_bw [OPTIONS]\n");

@@ -40,7 +40,7 @@ static const char *name = "cxi_send_lat";
 static const char *version = "2.3.0";
 
 /* Allocate resources */
-int send_lat_alloc(struct util_context *util)
+static int send_lat_alloc(struct util_context *util)
 {
 	int rc;
 	struct cxi_ctx_ini_opts ini_opts = {};
@@ -355,7 +355,7 @@ static int do_server(struct util_context *util)
 }
 
 /* Do a single send and measure the time until its PUT response arrives */
-int do_single_iteration(struct util_context *util)
+static int do_single_iteration(struct util_context *util)
 {
 	int rc;
 	int test_rc;
@@ -427,7 +427,7 @@ int do_single_iteration(struct util_context *util)
 	return 0;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("Usage:\n");
 	printf("  cxi_send_lat [-d DEV] [-p PORT]\n");

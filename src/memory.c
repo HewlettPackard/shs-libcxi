@@ -187,7 +187,7 @@ static int cxil_nl_cof_cb(struct nl_msg *msg, void *data)
 }
 
 /* Caller should hold mm_mutex */
-bool get_copy_on_fork(void)
+static bool get_copy_on_fork(void)
 {
 	struct nl_sock *nl;
 	int ret;

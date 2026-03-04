@@ -45,7 +45,7 @@ struct cxi_svc_desc svc_desc = {
 };
 struct cxi_rsrc_use rsrc_use = {};
 
-int get_rgids_avail(void)
+static int get_rgids_avail(void)
 {
 	int rc;
 	FILE *fp;
@@ -62,7 +62,7 @@ int get_rgids_avail(void)
 	return rgids;
 }
 
-void rgid_teardown(struct rgid_objs *obj)
+static void rgid_teardown(struct rgid_objs *obj)
 {
 	int ret;
 
@@ -112,7 +112,7 @@ void rgid_teardown(struct rgid_objs *obj)
 	obj->lni = NULL;
 }
 
-void rgid_setup(struct rgid_objs *obj)
+static void rgid_setup(struct rgid_objs *obj)
 {
 	int ret;
 	struct cxi_cq_alloc_opts cq_opts;
@@ -361,7 +361,7 @@ static void rgid_append_le(struct rgid_objs *obj,
 	cxi_cq_ring(obj->target_cmdq);
 }
 
-void rgid_append_le_sync(struct rgid_objs *obj,
+static void rgid_append_le_sync(struct rgid_objs *obj,
 			 const struct cxil_pte *pte,
 			 struct mem_window *mem_win,
 			 enum c_ptl_list list,
@@ -388,7 +388,7 @@ void rgid_append_le_sync(struct rgid_objs *obj,
 		    event);
 }
 
-void rgid_do_put_sync(struct rgid_objs *obj, struct mem_window mem_win,
+static void rgid_do_put_sync(struct rgid_objs *obj, struct mem_window mem_win,
 		      size_t len, uint64_t r_off, uint64_t l_off,
 		      unsigned int pid, uint32_t pid_idx, bool restricted,
 		      uint64_t match_bits, uint64_t user_ptr,
@@ -425,8 +425,8 @@ void rgid_do_put_sync(struct rgid_objs *obj, struct mem_window mem_win,
 	process_eqe(obj->transmit_evtq, EQE_INIT_SHORT, C_EVENT_ACK, 0, NULL);
 }
 
-void rgid_unlink_le(struct rgid_objs *obj, const struct cxil_pte *pte,
-		  enum c_ptl_list list, uint32_t buffer_id)
+static void rgid_unlink_le(struct rgid_objs *obj, const struct cxil_pte *pte,
+			   enum c_ptl_list list, uint32_t buffer_id)
 {
 	union c_cmdu cmd = {};
 	int rc;
@@ -442,8 +442,9 @@ void rgid_unlink_le(struct rgid_objs *obj, const struct cxil_pte *pte,
 	cxi_cq_ring(obj->target_cmdq);
 }
 
-void rgid_unlink_le_sync(struct rgid_objs *obj, const struct cxil_pte *pte,
-		       enum c_ptl_list list, uint32_t buffer_id)
+static void rgid_unlink_le_sync(struct rgid_objs *obj,
+				const struct cxil_pte *pte,
+				enum c_ptl_list list, uint32_t buffer_id)
 {
 	rgid_unlink_le(obj, pte, list, buffer_id);
 
@@ -452,7 +453,7 @@ void rgid_unlink_le_sync(struct rgid_objs *obj, const struct cxil_pte *pte,
 		    NULL);
 }
 
-void simple_put(void)
+static void simple_put(void)
 {
 	int i;
 	int pid_idx = 0;

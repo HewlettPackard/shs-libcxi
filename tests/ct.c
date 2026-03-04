@@ -26,7 +26,7 @@ Test(counting_event, doorbell_inc)
 	expect_ct_values(ct, success, failure);
 }
 
-void cntr_read(struct cxi_cq *cmdq)
+static void cntr_read(struct cxi_cq *cmdq)
 {
 	int rc;
 	struct c_ct_cmd cmd = {
@@ -51,13 +51,8 @@ Test(counting_event, doorbell_inc_2)
 	expect_ct_values(ct, success * 2, 0);
 }
 
-void get_mmio_addr(struct cxi_ct *ct, void **addr, size_t *len)
-{
-	*addr = ct->doorbell;
-	*len = sizeof(ct->doorbell);
-}
-
-void wait_wb(struct c_ct_writeback *wb, uint64_t success, uint8_t failure)
+static void wait_wb(struct c_ct_writeback *wb,
+		    uint64_t success, uint8_t failure)
 {
 	time_t timeout;
 
@@ -116,7 +111,7 @@ Test(counting_event, invalid_alignment)
 }
 
 #if defined(HAVE_HIP_SUPPORT) || defined(HAVE_CUDA_SUPPORT)
-void device_ct_setup(void)
+static void device_ct_setup(void)
 {
 	int ret;
 	struct cxi_cq_alloc_opts cq_opts = {
@@ -139,7 +134,7 @@ void device_ct_setup(void)
 
 }
 
-void device_ct_teardown(void)
+static void device_ct_teardown(void)
 {
 	int ret;
 
@@ -179,8 +174,8 @@ Test(device_ct, no_device)
 	free(wb);
 }
 
-int wait_ct_values_device(struct cxi_ct *ct, uint64_t *success,
-			     uint64_t *failure)
+static int wait_ct_values_device(struct cxi_ct *ct, uint64_t *success,
+				 uint64_t *failure)
 {
 	time_t timeout;
 	struct c_ct_writeback lwb;
