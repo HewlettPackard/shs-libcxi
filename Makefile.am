@@ -109,7 +109,7 @@ utils_cxi_dump_csrs_SOURCES = utils/cxi_dump_csrs.c
 utils_cxi_dump_csrs_LDADD = src/libcxi.la
 utils/cxi_dump_csrs.c: utils/cxi_dump_csrs.h
 utils/cxi_dump_csrs.h: utils/cxi_dump_csrs.py
-	utils/cxi_dump_csrs.py > utils/cxi_dump_csrs.h
+	CASSINI_CSR_DEFS=$(cassinicsrdefs) utils/cxi_dump_csrs.py > utils/cxi_dump_csrs.h
 
 utils_dgchs_fw_SOURCES = utils/dgchs_fw.c \
 	utils/dgchs_i2c.c
