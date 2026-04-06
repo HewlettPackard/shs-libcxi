@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sched.h>
 
 #include "libcxi_test_common.h"
 #include "libcxi.h"
@@ -1294,4 +1295,461 @@ Test(svc, svc_demo)
 			res_le, info->num_les - res_le);
 
 	cxil_free_svc_list(list);
+}
+
+/*
+ * Test: svc_le_hw_read
+ *
+ * Validates that LE in-use counts returned by cxil_get_svc_rsrc_use() are
+ * read from hardware (via cass_get_le_in_use), not from stale cached values.
+ *
+ * Flow:
+ *   1. Allocate a service with LE reservations + supporting resources
+ *   2. Verify baseline LE in_use == 0
+ *   3. Append N LEs to a PTE overflow list -> each consumes 1 LE in hardware
+ *   4. Verify LE in_use == N
+ *   5. Unlink all LEs
+ *   6. Verify LE in_use == 0
+ */
+Test(svc, svc_le_hw_read)
+{
+	int rc, i;
+	int num_les = 3;
+	size_t buf_len;
+	void *eq_buf;
+	struct cxi_md *eq_buf_md;
+	struct cxi_eq_attr eq_attr = {};
+	struct cxi_eq *tgt_evtq;
+	struct cxi_cq *tgt_cmdq;
+	struct cxi_pt_alloc_opts pt_opts = {};
+	struct cxil_pte *pte;
+	struct cxil_pte_map *pte_map;
+	struct cxi_rsrc_use rsrc_use = {};
+	struct mem_window le_mem;
+	struct cxil_wait_obj *wobj;
+	union c_cmdu cmd = {};
+	const union c_event *event;
+	struct cxi_cq *saved_target_cmdq = target_cmdq;
+	struct cxi_eq *saved_target_evtq = target_evtq;
+
+	struct cxi_cq_alloc_opts cq_opts = {
+		.count = 1024,
+		.flags = 0,
+	};
+	struct cxi_rsrc_limits limits = {
+		.les = {
+			.max = 16384,
+			.res = 128,
+		},
+		.eqs = {
+			.max = 4,
+			.res = 2,
+		},
+		.ptes = {
+			.max = 4,
+			.res = 1,
+		},
+		.tgqs = {
+			.max = 4,
+			.res = 1,
+		},
+		.acs = {
+			.max = 2,
+			.res = 1,
+		},
+	};
+	struct cxi_svc_desc svc_desc = {
+		.resource_limits = true,
+		.limits = limits,
+		.restricted_vnis = 1,
+		.num_vld_vnis = 1,
+		.vnis[0] = 32,
+	};
+
+	if (dev->info.is_vf)
+		cr_skip("LE/TLE reservation not supported in VFs");
+
+	/* Allocate SVC */
+	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc() failed rc:%d", rc);
+	svc_desc.svc_id = rc;
+
+	/* Allocate LNI */
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_alloc_lni() failed rc:%d", rc);
+
+	/* Allocate CP */
+	rc = cxil_alloc_trig_cp(lni, svc_desc.vnis[0], CXI_TC_BEST_EFFORT,
+				CXI_TC_TYPE_DEFAULT, NON_TRIG_LCID, &cp);
+	cr_assert_eq(rc, 0, "cxil_alloc_trig_cp() failed rc:%d", rc);
+
+	/* Allocate domain */
+	rc = cxil_alloc_domain(lni, svc_desc.vnis[0], C_PID_ANY, &domain);
+	cr_assert_eq(rc, 0, "cxil_alloc_domain() failed rc:%d", rc);
+
+	/* Allocate wait object */
+	rc = cxil_alloc_wait_obj(lni, &wobj);
+	cr_assert_eq(rc, 0, "cxil_alloc_wait_obj() failed rc:%d", rc);
+
+	/* Allocate target EQ */
+	buf_len = s_page_size * 2;
+	eq_buf = aligned_alloc(s_page_size, buf_len);
+	cr_assert(eq_buf);
+	memset(eq_buf, 0, buf_len);
+
+	rc = cxil_map(lni, eq_buf, buf_len,
+		      CXI_MAP_PIN | CXI_MAP_READ | CXI_MAP_WRITE,
+		      NULL, &eq_buf_md);
+	cr_assert_eq(rc, 0, "cxil_map() for EQ buf failed rc:%d", rc);
+
+	eq_attr.queue = eq_buf;
+	eq_attr.queue_len = buf_len;
+	rc = cxil_alloc_evtq(lni, eq_buf_md, &eq_attr, wobj, wobj,
+			     &tgt_evtq);
+	cr_assert_eq(rc, 0, "cxil_alloc_evtq() failed rc:%d", rc);
+
+	/* Allocate target CQ */
+	rc = cxil_alloc_cmdq(lni, NULL, &cq_opts, &tgt_cmdq);
+	cr_assert_eq(rc, 0, "cxil_alloc_cmdq() failed rc:%d", rc);
+
+	/* Point the helper globals at this test's queues */
+	target_cmdq = tgt_cmdq;
+	target_evtq = tgt_evtq;
+
+	/* Allocate and enable PTE */
+	pt_opts.is_matching = false;
+	rc = cxil_alloc_pte(lni, tgt_evtq, &pt_opts, &pte);
+	cr_assert_eq(rc, 0, "cxil_alloc_pte() failed rc:%d", rc);
+
+	rc = cxil_map_pte(pte, domain, 0, false, &pte_map);
+	cr_assert_eq(rc, 0, "cxil_map_pte() failed rc:%d", rc);
+
+	cmd.set_state.command.opcode = C_CMD_TGT_SETSTATE;
+	cmd.set_state.ptlte_index = pte->ptn;
+	cmd.set_state.ptlte_state = C_PTLTE_ENABLED;
+	rc = cxi_cq_emit_target(tgt_cmdq, &cmd);
+	cr_assert_eq(rc, 0, "emit setstate failed rc:%d", rc);
+	cxi_cq_ring(tgt_cmdq);
+
+	while (!(event = cxi_eq_get_event(tgt_evtq)))
+		sched_yield();
+	cr_assert_eq(event->hdr.event_type, C_EVENT_STATE_CHANGE);
+	cxi_eq_ack_events(tgt_evtq);
+
+	/* Prepare LE buffer */
+	le_mem.length = s_page_size;
+	le_mem.buffer = aligned_alloc(s_page_size, le_mem.length);
+	cr_assert(le_mem.buffer);
+	memset(le_mem.buffer, 0, le_mem.length);
+
+	rc = cxil_map(lni, le_mem.buffer, le_mem.length,
+		      CXI_MAP_PIN | CXI_MAP_READ | CXI_MAP_WRITE,
+		      NULL, &le_mem.md);
+	cr_assert_eq(rc, 0, "cxil_map() for LE buf failed rc:%d", rc);
+
+	/* Verify baseline: LE in_use == 0 */
+	rc = cxil_get_svc_rsrc_use(dev, svc_desc.svc_id, &rsrc_use);
+	cr_assert_eq(rc, 0, "cxil_get_svc_rsrc_use() baseline failed rc:%d",
+		     rc);
+	cr_assert_eq(rsrc_use.in_use[CXI_RSRC_TYPE_LE], 0,
+		     "Baseline LE in_use expected 0, got %u",
+		     rsrc_use.in_use[CXI_RSRC_TYPE_LE]);
+
+	/* Append N LEs */
+	for (i = 0; i < num_les; i++) {
+		append_le_sync(pte, &le_mem, C_PTL_LIST_OVERFLOW,
+			       i,    /* buffer_id */
+			       0, 0, /* match_bits, ignore_bits */
+			       CXI_MATCH_ID_ANY, 0,
+			       false, /* event_success_disable */
+			       false, /* event_unlink_disable */
+			       false, /* use_once */
+			       false, /* manage_local */
+			       true,  /* no_truncate */
+			       true,  /* op_put */
+			       false, /* op_get */
+			       NULL);
+	}
+
+	/* Verify: LE in_use == num_les */
+	rc = cxil_get_svc_rsrc_use(dev, svc_desc.svc_id, &rsrc_use);
+	cr_assert_eq(rc, 0, "cxil_get_svc_rsrc_use() post-append failed rc:%d",
+		     rc);
+	cr_assert_eq(rsrc_use.in_use[CXI_RSRC_TYPE_LE], num_les,
+		     "Post-append LE in_use expected %d, got %u",
+		     num_les, rsrc_use.in_use[CXI_RSRC_TYPE_LE]);
+
+	/* Unlink all LEs */
+	for (i = 0; i < num_les; i++)
+		unlink_le_sync(pte, C_PTL_LIST_OVERFLOW, i);
+
+	/* Verify: LE in_use == 0 after unlink */
+	rc = cxil_get_svc_rsrc_use(dev, svc_desc.svc_id, &rsrc_use);
+	cr_assert_eq(rc, 0, "cxil_get_svc_rsrc_use() post-unlink failed rc:%d",
+		     rc);
+	cr_assert_eq(rsrc_use.in_use[CXI_RSRC_TYPE_LE], 0,
+		     "Post-unlink LE in_use expected 0, got %u",
+		     rsrc_use.in_use[CXI_RSRC_TYPE_LE]);
+
+	/* Teardown */
+	target_cmdq = saved_target_cmdq;
+	target_evtq = saved_target_evtq;
+
+	cxil_unmap(le_mem.md);
+	free(le_mem.buffer);
+
+	rc = cxil_unmap_pte(pte_map);
+	cr_assert_eq(rc, 0);
+	rc = cxil_destroy_pte(pte);
+	cr_assert_eq(rc, 0);
+
+	rc = cxil_destroy_cmdq(tgt_cmdq);
+	cr_assert_eq(rc, 0);
+	rc = cxil_destroy_evtq(tgt_evtq);
+	cr_assert_eq(rc, 0);
+	cxil_unmap(eq_buf_md);
+	free(eq_buf);
+
+	rc = cxil_destroy_wait_obj(wobj);
+	cr_assert_eq(rc, 0);
+
+	rc = cxil_destroy_domain(domain);
+	cr_assert_eq(rc, 0);
+	domain = NULL;
+	rc = cxil_destroy_cp(cp);
+	cr_assert_eq(rc, 0);
+	cp = NULL;
+	rc = cxil_destroy_lni(lni);
+	cr_assert_eq(rc, 0);
+	lni = NULL;
+	rc = cxil_destroy_svc(dev, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_destroy_svc() failed rc:%d", rc);
+}
+
+/*
+ * Test: svc_tle_hw_read
+ *
+ * Validates that TLE in-use counts returned by cxil_get_svc_rsrc_use() are
+ * read from hardware (via cass_get_tle_in_use), not from stale cached values.
+ *
+ * Flow:
+ *   1. Allocate a service with TLE reservations + supporting resources
+ *   2. Verify baseline TLE in_use == 0 and tle_pool_id is valid
+ *   3. Arm N triggered increments (C_CMD_CT_TRIG_INC) with cascading
+ *      thresholds (1, 2, ..., N) -> each consumes 1 TLE in hardware
+ *   4. Verify TLE in_use == N
+ *   5. Fire the cascade with a single C_CMD_CT_INC (ct_success=1)
+ *   6. Poll until TLE in_use == 0
+ */
+Test(svc, svc_tle_hw_read)
+{
+	int rc, i;
+	int num_tles = 10;
+	int attempts;
+	uint16_t tle_in_use = num_tles;
+	size_t buf_len;
+	void *eq_buf;
+	struct cxi_md *eq_buf_md;
+	struct cxi_eq_attr eq_attr = {};
+	struct cxi_eq *tx_evtq;
+	struct cxi_cq *tx_trig_cmdq;
+	struct cxi_cp *trig_profile;
+	struct cxi_ct *counter;
+	struct c_ct_writeback *ct_wb;
+	struct cxi_rsrc_use rsrc_use = {};
+	struct cxil_wait_obj *wobj;
+	struct c_ct_cmd ct_cmd = {};
+
+	struct cxi_cq_alloc_opts cq_opts = {
+		.count = 4096,
+		.flags = CXI_CQ_IS_TX | CXI_CQ_TX_WITH_TRIG_CMDS,
+	};
+	struct cxi_rsrc_limits limits = {
+		.ptes = {
+			.max = 100,
+			.res = 100,
+		},
+		.txqs = {
+			.max = 100,
+			.res = 100,
+		},
+		.tgqs = {
+			.max = 100,
+			.res = 100,
+		},
+		.eqs = {
+			.max = 100,
+			.res = 100,
+		},
+		.cts = {
+			.max = 100,
+			.res = 100,
+		},
+		.les = {
+			.max = 100,
+			.res = 100,
+		},
+		.tles = {
+			.max = 100,
+			.res = 100,
+		},
+		.acs = {
+			.max = 4,
+			.res = 4,
+		},
+	};
+	struct cxi_svc_desc svc_desc = {
+		.enable = 1,
+		.is_system_svc = 1,
+		.resource_limits = true,
+		.limits = limits,
+		.restricted_vnis = 1,
+		.num_vld_vnis = 1,
+		.vnis[0] = 32,
+		.tcs[CXI_TC_BEST_EFFORT] = true,
+	};
+
+	if (dev->info.is_vf)
+		cr_skip("LE/TLE reservation not supported in VFs");
+
+	/* Allocate SVC */
+	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc() failed rc:%d", rc);
+	svc_desc.svc_id = rc;
+
+	/* Allocate LNI */
+	rc = cxil_alloc_lni(dev, &lni, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_alloc_lni() failed rc:%d", rc);
+
+	/* Allocate triggered CP */
+	rc = cxil_alloc_trig_cp(lni, svc_desc.vnis[0], CXI_TC_BEST_EFFORT,
+				CXI_TC_TYPE_DEFAULT, TRIG_LCID,
+				&trig_profile);
+	cr_assert_eq(rc, 0, "cxil_alloc_trig_cp() failed rc:%d", rc);
+
+	/* Allocate wait object */
+	rc = cxil_alloc_wait_obj(lni, &wobj);
+	cr_assert_eq(rc, 0, "cxil_alloc_wait_obj() failed rc:%d", rc);
+
+	/* Allocate transmit EQ */
+	buf_len = s_page_size * 2;
+	eq_buf = aligned_alloc(s_page_size, buf_len);
+	cr_assert(eq_buf);
+	memset(eq_buf, 0, buf_len);
+
+	rc = cxil_map(lni, eq_buf, buf_len,
+		      CXI_MAP_PIN | CXI_MAP_READ | CXI_MAP_WRITE,
+		      NULL, &eq_buf_md);
+	cr_assert_eq(rc, 0, "cxil_map() for EQ buf failed rc:%d", rc);
+
+	eq_attr.queue = eq_buf;
+	eq_attr.queue_len = buf_len;
+	rc = cxil_alloc_evtq(lni, eq_buf_md, &eq_attr, wobj, wobj,
+			     &tx_evtq);
+	cr_assert_eq(rc, 0, "cxil_alloc_evtq() failed rc:%d", rc);
+
+	/* Allocate triggered CQ */
+	cq_opts.lcid = trig_profile->lcid;
+	rc = cxil_alloc_cmdq(lni, tx_evtq, &cq_opts, &tx_trig_cmdq);
+	cr_assert_eq(rc, 0, "cxil_alloc_cmdq() trig failed rc:%d", rc);
+
+	/* Allocate CT */
+	ct_wb = aligned_alloc(8, sizeof(*ct_wb));
+	cr_assert(ct_wb);
+	memset(ct_wb, 0, sizeof(*ct_wb));
+
+	rc = cxil_alloc_ct(lni, ct_wb, &counter);
+	cr_assert_eq(rc, 0, "cxil_alloc_ct() failed rc:%d", rc);
+
+	/* Verify baseline: TLE in_use == 0, pool_id valid */
+	rc = cxil_get_svc_rsrc_use(dev, svc_desc.svc_id, &rsrc_use);
+	cr_assert_eq(rc, 0, "cxil_get_svc_rsrc_use() baseline failed rc:%d",
+		     rc);
+	cr_assert_eq(rsrc_use.in_use[CXI_RSRC_TYPE_TLE], 0,
+		     "Baseline TLE in_use expected 0, got %u",
+		     rsrc_use.in_use[CXI_RSRC_TYPE_TLE]);
+	cr_assert_gt(rsrc_use.tle_pool_id, 0,
+		     "TLE pool_id must be non-zero (0 is the default svc)");
+
+	/* Arm N triggered increments with ascending thresholds
+	 * Each armed trigger consumes 1 TLE from the service's TLE pool.
+	 * Use C_CMD_CT_TRIG_INC with cascading thresholds so a single
+	 * C_CMD_CT_INC fires the first, which increments the CT to fire
+	 * the next, and so on.
+	 */
+	ct_cmd.trig_ct = counter->ctn;
+	ct_cmd.ct = counter->ctn;
+	ct_cmd.ct_success = 1;
+	ct_cmd.set_ct_success = 1;
+
+	for (i = 0; i < num_tles; i++) {
+		ct_cmd.threshold = i + 1;
+
+		rc = cxi_cq_emit_ct(tx_trig_cmdq, C_CMD_CT_TRIG_INC,
+				    &ct_cmd);
+		cr_assert_eq(rc, 0,
+			     "cxi_cq_emit_ct() trig_inc[%d] failed rc:%d",
+			     i, rc);
+
+		cxi_cq_ring(tx_trig_cmdq);
+	}
+
+	/* Verify: TLE in_use == num_tles */
+	rc = cxil_get_svc_rsrc_use(dev, svc_desc.svc_id, &rsrc_use);
+	cr_assert_eq(rc, 0,
+		     "cxil_get_svc_rsrc_use() post-arm failed rc:%d", rc);
+	cr_assert_eq(rsrc_use.in_use[CXI_RSRC_TYPE_TLE], num_tles,
+		     "Post-arm TLE in_use expected %d, got %u",
+		     num_tles, rsrc_use.in_use[CXI_RSRC_TYPE_TLE]);
+
+	/* Fire triggers: increment CT to start the cascade
+	 * C_CMD_CT_INC increments by ct_success=1, making CT=1.
+	 * This fires threshold=1, whose TRIG_INC makes CT=2,
+	 * which fires threshold=2, and so on - releasing all TLEs.
+	 */
+	rc = cxi_cq_emit_ct(tx_trig_cmdq, C_CMD_CT_INC, &ct_cmd);
+	cr_assert_eq(rc, 0, "cxi_cq_emit_ct() inc failed rc:%d", rc);
+	cxi_cq_ring(tx_trig_cmdq);
+
+	/* Poll until hardware releases all TLEs after the cascade fires.
+	 * We poll the hardware-backed TLE in_use count directly -
+	 * this is the exact code path we are testing.
+	 */
+	for (attempts = 0; attempts < 1000; attempts++) {
+		rc = cxil_get_svc_rsrc_use(dev, svc_desc.svc_id, &rsrc_use);
+		cr_assert_eq(rc, 0);
+		tle_in_use = rsrc_use.in_use[CXI_RSRC_TYPE_TLE];
+		if (tle_in_use == 0)
+			break;
+		usleep(5000);
+	}
+	cr_assert_eq(tle_in_use, 0,
+		     "Post-fire TLE in_use expected 0, got %u after %d tries",
+		     tle_in_use, attempts);
+
+	/* Teardown */
+	rc = cxil_destroy_ct(counter);
+	cr_assert_eq(rc, 0);
+	free(ct_wb);
+
+	rc = cxil_destroy_cmdq(tx_trig_cmdq);
+	cr_assert_eq(rc, 0);
+
+	rc = cxil_destroy_evtq(tx_evtq);
+	cr_assert_eq(rc, 0);
+	cxil_unmap(eq_buf_md);
+	free(eq_buf);
+
+	rc = cxil_destroy_wait_obj(wobj);
+	cr_assert_eq(rc, 0);
+
+	rc = cxil_destroy_cp(trig_profile);
+	cr_assert_eq(rc, 0);
+
+	rc = cxil_destroy_lni(lni);
+	cr_assert_eq(rc, 0);
+	lni = NULL;
+
+	rc = cxil_destroy_svc(dev, svc_desc.svc_id);
+	cr_assert_eq(rc, 0, "cxil_destroy_svc() failed rc:%d", rc);
 }
