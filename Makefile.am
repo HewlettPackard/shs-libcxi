@@ -8,6 +8,7 @@ AM_CPPFLAGS = \
 	-I$(srcdir)/include \
 	-I$(srcdir)/../cxi-driver/include \
 	-I$(srcdir)/../cassini-headers/install/include \
+	-I$(builddir)/utils \
 	-fvisibility=hidden -fsigned-char
 AM_CFLAGS = \
 	${pkg_CFLAGS}
@@ -109,7 +110,7 @@ utils_cxi_dump_csrs_SOURCES = utils/cxi_dump_csrs.c
 utils_cxi_dump_csrs_LDADD = src/libcxi.la
 utils/cxi_dump_csrs.c: utils/cxi_dump_csrs.h
 utils/cxi_dump_csrs.h: utils/cxi_dump_csrs.py
-	utils/cxi_dump_csrs.py > utils/cxi_dump_csrs.h
+	$(srcdir)/utils/cxi_dump_csrs.py > utils/cxi_dump_csrs.h
 
 utils_dgchs_fw_SOURCES = utils/dgchs_fw.c \
 	utils/dgchs_i2c.c
