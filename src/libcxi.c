@@ -120,7 +120,7 @@ CXIL_API int cxil_get_svc_rsrc_list(struct cxil_dev *dev_in,
 				    struct cxil_svc_rsrc_list **rsrc_list)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_svc_rsrc_list_get_resp resp;
+	struct cxi_svc_rsrc_list_get_resp resp = {};
 	struct cxi_svc_rsrc_list_get_cmd cmd = {
 		.op = CXI_OP_SVC_RSRC_LIST_GET,
 		.resp = &resp,
@@ -178,7 +178,7 @@ CXIL_API int cxil_get_svc_rsrc_use(struct cxil_dev *dev_in,
 				   struct cxi_rsrc_use *rsrcs)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_svc_rsrc_get_resp resp;
+	struct cxi_svc_rsrc_get_resp resp = {};
 	struct cxi_svc_rsrc_get_cmd cmd = {
 		.op = CXI_OP_SVC_RSRC_GET,
 		.resp = &resp,
@@ -207,7 +207,7 @@ CXIL_API int cxil_get_svc_list(struct cxil_dev *dev_in,
 			       struct cxil_svc_list **svc_list)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_svc_list_get_resp resp;
+	struct cxi_svc_list_get_resp resp = {};
 	struct cxi_svc_list_get_cmd cmd = {
 		.op = CXI_OP_SVC_LIST_GET,
 		.resp = &resp,
@@ -265,7 +265,7 @@ CXIL_API int cxil_get_svc(struct cxil_dev *dev_in,
 			  struct cxi_svc_desc *desc)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_svc_get_resp resp;
+	struct cxi_svc_get_resp resp = {};
 	struct cxi_svc_get_cmd cmd = {
 		.op = CXI_OP_SVC_GET,
 		.resp = &resp,
@@ -295,7 +295,7 @@ CXIL_API int cxil_update_svc(struct cxil_dev *dev_in,
 			     struct cxi_svc_fail_info *fail_info)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_svc_alloc_resp resp;
+	struct cxi_svc_alloc_resp resp = {};
 	struct cxi_svc_alloc_cmd cmd = {
 		.op = CXI_OP_SVC_UPDATE,
 		.resp = &resp,
@@ -323,7 +323,7 @@ CXIL_API int cxil_alloc_svc(struct cxil_dev *dev_in,
 			    struct cxi_svc_fail_info *fail_info)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_svc_alloc_resp resp;
+	struct cxi_svc_alloc_resp resp = {};
 	struct cxi_svc_alloc_cmd cmd = {
 		.op = CXI_OP_SVC_ALLOC,
 		.resp = &resp,
@@ -566,7 +566,7 @@ CXIL_API int cxil_alloc_lni(struct cxil_dev *dev_in, struct cxil_lni **lni,
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
 	struct cxi_lni_alloc_cmd cmd = {};
-	struct cxi_lni_alloc_resp resp;
+	struct cxi_lni_alloc_resp resp = {};
 	struct cxil_lni_priv *lni_priv;
 	int rc;
 
@@ -627,7 +627,7 @@ CXIL_API int cxil_alloc_trig_cp(struct cxil_lni *lni, unsigned int vni,
 				enum cxi_trig_cp cp_type,
 				struct cxi_cp **cp)
 {
-	struct cxi_cp_alloc_resp resp;
+	struct cxi_cp_alloc_resp resp = {};
 	struct cxi_trig_cp_alloc_cmd cmd = {};
 	int rc;
 	struct cxil_cp_priv *cp_priv;
@@ -729,7 +729,7 @@ CXIL_API int cxil_reserve_domain(struct cxil_lni *lni, unsigned int vni,
 				 unsigned int pid, unsigned int count)
 {
 	struct cxi_domain_reserve_cmd cmd = {};
-	struct cxi_domain_reserve_resp resp;
+	struct cxi_domain_reserve_resp resp = {};
 	struct cxil_lni_priv *lni_priv;
 	int rc;
 
@@ -757,7 +757,7 @@ CXIL_API int cxil_alloc_domain(struct cxil_lni *lni, unsigned int vni,
 			       unsigned int pid, struct cxil_domain **domain)
 {
 	struct cxi_domain_alloc_cmd cmd = {};
-	struct cxi_domain_alloc_resp resp;
+	struct cxi_domain_alloc_resp resp = {};
 	struct cxil_domain_priv *new_domain;
 	int rc;
 	struct cxil_lni_priv *lni_priv;
@@ -853,7 +853,7 @@ CXIL_API int cxil_alloc_ct(struct cxil_lni *lni, struct c_ct_writeback *wb,
 			   struct cxi_ct **ct)
 {
 	struct cxi_ct_alloc_cmd cmd = {};
-	struct cxi_ct_alloc_resp resp;
+	struct cxi_ct_alloc_resp resp = {};
 	int rc;
 	struct cxil_ct *cct;
 	struct cxil_lni_priv *lni_priv;
@@ -959,7 +959,7 @@ CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 				 struct cxi_cq **cmdq)
 {
 	struct cxi_cq_alloc_buf_cmd cmd = {};
-	struct cxi_cq_alloc_resp resp;
+	struct cxi_cq_alloc_resp resp = {};
 	const struct cxi_cq_alloc_opts *opts = &opts_in->opts;
 	int rc;
 	struct cxil_cq *ccq;
@@ -1094,7 +1094,7 @@ CXIL_API int cxil_destroy_cmdq(struct cxi_cq *cmdq)
 CXIL_API int cxil_cmdq_ack_counter(struct cxi_cq *cmdq,
 				   unsigned int *ack_counter)
 {
-	struct cxi_cq_ack_counter_resp resp;
+	struct cxi_cq_ack_counter_resp resp = {};
 	struct cxi_cq_ack_counter_cmd cmd = {};
 	struct cxil_cq *ccq;
 	int rc;
@@ -1122,7 +1122,7 @@ CXIL_API int cxil_map(struct cxil_lni *lni, void *va, size_t len,
 {
 	struct cxil_md_priv *md_priv;
 	struct cxi_atu_map_cmd cmd = {};
-	struct cxi_atu_map_resp resp;
+	struct cxi_atu_map_resp resp = {};
 	int rc;
 	struct cxil_lni_priv *lni_priv;
 
@@ -1256,7 +1256,7 @@ CXIL_API int cxil_alloc_wait_obj(struct cxil_lni *lni,
 				 struct cxil_wait_obj **wait_out)
 {
 	struct cxi_wait_alloc_cmd cmd = {};
-	struct cxi_wait_alloc_resp resp;
+	struct cxi_wait_alloc_resp resp = {};
 	int rc;
 	struct cxil_wait_obj *wait;
 	char *int_fname;
@@ -1362,7 +1362,7 @@ CXIL_API int cxil_alloc_evtq(struct cxil_lni *lni, const struct cxi_md *md,
 			     struct cxil_wait_obj *status_wait,
 			     struct cxi_eq **evtq)
 {
-	struct cxi_eq_alloc_resp resp;
+	struct cxi_eq_alloc_resp resp = {};
 	struct cxil_eq *eq;
 	struct cxil_md_priv *md_priv;
 	int rc;
@@ -1465,7 +1465,7 @@ CXIL_API int cxil_destroy_evtq(struct cxi_eq *evtq)
 /* Adjust CXI Event Queue reserved FC field. */
 CXIL_API int cxil_evtq_adjust_reserved_fc(struct cxi_eq *evtq, int value)
 {
-	struct cxi_eq_adjust_reserved_fc_resp resp;
+	struct cxi_eq_adjust_reserved_fc_resp resp = {};
 	struct cxi_eq_adjust_reserved_fc_cmd cmd = {
 		.op = CXI_OP_EQ_ADJUST_RESERVED_FC,
 		.value = value,
@@ -1574,7 +1574,7 @@ CXIL_API int cxil_alloc_pte(struct cxil_lni *lni, struct cxi_eq *evtq,
 			    struct cxil_pte **pte)
 {
 	struct cxi_pte_alloc_cmd cmd;
-	struct cxi_pte_alloc_resp resp;
+	struct cxi_pte_alloc_resp resp = {};
 	struct cxil_pte_priv *pte_priv;
 	int evtq_hndl = C_EQ_NONE;
 	int rc;
@@ -1640,7 +1640,7 @@ CXIL_API int cxil_map_pte(struct cxil_pte *pte, struct cxil_domain *domain,
 			  struct cxil_pte_map **pte_map)
 {
 	struct cxi_pte_map_cmd cmd;
-	struct cxi_pte_map_resp resp;
+	struct cxi_pte_map_resp resp = {};
 	struct cxil_pte_map *cpte_map;
 	struct cxil_domain_priv *domain_priv;
 	struct cxil_pte_priv *pte_priv;
@@ -1726,7 +1726,7 @@ CXIL_API int cxil_invalidate_pte_le(struct cxil_pte *pte,
 CXIL_API int cxil_pte_status(struct cxil_pte *pte,
 			     struct cxi_pte_status *status)
 {
-	struct cxi_pte_status_resp resp;
+	struct cxi_pte_status_resp resp = {};
 	struct cxi_pte_status_cmd cmd = {
 		.op = CXI_OP_PTE_STATUS,
 		.resp = &resp,
@@ -1850,7 +1850,7 @@ CXIL_API int cxil_write8_csr(struct cxil_dev *dev_in, unsigned int csr,
 CXIL_API int cxil_map_csr(struct cxil_dev *dev_in)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_map_csrs_resp resp;
+	struct cxi_map_csrs_resp resp = {};
 	int rc;
 	struct cxi_map_csrs_cmd cmd = {
 		.op = CXI_OP_MAP_CSRS,
@@ -2012,7 +2012,7 @@ CXIL_API int cxil_sbus_op(struct cxil_dev *dev_in,
 			  uint8_t *overrun)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *)dev_in;
-	struct cxi_sbus_op_resp resp;
+	struct cxi_sbus_op_resp resp = {};
 	struct cxi_sbus_op_cmd cmd = {
 		.op = CXI_OP_SBUS_OP,
 		.resp = &resp,
@@ -2112,7 +2112,7 @@ CXIL_API int cxil_serdes_op(struct cxil_dev *dev_in, int port_num,
 			    uint16_t *result, int timeout, unsigned int flags)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *)dev_in;
-	struct cxi_serdes_op_resp resp;
+	struct cxi_serdes_op_resp resp = {};
 	struct cxi_serdes_op_cmd cmd = {
 		.op = CXI_OP_SERDES_OP,
 		.resp = &resp,
@@ -2139,7 +2139,7 @@ int cxil_get_dev_info(struct cxil_dev *dev_in,
 		      struct cxi_dev_info_use *devinfo)
 {
 	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
-	struct cxi_dev_info_get_resp resp;
+	struct cxi_dev_info_get_resp resp = {};
 	struct cxi_dev_info_get_cmd cmd = {
 		.op = CXI_OP_DEV_INFO_GET,
 		.resp = &resp,
