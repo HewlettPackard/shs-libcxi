@@ -973,9 +973,15 @@ void parse_common_opt(char c, struct util_opts *opts, const char *name,
 		if (opts->atomic_type > C_AMO_TYPE_UINT128_T)
 			errx(1, "Invalid atomic type: %s", optarg);
 		break;
-	case 's':
-		rc = sscanf(optarg, "%lu:%lu", &opts->min_size,
-			    &opts->max_size);
+	case 's': {
+		// since opts is declared __attribute__((packed)), some
+		// compilers will carp about unaligned addressing if we sscanf
+		// directly into the struct
+		uint64_t min_size, max_size;
+
+		rc = sscanf(optarg, "%lu:%lu", &min_size, &max_size);
+		opts->min_size = min_size;
+		opts->max_size = max_size;
 		if ((rc == 0 || rc == EOF) ||
 		    (opts->min_size == 0 || opts->min_size > MAX_MSG_SIZE) ||
 		    (rc == 2 && (opts->max_size < opts->min_size ||
@@ -989,6 +995,7 @@ void parse_common_opt(char c, struct util_opts *opts, const char *name,
 		else if (rc == 1)
 			opts->max_size = opts->min_size;
 		break;
+	}
 	case 'l':
 		errno = 0;
 		endptr = NULL;
