@@ -1,6 +1,12 @@
+# Object files and libraries
 *.o
+*.la
+*.lo
 .deps/
 .libs/
+.dirstamp
+
+# Autotools generated
 Makefile
 Makefile.in
 /aclocal.m4
@@ -18,14 +24,50 @@ Makefile.in
 /missing
 /tap-driver.sh
 /test-driver
-/test-suite.log
-.dirstamp
-*.la
-*.lo
+
+# pkg-config
 *.pc
-/src/test/*.tap
-/src/test/*.dbg
-/src/test/libcxi_test
-/src/test/ucxi_test
-/src/test/run_tests_vm.sh.*
-/src/test/test_cmd.sh
+
+# Distribution tarballs
+*.tar.*
+
+# Install prefix output
+/install/
+
+# Generated sources
+/utils/cxi_dump_csrs.h
+/utils/hpe_generated.c
+
+# Built binaries - retry handler
+/retry_handler/cxi_rh
+/retry_handler/cxi_rh@.service
+
+# Built binaries - utils
+/utils/cxi_atomic_bw
+/utils/cxi_atomic_lat
+/utils/cxi_dump_csrs
+/utils/cxi_gpu_loopback_bw
+/utils/cxi_heatsink_check
+/utils/cxi_read_bw
+/utils/cxi_read_lat
+/utils/cxi_send_bw
+/utils/cxi_send_lat
+/utils/cxi_service
+/utils/cxi_stat
+/utils/cxi_udp_gen
+/utils/cxi_write_bw
+/utils/cxi_write_lat
+/utils/dgchs_fw
+/utils/pause_cassini_pcp
+/utils/test_pause
+
+# Built binaries - tests
+/tests/cxi_device_list
+/tests/libcxi_test
+/tests/test_map_csr
+/tests/test_write_csr
+
+# Test output
+/test-suite.log
+/tests/*.tap
+/tests/*.dbg
