@@ -609,7 +609,6 @@ static void desc_from_yaml(struct cxi_svc_desc *desc,
 {
 	int rc;
 	int done = 0;
-	int count = 0;
 	FILE *file;
 	yaml_parser_t parser;
 	yaml_event_t event;
@@ -634,7 +633,6 @@ static void desc_from_yaml(struct cxi_svc_desc *desc,
 			errx(1, "Error consuming event\n");
 		done = (event.type == YAML_STREAM_END_EVENT);
 		yaml_event_delete(&event);
-		count++;
 	}
 }
 

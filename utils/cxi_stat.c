@@ -254,7 +254,7 @@ static float cntr_rate(struct rate_cntr r)
 	if (t_delta > 0)
 		rate = c_delta / t_delta;
 	else
-		rate = 999999999;
+		rate = 999999999.0;
 
 	return rate;
 }
