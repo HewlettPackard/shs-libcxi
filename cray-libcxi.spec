@@ -16,7 +16,6 @@ Prefix:     /usr
 
 BuildRequires:  cray-cassini-headers-user
 BuildRequires:  cray-cxi-driver-devel
-BuildRequires:  cray-cassini-csr-defs
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  libtool
