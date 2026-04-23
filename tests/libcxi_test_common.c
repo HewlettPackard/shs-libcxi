@@ -197,7 +197,9 @@ static void *alloc_cq_buf(size_t len)
 static void cq_setup(size_t user_buffer_len)
 {
 	int rc;
-	struct cxi_cq_alloc_opts_buf cq_opts = {};
+	struct cxi_cq_alloc_opts_buf cq_opts = {
+		.is_host_mem = true,
+	};
 
 	if (user_buffer_len) {
 		cq_buf_len = user_buffer_len;
