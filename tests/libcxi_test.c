@@ -14,7 +14,7 @@
 int svc_id2;
 struct cxil_lni *lni2;
 
-TestSuite(dev);
+TestSuite(dev, .init = get_dev_id);
 
 struct dev_open_params {
 	int dev_id;
@@ -28,9 +28,10 @@ ParameterizedTestParameters(dev, dev_open)
 	static struct dev_open_params params[] = {
 		{.dev_id = 0,
 		 .rc = 0 },
-		{.dev_id = 10,
+		{.dev_id = 100,
 		 .rc = -ENOENT },
 	};
+	params[0].dev_id = dev_id;
 
 	param_sz = ARRAY_SIZE(params);
 	return cr_make_param_array(struct dev_open_params, params,
@@ -50,7 +51,7 @@ ParameterizedTest(struct dev_open_params *param, dev, dev_open)
 
 Test(dev, dev_null)
 {
-	int rc = cxil_open_device(0, NULL);
+	int rc = cxil_open_device(dev_id, NULL);
 	cr_assert_eq(rc, -EINVAL);
 
 	cxil_close_device(NULL);
@@ -1082,7 +1083,15 @@ Test(pte, pte_status)
 	free_iobuf(&rcv_mem);
 }
 
-TestSuite(cntr, .init = dev_setup, .fini = dev_teardown);
+static void cntr_setup(void)
+{
+	dev_setup();
+
+	if (dev->info.is_vf)
+		cr_skip_test("Counters aren't supported on VFs");
+}
+
+TestSuite(cntr, .init = cntr_setup, .fini = dev_teardown);
 
 /* buf needs to store 30 characters */
 static int timespec_fmt(char *buf, uint len, struct timespec *ts)

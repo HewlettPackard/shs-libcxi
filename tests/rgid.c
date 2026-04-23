@@ -194,7 +194,7 @@ static void service_setup(struct cxi_svc_desc *svc_desc)
 	int ret;
 	int svc_id;
 
-	svc_id = cxil_alloc_svc(dev, svc_desc, NULL);
+	svc_id = alloc_svc(dev, svc_desc, NULL);
 	cr_assert_gt(svc_id, 0, "cxil_alloc_svc(): Failed. ret:%d", svc_id);
 
 	svc_desc->svc_id = svc_id;

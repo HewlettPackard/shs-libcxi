@@ -90,6 +90,7 @@ extern int test_data_len;
 /* Used by most tests */
 void devinfo_setup(void);
 void devinfo_teardown(void);
+void get_dev_id(void);
 void dev_setup(void);
 void dev_teardown(void);
 void lni_setup(void);
@@ -189,6 +190,12 @@ void memcpy_device_to_host(void *dest, struct mem_window *win);
 void memcpy_host_to_device(struct mem_window *win, void *src);
 void memset_device(struct mem_window *win, int value, size_t count);
 unsigned int get_network_namespace(void);
+
+/* Wrapper for cxil_svc_alloc that skips the test if run from a VF (since
+ * service) allocation is not supported from VFs.
+ */
+int alloc_svc(struct cxil_dev *dev, const struct cxi_svc_desc *desc,
+	      struct cxi_svc_fail_info *fail_info);
 
 int gpu_lib_init(void);
 void gpu_lib_fini(void);

@@ -79,7 +79,7 @@ ParameterizedTest(struct svc_alloc_params *param, svc, svc_alloc)
 		.vnis[0] = 8,
 	};
 
-	int rc = cxil_alloc_svc(dev, &svc_desc, &fail_info);
+	int rc = alloc_svc(dev, &svc_desc, &fail_info);
 
 	if (param->pass) {
 		/* Check svc_id */
@@ -109,7 +109,7 @@ Test(svc, svc_null)
 {
 	int rc;
 
-	rc = cxil_alloc_svc(dev, NULL, NULL);
+	rc = alloc_svc(dev, NULL, NULL);
 	cr_assert_eq(rc, -EINVAL);
 
 	rc = cxil_destroy_svc(dev, 9001);
@@ -148,7 +148,7 @@ Test(svc, svc_update)
 	};
 
 	/* Initial allocation of service */
-	rc = cxil_alloc_svc(dev, &svc_desc, &fail_info);
+	rc = alloc_svc(dev, &svc_desc, &fail_info);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc(): Failed. Expected Success! rc:%d",
 		     rc);
 
@@ -296,7 +296,7 @@ ParameterizedTest(struct svc_ugid_params *param, svc, svc_ugid)
 	svc_desc.members[0].type = param->type;
 
 	/* Allocate SVC */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d",
 		     rc);
 
@@ -442,7 +442,7 @@ ParameterizedTest(struct svc_netns_params *param, svc, svc_netns)
 	}
 
 	/* Allocate SVC */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d", rc);
 
 	/* Save off svc_id */
@@ -525,7 +525,7 @@ Test(svc, svc_profile_ignore)
 	svc_desc.members[0].type = CXI_SVC_MEMBER_UID;
 
 	/* Allocate SVC */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d", rc);
 
 	svc_desc.svc_id = rc;
@@ -569,7 +569,7 @@ Test(svc, svc_member_perm)
 	svc_desc.members[1].type = CXI_SVC_MEMBER_GID;
 
 	/* Allocate SVC */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d", rc);
 
 	svc_desc.svc_id = rc;
@@ -669,7 +669,7 @@ Test(svc, svc_change_uid)
 	svc_desc.members[0].type = CXI_SVC_MEMBER_UID;
 
 	/* Allocate SVC */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() Failed. rc: %d",
 		     rc);
 
@@ -779,7 +779,7 @@ Test(svc, svc_max)
 	};
 
 	/* Allocate svc */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc(): Failed. Expected Success! rc:%d",
 		     rc);
 
@@ -996,7 +996,7 @@ Test(svc, svc_vni_range)
 	desc.limits.type[CXI_RSRC_TYPE_AC].max = C_ATU_CFG_AC_TABLE_ENTRIES - 2;
 
 	/* Using the default svc should fail */
-	rc = cxil_alloc_svc(dev, &desc, NULL);
+	rc = alloc_svc(dev, &desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc failed rc:%d", rc);
 	desc.svc_id = rc;
 
@@ -1039,7 +1039,7 @@ Test(svc, svc_vni_overlap)
 	svc_desc.vnis[0] = CXI_DEFAULT_SVC_ID;
 
 	/* Using the default svc should fail */
-	rc = cxil_alloc_svc(dev, &svc_desc, NULL);
+	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_eq(rc, -EEXIST, "cxil_alloc_svc() Failed. rc: %d", rc);
 }
 
@@ -1118,7 +1118,7 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 		svcs[i].restricted_vnis = 1;
 		svcs[i].num_vld_vnis = 1,
 		svcs[i].vnis[0] = 11 + i,
-		rc = cxil_alloc_svc(dev, &svcs[i], NULL);
+		rc = alloc_svc(dev, &svcs[i], NULL);
 		if (rc < 0) {
 			alloc_svcs_failed = true;
 			cr_log_info("cxil_alloc_svc()[%d]: rc:%d\n", i, rc);
@@ -1143,7 +1143,7 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 	svcs[num_svcs].restricted_vnis = 1;
 	svcs[num_svcs].num_vld_vnis = 1;
 	svcs[num_svcs].vnis[0] = 8;
-	rc = cxil_alloc_svc(dev, &svcs[num_svcs], NULL);
+	rc = alloc_svc(dev, &svcs[num_svcs], NULL);
 	cr_assert_eq(rc, -ENOSPC);
 
 	/* Destroy services */

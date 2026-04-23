@@ -59,6 +59,10 @@ static uint64_t get_odp_request_diff(void)
 static void odp_setup(void)
 {
 	data_xfer_setup();
+
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
+
 	odp_request_count = get_odp_request_count();
 }
 
@@ -308,6 +312,9 @@ ParameterizedTest(struct basic_map_params *param, map, basic_map_test)
 
 	va = aligned_alloc(s_page_size, len);
 	cr_assert_neq(va, 0, "allocation failed");
+
+	if (!(param->flags && CXI_MAP_PIN))
+		cr_skip_test("ODP isn't supported on VFs");
 
 	rc = cxil_map(lni, va, len, param->flags, NULL, &md);
 	cr_assert_eq(rc, param->map_expected, "cxil_map failed rc:%d", rc);
@@ -1328,6 +1335,9 @@ Test(map_hp, odp_hp0)
 
 	data_xfer_setup();
 
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
+
 	hp_order = 21;
 	mmap_hp(&src_mem, NULL, prot, len, hp_order, true);
 	cr_log_info("src buf page size:%ld\n", cxil_page_size(src_mem.buffer));
@@ -1763,6 +1773,9 @@ Test(map_xfer, odp_fault)
 	int hp_order;
 	int prot = PROT_WRITE | PROT_READ;
 
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
+
 	hp_order = 12;
 
 	mmap_hp(&src_mem, NULL, prot, len, hp_order, true);
@@ -1828,6 +1841,9 @@ ParameterizedTest(int *order, map_xfer, odp_fault2)
 	size_t mmap_len = 4UL << hp_order;
 	size_t xfer_len = mmap_len / 2;
 	int prot = PROT_WRITE | PROT_READ;
+
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
 
 	mmap_hp(&mem, NULL, prot, mmap_len, hp_order, false);
 	cr_log_info("buf:%p page size:%ld\n", mem.buffer,
@@ -1896,6 +1912,9 @@ Test(map_xfer, odp_fault3)
 	int prot = PROT_WRITE | PROT_READ;
 	int flags = CXI_MAP_READ | CXI_MAP_WRITE;
 
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
+
 	/* Register with a hugepage hint before mmaping */
 	hints.huge_shift = hp_order;
 	rc = cxil_map(lni, HIGH_BPTR, mmap_len, flags, &hints, &md);
@@ -1954,6 +1973,9 @@ Test(map_xfer, odp_fault4)
 	size_t xfer_len = 8 * 1024;
 	int prot = PROT_WRITE | PROT_READ;
 	int flags = CXI_MAP_READ | CXI_MAP_WRITE;
+
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
 
 	/* Register a large addr range before mmaping */
 	rc = cxil_map(lni, HIGH_BPTR, mmap_len, flags, &hints, &md);
@@ -2029,6 +2051,9 @@ Test(map, iova_init)
 	int flags = CXI_MAP_WRITE | CXI_MAP_READ;
 	int prot = PROT_WRITE | PROT_READ;
 	int mmap_flags = MAP_PRIVATE | MAP_ANONYMOUS;
+
+	if (dev->info.is_vf)
+		cr_skip_test("ODP isn't supported on VFs");
 
 	mmap_buf = mmap(NULL, mmap_len, prot, mmap_flags, 0, 0);
 	if (!mmap_buf || (uintptr_t)mmap_buf == 0xffffffffffffffff)

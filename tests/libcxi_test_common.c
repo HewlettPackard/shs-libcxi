@@ -78,12 +78,20 @@ bool is_netsim(void)
 	return dev->info.device_platform == C_PLATFORM_NETSIM;
 }
 
+void get_dev_id(void)
+{
+	char *dev_num_str = getenv("CXIL_TEST_DEV");
+
+	dev_id = dev_num_str ? atoi(dev_num_str) : 0;
+}
+
 void dev_setup(void)
 {
 	int ret;
 
+	get_dev_id();
 	set_system_page_size();
-	ret = cxil_open_device(0, &dev);
+	ret = cxil_open_device(dev_id, &dev);
 	cr_assert_eq(ret, 0, "ret = (%d) %s", ret, strerror(-ret));
 	cr_assert_neq(dev, NULL);
 }
@@ -1035,6 +1043,15 @@ bool is_vm(void) {
 		pclose(fp);
 	}
 	return hypervisor_count > 0;
+}
+
+int alloc_svc(struct cxil_dev *dev, const struct cxi_svc_desc *desc,
+	      struct cxi_svc_fail_info *fail_info)
+{
+	if (dev->info.is_vf)
+		cr_skip_test("Service allocation isn't supported on VFs");
+
+	return cxil_alloc_svc(dev, desc, fail_info);
 }
 
 static int no_gpu_props(struct mem_window *win, void **base, size_t *size)
