@@ -178,6 +178,16 @@ AS_IF([test -d $withval],
      AC_CHECK_DECL(HAVE_HIP_SUPPORT, [], [LDFLAGS="$LDFLAGS -ldl"], []),
     [AC_MSG_RESULT([No CUDA])])
 
+AC_ARG_WITH([cassini-csr-defs],
+            [AS_HELP_STRING([--with-cassini-csr-defs=PATH], [Path to csr_defs.json])],
+                            [cassinicsrdefs="$withval"],
+                            [cassinicsrdefs="/usr/share/cassini-headers/csr_defs.json"])
+
+AS_IF([test ! -f "$cassinicsrdefs"],
+  [AC_MSG_WARN([cassini-csr-defs file not found at $cassinicsrdefs])])
+
+AC_SUBST([cassinicsrdefs])
+
 AC_ARG_ENABLE([asan],
     [AS_HELP_STRING([--enable-asan],
 	            [Enable address sanitizer @<:@default=no@:>@])
@@ -206,6 +216,7 @@ AC_MSG_RESULT([
         includedir:             ${includedir}
         systemdunitdir:         ${systemdsystemunitdir}
         udevrulesdir:           ${udevrulesdir}
+        cassinicsrdefs:         ${cassinicsrdefs}
 
         compiler:               ${CC}
         cflags:                 ${CFLAGS}
