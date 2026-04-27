@@ -959,13 +959,12 @@ CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 				 struct cxi_cq **cmdq)
 {
 	struct cxi_cq_alloc_buf_cmd cmd = {};
-	struct cxi_cq_alloc_resp resp = {};
-	const struct cxi_cq_alloc_opts *opts = &opts_in->opts;
+	struct cxi_cq_alloc_resp resp;
 	int rc;
 	struct cxil_cq *ccq;
 	struct cxil_lni_priv *lni_priv;
 
-	if (!lni || !cmdq)
+	if (!lni || !cmdq || !opts_in)
 		return -EINVAL;
 
 	lni_priv = container_of(lni, struct cxil_lni_priv, lni);
@@ -987,17 +986,21 @@ CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 
 	ccq->lni_priv = lni_priv;
 	ccq->cmdq_hndl = resp.cq;
-	ccq->size_req = opts->count;
+	ccq->size_req = opts_in->opts.count;
 	ccq->cmds_len = resp.cmds.size;
 	ccq->csr_len = resp.wp_addr.size;
-	ccq->flags = opts->flags;
+	ccq->flags = opts_in->opts.flags;
 
 	if (opts_in->buf)
 		ccq->user_buffer = true;
 
 	/* mmaping queue */
 	if (ccq->user_buffer) {
-		ccq->cmds = opts_in->buf;
+		/* The user is expected to initialize the buffer's
+		 * status region if it's in gpu/device memory.
+		 */
+		if (opts_in->is_host_mem)
+			ccq->cmds = opts_in->buf;
 	} else {
 		ccq->cmds = mmap(NULL, resp.cmds.size,
 				 PROT_READ | PROT_WRITE, MAP_SHARED,
