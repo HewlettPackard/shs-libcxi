@@ -172,6 +172,7 @@ static void do_dma_amo(struct cxi_md *md, void *inc, void *res,
 
 	cmd.dma_amo.index_ext = idx_ext;
 	cmd.dma_amo.lac = md->lac;
+	cmd.dma_amo.write_lac = md->lac;
 	cmd.dma_amo.event_send_disable = 1;
 	cmd.dma_amo.restricted = 1;
 	cmd.dma_amo.dfa = dfa;
