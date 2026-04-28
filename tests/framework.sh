@@ -26,7 +26,7 @@ function startvm {
 	shift 1
 
 	# -M q35 = Standard PC (Q35 + ICH9, 2009) (alias of pc-q35-2.10)
-	QEMU_OPTS="--qemu-opts -smp cores=2 -device ccn -machine q35,kernel-irqchip=split -device intel-iommu,intremap=on,caching-mode=on -m 8192"
+	QEMU_OPTS="--qemu-opts -smp cores=2 -device ccn -machine q35,kernel-irqchip=split -global q35-pcihost.pci-hole64-size=40G -device intel-iommu,intremap=on,caching-mode=on -m 8192"
 	KERN_OPTS="--kopt iommu=pt --kopt intel_iommu=on --kopt iomem=relaxed"
 	KERN_OPTS="$KERN_OPTS --kopt transparent_hugepage=never --kopt hugepagesz=1g --kopt default_hugepagesz=1g --kopt hugepages=1"
 

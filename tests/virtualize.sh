@@ -32,5 +32,7 @@ insmod $TOP_DIR/sl-driver/drivers/net/ethernet/hpe/sl/cxi-sl.ko
 insmod $TOP_DIR/cxi-driver/$KO_PATH/cxi-ss1.ko disable_default_svc=0 active_qos_profile=1
 insmod $TOP_DIR/cxi-driver/$KO_PATH/cxi-user.ko
 
+export LD_LIBRARY_PATH=$TOP_DIR/Criterion/build/install/lib:$LD_LIBRARY_PATH
+
 # Execute the command (if any)
 $@
