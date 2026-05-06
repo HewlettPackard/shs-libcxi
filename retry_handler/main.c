@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
-#include <err.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <time.h>
@@ -2010,8 +2009,16 @@ static void setup_timing(struct retry_handler *rh)
 void fatal(struct retry_handler *rh, const char *fmt, ...)
 {
 	va_list ap;
+	char buf[256];
 
-	rh_printf(rh, LOG_CRIT, "fatal error\n");
+	va_start(ap, fmt);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
+	va_end(ap);
+
+	if (rh)
+		rh_printf(rh, LOG_CRIT, "fatal error: %s", buf);
+	else
+		fprintf(stderr, "fatal error: %s", buf);
 
 	if (rh && rh->dev) {
 		dump_rh_state(rh);
@@ -2019,9 +2026,7 @@ void fatal(struct retry_handler *rh, const char *fmt, ...)
 		cxil_destroy_svc(rh->dev, rh->svc_id);
 	}
 
-	va_start(ap, fmt);
-	verrx(1, fmt, ap);
-	va_end(ap);
+	exit(1);
 }
 
 
