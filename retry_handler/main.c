@@ -20,6 +20,7 @@
 #include <getopt.h>
 #include <limits.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <linux/mman.h>
 
@@ -2072,8 +2073,10 @@ static int start_rh(struct retry_handler *rh, unsigned int dev_id)
 	int page_size = sysconf(_SC_PAGESIZE);
 
 	ret = cxil_open_device(dev_id, &rh->dev);
-	if (ret != 0)
-		fatal(rh, "Failed to open device %u: %d\n", dev_id, ret);
+	if (ret != 0) {
+		fatal(rh, "Failed to open device %u: %s (ret=%d)\n",
+		      dev_id, strerror(-ret), ret);
+	}
 
 	if (rh->dev->info.is_vf) {
 		rh_printf(rh, LOG_ERR, "The retry handler will not start on device %u because it is a virtual function\n", dev_id);
@@ -2083,26 +2086,36 @@ static int start_rh(struct retry_handler *rh, unsigned int dev_id)
 	rh->is_c1 = rh->dev->info.cassini_version & CASSINI_1;
 
 	ret = cxil_map_csr(rh->dev);
-	if (ret != 0)
-		fatal(rh, "map csrs failed: %d\n", ret);
+	if (ret != 0) {
+		fatal(rh, "map csrs failed: %s (ret=%d)\n",
+		      strerror(-ret), ret);
+	}
 
 	rh->svc_id = cxil_alloc_svc(rh->dev, &svc_desc, NULL);
-	if (rh->svc_id < 0)
-		fatal(rh, "svc_alloc failed: %d\n", rh->svc_id);
+	if (rh->svc_id < 0) {
+		fatal(rh, "svc_alloc failed: %s (ret=%d)\n",
+		      strerror(-rh->svc_id), rh->svc_id);
+	}
 	rh_printf(rh, LOG_DEBUG, "svc_id: %d\n", rh->svc_id);
 	rh_printf(rh, LOG_DEBUG, "euid: %d\n", svc_desc.members[0].svc_member.uid);
 
 	ret = cxil_svc_enable(rh->dev, rh->svc_id, true);
-	if (ret != 0)
-		fatal(rh, "enable svc failed: %d\n", ret);
+	if (ret != 0) {
+		fatal(rh, "enable svc failed: %s (ret=%d)\n",
+		      strerror(-ret), ret);
+	}
 
 	ret = cxil_alloc_lni(rh->dev, &rh->lni, rh->svc_id);
-	if (ret != 0)
-		fatal(rh, "alloc lni failed: %d\n", ret);
+	if (ret != 0) {
+		fatal(rh, "alloc lni failed: %s (ret=%d)\n",
+		      strerror(-ret), ret);
+	}
 
 	ret = cxil_alloc_wait_obj(rh->lni, &rh->wait);
-	if (ret != 0)
-		fatal(rh, "alloc wait obj failed: %d\n", ret);
+	if (ret != 0) {
+		fatal(rh, "alloc wait obj failed: %s (ret=%d)\n",
+		      strerror(-ret), ret);
+	}
 
 	/* The CSDG recommends 16k entries, plus the 256 bytes for
 	 * status, which is just above 256KB.
@@ -2123,14 +2136,15 @@ static int start_rh(struct retry_handler *rh, unsigned int dev_id)
 		rh->eq_size = 16384 * 16 + page_size;
 		rh->eq_buf = aligned_alloc(page_size, rh->eq_size);
 		if (rh->eq_buf == NULL)
-			fatal(rh, "Failed to allocated the EQ buffer");
+			fatal(rh, "Failed to allocate the EQ buffer");
 
 		ret = cxil_map(rh->lni, rh->eq_buf, rh->eq_size,
 			       CXI_MAP_PIN | CXI_MAP_READ | CXI_MAP_WRITE,
 			       NULL, &rh->eq_buf_md);
-		if (ret != 0)
-			fatal(rh, "Failed to map the EQ buffer: %d\n",
-			      ret);
+		if (ret != 0) {
+			fatal(rh, "Failed to map the EQ buffer: %s (ret=%d)\n",
+			      strerror(-ret), ret);
+		}
 	} else {
 		rh->eq_pt = true;
 		attr.flags |= CXI_EQ_PASSTHROUGH;
@@ -2144,8 +2158,10 @@ static int start_rh(struct retry_handler *rh, unsigned int dev_id)
 
 	ret = cxil_alloc_evtq(rh->lni, rh->eq_buf_md, &attr,
 			      rh->wait, NULL, &rh->eq);
-	if (ret != 0)
-		fatal(rh, "cxil_alloc_evtq failed: %d\n", ret);
+	if (ret != 0) {
+		fatal(rh, "cxil_alloc_evtq failed: %s (ret=%d)\n",
+		      strerror(-ret), ret);
+	}
 
 	cxil_write_csr(rh->dev, C_PCT_CFG_SRB_RETRY_CTRL,
 		       &srb_retry_ctrl, sizeof(srb_retry_ctrl));
