@@ -1043,9 +1043,39 @@ Test(svc, svc_vni_overlap)
 	cr_assert_eq(rc, -EEXIST, "cxil_alloc_svc() Failed. rc: %d", rc);
 }
 
+/* Get services that have LE or TLE pools allocated.
+ * The way to tell if there is a pool allocated is by checking
+ * if there are reserved LEs or TLEs - except for the default
+ * service is implicitly "allocated" LE pool 0.
+ * The TLE pool is explicitly allocated.
+ */
+static int get_num_services(struct cxil_dev *dev, bool le_pools, bool tle_pools)
+{
+	int i;
+	int rc;
+	int num_svcs = le_pools ? 1 : 0;
+	struct cxil_svc_list *list = NULL;
+
+	rc = cxil_get_svc_list(dev, &list);
+	cr_assert_eq(0, rc, "cxil_get_svc_list failed:%d", rc);
+
+	for (i = 0; i < list->count; i++) {
+		if (le_pools && list->descs[i].limits.les.res)
+			num_svcs++;
+		else if (tle_pools && list->descs[i].limits.tles.res)
+			num_svcs++;
+	}
+
+	cxil_free_svc_list(list);
+
+	return num_svcs;
+}
+
+#define MAX_LE_POOLS 16
+#define MAX_TLE_POOLS 4
 struct le_tle_params {
 	struct cxi_rsrc_limits limits;
-	int num_services;
+	int max_services;
 };
 
 ParameterizedTestParameters(svc, le_tle)
@@ -1053,7 +1083,6 @@ ParameterizedTestParameters(svc, le_tle)
 	size_t param_sz;
 
 	static struct le_tle_params params[] = {
-		/* LEs */
 		{
 			.limits = (struct cxi_rsrc_limits) {
 				.les = {
@@ -1061,58 +1090,63 @@ ParameterizedTestParameters(svc, le_tle)
 					.res = 1092,
 				},
 			},
-			.num_services = 15,
+			.max_services = MAX_LE_POOLS,
 		},
-		/* TLEs */
+		{
+			.limits = (struct cxi_rsrc_limits) {
+				.les = {
+					.max = 16384,
+					.res = 0,
+				},
+			},
+			.max_services = MAX_LE_POOLS + 10,
+		},
 		{
 			.limits = (struct cxi_rsrc_limits) {
 				.tles = {
 					.max = 10,
-					.res = 7,
+					.res = 10,
 				},
 			},
-			.num_services = 3,
+			.max_services = MAX_TLE_POOLS,
 		},
 	};
 
 	param_sz = ARRAY_SIZE(params);
-	return cr_make_param_array(struct le_tle_params, params,
-				   param_sz);
-
+	return cr_make_param_array(struct le_tle_params, params, param_sz);
 }
 
+/* Test allocating services with and without reserving LEs.
+ * Reserving LEs causes an LE pool to be allocated for the service.
+ * There are 16 LE pools so a max of 16 services (including the
+ * default service) can be created. More services can be created
+ * if LEs are not reserved and they will use (share) the default
+ * LE pool.
+ */
 ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 {
 	int rc, i;
-	int num_svcs = param->num_services;
+	int num_svcs;
+	int cur_svcs;
 	struct cxi_svc_desc *svcs;
 	bool alloc_svcs_failed = false;
+	bool le_pools = param->limits.les.res;
+	bool tle_pools = param->limits.tles.res;
 
-	/* When running on actual HW, the LE test case needs to account for
-	 * LEs currently in use to determine max number of svcs to allocate.
+	/* Account for services with LE pools allocated to
+	 * determine the max number of svcs to allocate.
 	 */
-	if (!is_vm() && num_svcs == 15) {
-		FILE *fp = popen("cat /sys/kernel/debug/cxi/cxi0/services | awk '$0 ~ / Res / {s+=$8} END {print s}'", "r");
-		if (fp) {
-			int les_in_use;
-			int ret;
+	cur_svcs = get_num_services(dev, le_pools, tle_pools);
 
-			ret = fscanf(fp, "%d", &les_in_use);
-			cr_assert_eq(ret, 1, "ret=%d\n", ret);
-			pclose(fp);
-			num_svcs = (param->limits.les.max - les_in_use) / param->limits.les.res;
-			cr_log_info("les_in_use:%d num_svcs:%d\n", les_in_use,
-				    num_svcs);
-			if (!num_svcs)
-				cr_skip("Too many LEs are currently in use to run this test");
-		} else {
-			cr_log_info("Unable to determine LEs in use");
-		}
-	}
+	num_svcs = param->max_services - cur_svcs;
 
-	/* Allocate max number of services with le/tle limits */
+	/* Allocate max number of services with le limits */
 	svcs = calloc(num_svcs + 1, sizeof(*svcs));
+	cr_assert_neq(svcs, NULL);
+
 	for (i = 0; i < num_svcs; i++) {
+		struct cxi_svc_desc desc;
+
 		svcs[i].resource_limits = true;
 		svcs[i].limits = param->limits;
 		svcs[i].restricted_vnis = 1;
@@ -1125,6 +1159,8 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 			break;
 		}
 		svcs[i].svc_id = rc;
+		rc = cxil_get_svc(dev, rc, &desc);
+		cr_assert_eq(0, rc, "cxil_get_svc rc:%d", rc);
 	}
 
 	if (alloc_svcs_failed) {
@@ -1137,14 +1173,16 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 		cr_assert(0, "alloc svc failed");
 	}
 
-	/* Show that another svc with le/tle reservations cannot be allocated */
-	svcs[num_svcs].resource_limits = true;
-	svcs[num_svcs].limits = param->limits;
-	svcs[num_svcs].restricted_vnis = 1;
-	svcs[num_svcs].num_vld_vnis = 1;
-	svcs[num_svcs].vnis[0] = 8;
-	rc = alloc_svc(dev, &svcs[num_svcs], NULL);
-	cr_assert_eq(rc, -ENOSPC);
+	/* Show that another svc with le reservations cannot be allocated */
+	if (param->limits.les.res || param->limits.tles.res) {
+		svcs[num_svcs].resource_limits = true;
+		svcs[num_svcs].limits = param->limits;
+		svcs[num_svcs].restricted_vnis = 1;
+		svcs[num_svcs].num_vld_vnis = 1;
+		svcs[num_svcs].vnis[0] = 8;
+		rc = cxil_alloc_svc(dev, &svcs[num_svcs], NULL);
+		cr_assert_eq(rc, -ENOSPC);
+	}
 
 	/* Destroy services */
 	for (i = 0; i < num_svcs; i++) {
