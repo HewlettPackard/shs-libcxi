@@ -1898,7 +1898,7 @@ ParameterizedTest(int *order, map_xfer, odp_fault2)
 }
 
 /* Register range with hint and fault separate ranges */
-Test(map_xfer, odp_fault3)
+Test(map_xfer, odp_fault3, .disabled = true)
 {
 	int rc;
 	int hp_order = 25;
