@@ -173,7 +173,7 @@ retry_fail:
 	 */
 	for (i = num - not_retried; i < num; i++) {
 		spts[i]->status = STS_NEED_RETRY;
-		if (spt->current_event_to)
+		if (spts[i]->current_event_to)
 			spts[i]->to_retries--;
 		else
 			spts[i]->nack_retries--;
