@@ -16,6 +16,9 @@
 
 /* Debug functions for Cassini retry handler */
 
+/* Used to pass rh context to twalk callbacks which don't support user data */
+static struct retry_handler *twalk_rh;
+
 /* Dump an SPT. If unordered only, only dump it if it not attached to
  * an SCT.
  *
@@ -49,9 +52,7 @@ static void dump_spt_tw(const void *nodep, const VISIT which,
 			    const int depth)
 {
 	struct spt_entry *spt;
-	struct retry_handler *rh;
-
-	rh = container_of(nodep, struct retry_handler, spt_tree);
+	struct retry_handler *rh = twalk_rh;
 
 	if (which != postorder && which != leaf)
 		return;
@@ -83,9 +84,8 @@ static void dump_sct(struct retry_handler *rh, struct sct_entry *sct)
 static void dump_sct_tw(const void *nodep, const VISIT which, const int depth)
 {
 	struct sct_entry *sct;
-	struct retry_handler *rh;
+	struct retry_handler *rh = twalk_rh;
 
-	rh = container_of(nodep, struct retry_handler, sct_tree);
 	if (which != postorder && which != leaf)
 		return;
 
@@ -118,6 +118,8 @@ static void dump_timeout_list(const struct retry_handler *rh)
  */
 void dump_rh_state(const struct retry_handler *rh)
 {
+	twalk_rh = (struct retry_handler *)rh;
+
 	rh_printf(rh, LOG_WARNING, "SCT STATE DUMP BEGIN\n");
 	twalk(rh->sct_tree, dump_sct_tw);
 	rh_printf(rh, LOG_WARNING, "SCT STATE DUMP END\n");
