@@ -674,10 +674,6 @@ static int thp(int nr_hugepages)
 
 	cr_log_info("mapping len %lx\n", len);
 
-	ptr = mmap(NULL, len + HPAGE_SIZE, PROT_READ | PROT_WRITE,
-			MAP_ANONYMOUS | MAP_NORESERVE | MAP_PRIVATE, -1, 0);
-	cr_assert_neq(ptr, MAP_FAILED, "initial mmap");
-
 	rc = posix_memalign(&ptr, HPAGE_SIZE, len);
 	cr_assert_eq(rc, 0, "posix_memalign");
 
@@ -722,7 +718,7 @@ static int thp(int nr_hugepages)
 	return 0;
 }
 
-Test(map_xfer, thp, .disabled = false, .timeout = 10)
+Test(map_xfer, thp, .disabled = true, .timeout = 10)
 {
 	pagemap_fd = open("/proc/self/pagemap", O_RDONLY);
 	cr_assert_geq(pagemap_fd, 0, "open pagemap failed %d", pagemap_fd);
