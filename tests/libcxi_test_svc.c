@@ -1034,13 +1034,17 @@ Test(svc, svc_vni_overlap)
 	int rc;
 	struct cxi_svc_desc svc_desc = {};
 
+	/* The default service already owns VNI 1. A second service
+	 * specifying the same exact VNI must now succeed (job_vni support).
+	 */
 	svc_desc.restricted_vnis = 1;
 	svc_desc.num_vld_vnis = 1;
 	svc_desc.vnis[0] = CXI_DEFAULT_SVC_ID;
 
-	/* Using the default svc should fail */
 	rc = alloc_svc(dev, &svc_desc, NULL);
-	cr_assert_eq(rc, -EEXIST, "cxil_alloc_svc() Failed. rc: %d", rc);
+	cr_assert_gt(rc, 0, "cxil_alloc_svc() sharing exact VNI failed rc: %d", rc);
+
+	cxil_destroy_svc(dev, rc);
 }
 
 /* Get services that have LE or TLE pools allocated.
