@@ -7,9 +7,9 @@
 [[ $(basename $0) = "preamble.sh" ]] &&
 	echo "This script is only intended to be run by tests. Exiting." && exit 1
 
-HYP=$(grep -c "^flags.*\ hypervisor" /proc/cpuinfo)
-if [[ $HYP -eq 0 ]]; then
-    . ./framework.sh
+. ./framework.sh
+
+if ! vm_in_guest; then
 
     noexit=0
     while [[ $# -gt 0 ]]; do
