@@ -101,23 +101,36 @@ int ctx_alloc(struct cxi_context *ctx, uint32_t dev_id, uint32_t svc_id)
 		return rc;
 	}
 
-	/* If the provided service does not restrict VNIs, use one of the
-	 * default VNIs. Default VNIs can be determined by checking the
-	 * default service, if it exists. If the default service does not
-	 * restrict VNIs, pick any non-zero VNI.
+	/* verify svc is enabled */
+	if (!svc_desc.enable) {
+		fprintf(stderr, "Service %d is disabled\n", svc_id);
+		return -EINVAL;
+	}
+
+	/* The default service with unrestricted VNIs is a special case that
+	 * uses VNI 1. Otherwise, if the service does not restrict VNIs, it
+	 * uses a VNI range; retrieve that range and use a VNI within it. If
+	 * the service restricts VNIs, use one of the VNIs it explicitly
+	 * allows.
 	 */
-	if (!svc_desc.restricted_vnis && svc_id != CXI_DEFAULT_SVC_ID) {
-		/* ensure we can get the default service */
-		rc = cxil_get_svc(ctx->dev, CXI_DEFAULT_SVC_ID, &svc_desc);
+	if (svc_id == CXI_DEFAULT_SVC_ID && !svc_desc.restricted_vnis) {
+		ctx->vni = 1;
+	} else if (!svc_desc.restricted_vnis) {
+		uint16_t vni_min, vni_max;
+
+		rc = cxil_svc_get_vni_range(ctx->dev, svc_id, &vni_min,
+					    &vni_max);
 		if (rc) {
 			fprintf(stderr,
-				"Failed to get default service %d: %s\n",
-				CXI_DEFAULT_SVC_ID, strerror(-rc));
+				"Failed to get VNI range for service %d: %s\n",
+				svc_id, strerror(-rc));
 			return rc;
 		}
-	}
-	if (!svc_desc.restricted_vnis) {
-		ctx->vni = 1;
+		if (vni_min == 0) {
+			fprintf(stderr, "VNI 0 is not a valid VNI.\n");
+			return -EINVAL;
+		}
+		ctx->vni = vni_min;
 	} else {
 		if (svc_desc.vnis[0] == 0) {
 			fprintf(stderr, "VNI 0 is not a valid VNI.\n");
