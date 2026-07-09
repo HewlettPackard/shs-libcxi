@@ -599,6 +599,11 @@ cdb_get_fw_mgmt_features(struct cmis_fw_update *fwu)
 		error_out("Failed to get cdb response (rc=%d)\n", rc);
 		return rc;
 	}
+	if (cdb.RLPLLength < sizeof(fwu->features)) {
+		error_out("CMD_FW_MGMT_FEATURES response too short (%u < %zu)\n",
+			  cdb.RLPLLength, sizeof(fwu->features));
+		return -EIO;
+	}
 	memcpy((void *)&fwu->features, cdb.LocalPayload, sizeof(fwu->features));
 
 	/* Fixup multibyte fields as needed */
