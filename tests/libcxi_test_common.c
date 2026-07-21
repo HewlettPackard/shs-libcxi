@@ -1055,9 +1055,6 @@ bool is_vm(void) {
 int alloc_svc(struct cxil_dev *dev, const struct cxi_svc_desc *desc,
 	      struct cxi_svc_fail_info *fail_info)
 {
-	if (dev->info.is_vf)
-		cr_skip("TODO: Service allocation on VF");
-
 	return cxil_alloc_svc(dev, desc, fail_info);
 }
 

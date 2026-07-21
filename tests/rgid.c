@@ -41,7 +41,7 @@ struct rgid_objs obj[2] = {};
 struct cxi_svc_desc svc_desc = {
 	.restricted_vnis = 1,
 	.num_vld_vnis = 1,
-	.vnis[0] = 8,
+	.vnis[0] = 32,
 };
 struct cxi_rsrc_use rsrc_use = {};
 

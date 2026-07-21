@@ -46,16 +46,42 @@ cleanup()
 trap cleanup EXIT
 
 cat <<EOF > "$parent_yaml"
-resource_limits: 0
+resource_limits: 1
 restricted_vnis: 0
 restricted_members: 0
 restricted_tcs: 0
 exclusive_cp: 0
+is_parent: 1
+
+limits:
+  - name: ACs
+    max: 1022
+    res: 1022
+  - name: EQs
+    max: 2047
+    res: 2047
+  - name: CTs
+    max: 2047
+    res: 2047
+  - name: PTEs
+    max: 2047
+    res: 2047
+  - name: TXQs
+    max: 1022
+    res: 1022
+  - name: TGQs
+    max: 511
+    res: 511
+  - name: TLEs
+    max: 1536
+    res: 1536
+  - name: LEs
+    max: 16383
+    res: 16383
 
 vnis:
   vni_min: 32
   vni_max: 63
-
 EOF
 
 cat <<EOF > "$vf_yaml"
@@ -64,6 +90,7 @@ restricted_vnis: 1
 restricted_members: 0
 restricted_tcs: 0
 exclusive_cp: 0
+is_parent: 0
 
 vnis:
   vni: 63
@@ -71,6 +98,7 @@ EOF
 
 create_service -d cxi0 -y "$parent_yaml"
 parent_svc_id="$SERVICE_ID"
+$cxi_service enable -d cxi0 -s "$parent_svc_id"
 
 echo "$parent_svc_id" > /sys/class/cxi/cxi0/vf/0/svc_id
 

@@ -76,7 +76,7 @@ ParameterizedTest(struct svc_alloc_params *param, svc, svc_alloc)
 		.resource_limits = param->resource_limits,
 		.limits = param->limits,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	int rc = alloc_svc(dev, &svc_desc, &fail_info);
@@ -291,7 +291,7 @@ ParameterizedTest(struct svc_ugid_params *param, svc, svc_ugid)
 		.restricted_members = 1,
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	svc_desc.members[0].svc_member.gid = param->ugid;
@@ -430,7 +430,7 @@ ParameterizedTest(struct svc_netns_params *param, svc, svc_netns)
 	struct cxi_svc_desc svc_desc = {
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	svc_desc.restricted_members = param->restricted_members;
@@ -519,7 +519,7 @@ Test(svc, svc_profile_ignore)
 		.restricted_members = 1,
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	/* member[1].type is ignore therefore no ac entry */
@@ -664,7 +664,7 @@ Test(svc, svc_change_uid)
 		.restricted_members = 1,
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	svc_desc.members[0].svc_member.uid = 0;
@@ -773,7 +773,7 @@ Test(svc, svc_max)
 		.limits = limits,
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 	struct cxi_cq_alloc_opts opts = {
 		.count = 1024,
@@ -1039,13 +1039,18 @@ Test(svc, svc_vni_overlap)
 {
 	int rc;
 	struct cxi_svc_desc svc_desc = {};
+	struct cxi_svc_desc existing = {};
 
-	/* The default service already owns VNI 1. A second service
-	 * specifying the same exact VNI must now succeed (job_vni support).
+	rc = cxil_get_svc(dev, svc_id(), &existing);
+	cr_assert(rc == 0, "cxil_get_svc() failed rc: %d", rc);
+	cr_assert(existing.num_vld_vnis > 0, "Service has no VNI list");
+
+	/* The service that tests are running under already owns a VNI.
+	 * Specifying the same exact VNI must now succeed (job_vni support).
 	 */
 	svc_desc.restricted_vnis = 1;
 	svc_desc.num_vld_vnis = 1;
-	svc_desc.vnis[0] = svc_id();
+	svc_desc.vnis[0] = existing.vnis[0];
 
 	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() sharing exact VNI failed rc: %d", rc);
@@ -1143,8 +1148,9 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 	bool le_pools = param->limits.les.res;
 	bool tle_pools = param->limits.tles.res;
 
-	if (dev->info.is_vf)
-		cr_skip("Test not applicable to VF devices");
+	if (dev->info.is_vf &&
+	    (param->limits.les.res || param->limits.tles.res))
+		cr_skip("LE/TLE reservation not supported in VFs - rgroups belong to parent");
 
 	/* Account for services with LE pools allocated to
 	 * determine the max number of svcs to allocate.
@@ -1164,7 +1170,7 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 		svcs[i].limits = param->limits;
 		svcs[i].restricted_vnis = 1;
 		svcs[i].num_vld_vnis = 1,
-		svcs[i].vnis[0] = 11 + i,
+		svcs[i].vnis[0] = 32 + i,
 		rc = alloc_svc(dev, &svcs[i], NULL);
 		if (rc < 0) {
 			alloc_svcs_failed = true;
@@ -1186,7 +1192,12 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 		cr_assert(0, "alloc svc failed");
 	}
 
-	/* Show that another svc with le reservations cannot be allocated */
+	/* Show that another svc with le reservations cannot be allocated.
+	 * Skipped on a VF: child services inherit the parent's LE/TLE hardware
+	 * pools (through the rgroup), so the number of pools can never be
+	 * exhausted. Allocation is instead bounded by the parent's reservation
+	 * budget.
+	 */
 	if (param->limits.les.res || param->limits.tles.res) {
 		svcs[num_svcs].resource_limits = true;
 		svcs[num_svcs].limits = param->limits;
