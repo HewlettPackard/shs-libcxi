@@ -79,7 +79,7 @@ ParameterizedTestParameters(lni, lni_alloc)
 ParameterizedTest(struct lni_alloc_params *param, lni, lni_alloc)
 {
 	/* TODO Additional testing for svc_id field */
-	int rc = cxil_alloc_lni(dev, &lni, CXI_DEFAULT_SVC_ID);
+	int rc = cxil_alloc_lni(dev, &lni, svc_id());
 
 	cr_assert_eq(rc, param->rc, "rc mismatch, expected: %d received %d",
 		     param->rc, rc);
@@ -90,10 +90,10 @@ ParameterizedTest(struct lni_alloc_params *param, lni, lni_alloc)
 
 Test(lni, lni_null)
 {
-	int rc = cxil_alloc_lni(NULL, &lni, CXI_DEFAULT_SVC_ID);
+	int rc = cxil_alloc_lni(NULL, &lni, svc_id());
 	cr_assert_eq(rc, -EINVAL);
 
-	rc = cxil_alloc_lni(dev, NULL, CXI_DEFAULT_SVC_ID);
+	rc = cxil_alloc_lni(dev, NULL, svc_id());
 	cr_assert_eq(rc, -EINVAL);
 
 	rc = cxil_alloc_lni(dev, &lni, 0);
@@ -156,7 +156,7 @@ Test(domain, reserve)
 	struct cxil_lni *lni2;
 	int base_pid;
 
-	rc = cxil_alloc_lni(dev, &lni2, CXI_DEFAULT_SVC_ID);
+	rc = cxil_alloc_lni(dev, &lni2, svc_id());
 
 	/* Bad vni */
 	rc = cxil_reserve_domain(lni, 10000, 0, 0);
@@ -178,7 +178,7 @@ Test(domain, reserve)
 	rc = cxil_destroy_lni(lni);
 	cr_assert_eq(rc, 0);
 
-	rc = cxil_alloc_lni(dev, &lni, CXI_DEFAULT_SVC_ID);
+	rc = cxil_alloc_lni(dev, &lni, svc_id());
 	cr_assert_eq(rc, 0);
 
 	/* reserve 1 PID */
@@ -233,7 +233,7 @@ Test(domain, reserve)
 	}
 
 	/* reserve 1 non-zero PID */
-	rc = cxil_alloc_lni(dev, &lni2, CXI_DEFAULT_SVC_ID);
+	rc = cxil_alloc_lni(dev, &lni2, svc_id());
 	cr_assert_eq(rc, 0);
 
 	rc = cxil_reserve_domain(lni2, 1, 100, 1);

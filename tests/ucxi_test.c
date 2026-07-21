@@ -85,7 +85,7 @@ ParameterizedTest(const struct lni_alloc_params *param, ucxi_lni, lni_alloc)
 
 	lni_alloc.op = CXI_OP_LNI_ALLOC;
 	lni_alloc.resp = param->with_resp ? &resp : NULL;
-	lni_alloc.svc_id = CXI_DEFAULT_SVC_ID;
+	lni_alloc.svc_id = svc_id();
 	rc = write(pdev->fd, &lni_alloc, param->write_sz);
 	cr_assert_eq(rc, param->write_rc,
 		     "RC mismatch, expected: %d received: %d",

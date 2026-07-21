@@ -91,6 +91,7 @@ extern int test_data_len;
 void devinfo_setup(void);
 void devinfo_teardown(void);
 void get_dev_id(void);
+int svc_id(void);
 void dev_setup(void);
 void dev_teardown(void);
 void lni_setup(void);

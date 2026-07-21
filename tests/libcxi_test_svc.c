@@ -127,7 +127,7 @@ Test(svc, svc_get)
 		     rc);
 
 	/* Should be able to retrieve default service */
-	rc = cxil_get_svc(dev, CXI_DEFAULT_SVC_ID, &desc);
+	rc = cxil_get_svc(dev, svc_id(), &desc);
 	cr_assert_eq(rc, 0, "cxil_get_svc(): Failed. Expected Success! rc:%d",
 		     rc);
 }
@@ -139,12 +139,12 @@ Test(svc, svc_update)
 	struct cxi_svc_desc svc_desc = {
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 	struct cxi_svc_desc comp_desc = {
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	/* Initial allocation of service */
@@ -157,7 +157,9 @@ Test(svc, svc_update)
 	/* Updating nonexistent service should fail */
 	svc_desc.svc_id = 13;
 	rc = cxil_update_svc(dev, &svc_desc, &fail_info);
-	cr_assert_eq(rc, -EINVAL, "cxil_update_svc(): Succeeded. (Bad svc_id) Expected Failure!");
+	cr_assert_eq(rc, -EINVAL,
+		     "cxil_update_svc(): returned %d. (Bad svc_id) Expected -EINVAL!",
+		     rc);
 
 	/* Put good ID back in descriptor */
 	svc_desc.svc_id = svc_id;
@@ -172,7 +174,7 @@ Test(svc, svc_update)
 
 	/* Updating VNIs properly should work */
 	svc_desc.num_vld_vnis = 1;
-	svc_desc.vnis[0] = 11;
+	svc_desc.vnis[0] = 33;
 	rc = cxil_update_svc(dev, &svc_desc, &fail_info);
 	cr_assert_eq(rc, 0, "cxil_update_svc(): Failed with rc: %d.(restricted_vnis) Expected Success!",
 		     rc);
@@ -560,7 +562,7 @@ Test(svc, svc_member_perm)
 		.restricted_members = 1,
 		.restricted_vnis = 1,
 		.num_vld_vnis = 1,
-		.vnis[0] = 8,
+		.vnis[0] = 32,
 	};
 
 	svc_desc.members[0].svc_member.uid = TEST_UID;
@@ -980,8 +982,8 @@ Test(svc, svc_max)
 Test(svc, svc_vni_range)
 {
 	int rc;
-	uint16_t vni_min = 16;
-	uint16_t vni_max = 31;
+	uint16_t vni_min = 32;
+	uint16_t vni_max = 47;
 	uint16_t min;
 	uint16_t max;
 	bool exclusive = false;
@@ -1011,14 +1013,18 @@ Test(svc, svc_vni_range)
 		     "vni_min:%d exp:%d vni_max:%d exp:%d",
 		     min, vni_min, max, vni_max);
 
-	rc = cxil_svc_set_exclusive_cp(dev, desc.svc_id, true);
-	cr_assert_eq(rc, 0, "cxil_svc_set_exclusive_cp failed svc_id:%d rc: %d",
-		     desc.svc_id, rc);
+	if (!dev->info.is_vf) {
+		rc = cxil_svc_set_exclusive_cp(dev, desc.svc_id, true);
+		cr_assert_eq(rc, 0,
+			     "cxil_svc_set_exclusive_cp failed svc_id:%d rc: %d",
+			     desc.svc_id, rc);
 
-	rc = cxil_svc_get_exclusive_cp(dev, desc.svc_id, &exclusive);
-	cr_assert_eq(rc, 0, "cxil_get_svc_exclusive_cp failed svc_id:%d rc: %d",
-		     desc.svc_id, rc);
-	cr_log_info("exclusive:%d\n", exclusive);
+		rc = cxil_svc_get_exclusive_cp(dev, desc.svc_id, &exclusive);
+		cr_assert_eq(rc, 0,
+			     "cxil_get_svc_exclusive_cp failed svc_id:%d rc: %d",
+			     desc.svc_id, rc);
+		cr_log_info("exclusive:%d\n", exclusive);
+	}
 
 	rc = cxil_svc_enable(dev, desc.svc_id, true);
 	cr_assert_eq(rc, 0, "cxil_svc_enable failed svc_id:%d rc: %d",
@@ -1039,7 +1045,7 @@ Test(svc, svc_vni_overlap)
 	 */
 	svc_desc.restricted_vnis = 1;
 	svc_desc.num_vld_vnis = 1;
-	svc_desc.vnis[0] = CXI_DEFAULT_SVC_ID;
+	svc_desc.vnis[0] = svc_id();
 
 	rc = alloc_svc(dev, &svc_desc, NULL);
 	cr_assert_gt(rc, 0, "cxil_alloc_svc() sharing exact VNI failed rc: %d", rc);
@@ -1137,6 +1143,9 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 	bool le_pools = param->limits.les.res;
 	bool tle_pools = param->limits.tles.res;
 
+	if (dev->info.is_vf)
+		cr_skip("Test not applicable to VF devices");
+
 	/* Account for services with LE pools allocated to
 	 * determine the max number of svcs to allocate.
 	 */
@@ -1183,9 +1192,9 @@ ParameterizedTest(struct le_tle_params *param, svc, le_tle)
 		svcs[num_svcs].limits = param->limits;
 		svcs[num_svcs].restricted_vnis = 1;
 		svcs[num_svcs].num_vld_vnis = 1;
-		svcs[num_svcs].vnis[0] = 8;
+		svcs[num_svcs].vnis[0] = 32;
 		rc = cxil_alloc_svc(dev, &svcs[num_svcs], NULL);
-		cr_assert_eq(rc, -ENOSPC);
+		cr_assert_eq(rc, -ENOSPC, "Expected ENOSPC, got rc %d", rc);
 	}
 
 	/* Destroy services */

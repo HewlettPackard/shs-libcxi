@@ -85,6 +85,13 @@ void get_dev_id(void)
 	dev_id = dev_num_str ? atoi(dev_num_str) : 0;
 }
 
+int svc_id(void)
+{
+	char *svc_id_str = getenv("CXIL_TEST_SVC_ID");
+
+	return svc_id_str ? atoi(svc_id_str) : CXI_DEFAULT_SVC_ID;
+}
+
 void dev_setup(void)
 {
 	int ret;
@@ -108,7 +115,7 @@ void lni_setup(void)
 
 	dev_setup();
 
-	ret = cxil_alloc_lni(dev, &lni, CXI_DEFAULT_SVC_ID);
+	ret = cxil_alloc_lni(dev, &lni, svc_id());
 	cr_assert_eq(ret, 0, "ret = (%d) %s", ret, strerror(-ret));
 	cr_assert_neq(lni, NULL);
 }
@@ -1049,7 +1056,7 @@ int alloc_svc(struct cxil_dev *dev, const struct cxi_svc_desc *desc,
 	      struct cxi_svc_fail_info *fail_info)
 {
 	if (dev->info.is_vf)
-		cr_skip_test("Service allocation isn't supported on VFs");
+		cr_skip("TODO: Service allocation on VF");
 
 	return cxil_alloc_svc(dev, desc, fail_info);
 }
