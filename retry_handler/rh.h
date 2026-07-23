@@ -148,7 +148,6 @@ struct retry_handler {
 
 	pthread_t stats_thread;
 	struct fuse *stats_fuse;
-	struct fuse_chan *stats_chan;
 	struct {
 		unsigned int spt_alloc;
 		unsigned int spt_freed;
