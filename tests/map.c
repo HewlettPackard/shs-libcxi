@@ -653,7 +653,7 @@ static void is_hp(void *ptr, int hp_order)
 static int thp(int nr_hugepages)
 {
 	int rc;
-	void *ptr;
+	void *ptr = NULL;
 	size_t len;
 	size_t ram;
 	uint64_t ent[2];
