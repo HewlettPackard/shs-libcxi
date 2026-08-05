@@ -508,12 +508,6 @@ static void cancel_spt(struct retry_handler *rh, struct spt_entry *spt)
 			  nid,
 			  nid_to_mac(nid),
 			  cxi_rc_to_str(spt->cancel_return_code));
-
-		/* Cache the next SCT sequence number to determine if a
-		 * connection is unexpectedly reused.
-		 */
-		if (spt->spt_idx == spt->sct->tail)
-			rh->sct_state[spt->sct->sct_idx].seqno = spt->sct->ram2.req_seqno;
 	} else {
 		rh_printf(rh, LOG_NOTICE, "force closing (invalidating) spt=%u (op=%u, nid=%u, mac=%s, rc=%s)\n",
 			  spt->spt_idx, spt->opcode, nid, nid_to_mac(nid),
@@ -635,6 +629,11 @@ static void increment_sct_seqno(struct retry_handler *rh, struct sct_entry *sct)
 	sct->ram2.req_seqno = new_seqno;
 	cxil_write_csr(rh->dev, C_PCT_CFG_SCT_RAM2(sct->sct_idx),
 		       &sct->ram2, sizeof(sct->ram2));
+
+	/* Cache the next SCT sequence number to determine if a
+	 * connection is unexpectedly reused.
+	 */
+	rh->sct_state[sct->sct_idx].seqno = new_seqno;
 }
 
 /* Schedule an SPT cancellation */
@@ -650,7 +649,7 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 	if (return_code == C_RC_UNDELIVERABLE)
 		nid_tree_inc(rh, cxi_dfa_nid(spt->dfa));
 
-	if (spt->has_timed_out && spt->ram0.req_order == 1) {
+	if (spt->ram0.req_order == 1) {
 		/* Hold onto this packet so an explicit clear isn't
 		 * sent out.
 		 */
@@ -661,33 +660,47 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 		case C_CMD_GET:
 		case C_CMD_NOMATCH_GET:
 		case C_CMD_FETCHING_ATOMIC:
-			/* By policy, EOM Gets are provided with a larger wait time before being cancelled.
-			 * Developer Notes: CAS-3283, NETCASSINI-3345
+			/* The Get cancellation workaround runs for every Get
+			 * SCT we cancel, regardless of which packet tripped
+			 * the cancel. If already applied, just cancel.
 			 */
-			if (spt->ram0.eom &&
-			    !rh->sct_state[spt->sct->sct_idx].seqno_modified) {
-				rh_printf(rh, LOG_DEBUG, "schedule cancel of EOM Get spt=%u (sct=%u) in %lu.%06lus\n",
-					  spt->spt_idx, spt->sct->sct_idx,
-					  peer_tct_free_wait_time.tv_sec,
-					  peer_tct_free_wait_time.tv_usec);
-
-				/* Add this SCT to a global table to track if cancellation is already scheduled */
-				rh->sct_state[spt->sct->sct_idx].seqno_modified = true;
-
-				/* Increment sequence number to cancel EOM GET */
-				increment_sct_seqno(rh, spt->sct);
-
-				timer_add(rh, &spt->timeout_list,
-					  &peer_tct_free_wait_time);
-			} else {
-				if (spt->ram0.eom)
-					rh_printf(rh, LOG_DEBUG, "skipping EOM Get cancellation for spt=%u (sct=%u)\n",
-						  spt->spt_idx, spt->sct->sct_idx);
+			if (rh->sct_state[spt->sct->sct_idx].seqno_modified) {
+				rh_printf(rh, LOG_DEBUG, "skipping Get cancellation workaround for spt=%u (sct=%u). Immediately canceling.\n",
+					  spt->spt_idx, spt->sct->sct_idx);
 				cancel_spt(rh, spt);
+				break;
 			}
+
+			/* Calling function tells us which SPT to hold onto.
+			 * Others can be canceled immediately to free up NIC
+			 * resources.
+			 */
+			if (spt != spt->sct->cancel_hold_spt) {
+				cancel_spt(rh, spt);
+				break;
+			}
+
+			/* Hold the last active packet for 2x TCT so the SCT stays
+			 * in RETRY and the target TCT idles out before release.
+			 * Developer Notes: CAS-3283, NETCASSINI-3345, NETCASSINI-4790
+			 */
+			rh_printf(rh, LOG_DEBUG, "schedule cancel of Get hold spt=%u (sct=%u) in %lu.%06lus\n",
+				  spt->spt_idx, spt->sct->sct_idx,
+				  peer_tct_free_wait_time.tv_sec,
+				  peer_tct_free_wait_time.tv_usec);
+
+			rh->sct_state[spt->sct->sct_idx].seqno_modified = true;
+			increment_sct_seqno(rh, spt->sct);
+			timer_add(rh, &spt->timeout_list, &peer_tct_free_wait_time);
 			break;
 
 		default:
+		/* PUTS */
+			if (!spt->has_timed_out) {
+				cancel_spt(rh, spt);
+				break;
+			}
+
 			/* If the SCT seqno was already modified, all ODP policy
 			 * actions were applied to all packets. No further policy
 			 * actions required.
@@ -736,6 +749,7 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 			}
 		}
 	} else {
+		/* Immediately cancel unordered SPT */
 		cancel_spt(rh, spt);
 	}
 }
@@ -1965,9 +1979,11 @@ static void setup_timing(struct retry_handler *rh)
 	rh->base_retry_interval_us = epoch_us / 2000;
 	rh->max_retry_interval_us = epoch_us / 2;
 
-	/* Tie peer_tct_timeout to TCT Epoch, unless the user already set it */
+	/* Tie peer_tct_timeout to TCT Epoch (plus a cushion so the target
+	 * reliably times out before release), unless the user already set it.
+	 */
 	if (!peer_tct_free_wait_time.tv_sec) {
-		peer_tct_free_wait_time.tv_sec = (epoch_us * 2) / 1000000;
+		peer_tct_free_wait_time.tv_sec = (epoch_us * 2) / 1000000 + 2;
 		peer_tct_free_wait_time.tv_usec = (epoch_us * 2) % 1000000;
 	}
 

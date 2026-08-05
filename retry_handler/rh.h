@@ -332,6 +332,12 @@ struct sct_entry {
 	/* Return Code to use when cancelling SPTs */
 	enum c_return_code cancel_rc;
 
+	/* Last non-completed SPT in the chain; carries the cancellation
+	 * workaround (hold + seqno modification) at teardown. Only valid when
+	 * the sct is being cancelled.
+	 */
+	struct spt_entry *cancel_hold_spt;
+
 	/* Whether to do a force close when releasing the SCT */
 	bool do_force_close;
 

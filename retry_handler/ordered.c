@@ -536,6 +536,7 @@ static void cancel_spt_entries(struct retry_handler *rh,
 			       struct sct_entry *sct)
 {
 	struct spt_entry *spt;
+	struct spt_entry *hold_spt = NULL;
 	bool tail;
 	unsigned int nid = cxi_dfa_nid(sct->sct_cam.dfa);
 
@@ -544,6 +545,22 @@ static void cancel_spt_entries(struct retry_handler *rh,
 		  sct->num_entries, sct->sct_idx,
 		  nid, nid_to_mac(nid),
 		  cxi_dfa_ep(sct->sct_cam.dfa), sct->sct_cam.vni);
+
+	/* Determine which SPT is last non completed one on the chain. We may
+	 * need to defer its cancellation for certain workarounds.
+	 */
+	list_for_each_entry(spt, &sct->spt_list, list)
+		if (spt->status != STS_COMPLETED)
+			hold_spt = spt;
+	sct->cancel_hold_spt = hold_spt;
+
+	/* We expect in practice that the hold_spt and the sct tail are the same
+	 * but log it here to see if it ever differs.
+	 */
+	if (hold_spt && hold_spt->spt_idx != sct->tail)
+		rh_printf(rh, LOG_DEBUG,
+			  "sct=%u hold spt=%u differs from tail spt=%u (tail completed out of order)\n",
+			  sct->sct_idx, hold_spt->spt_idx, sct->tail);
 
 	sct->spt_status_known = 0;
 
