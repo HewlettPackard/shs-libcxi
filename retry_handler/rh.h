@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2020 Hewlett Packard Enterprise Development LP
+ * Copyright 2020, 2026 Hewlett Packard Enterprise Development LP
  */
 
 #define _GNU_SOURCE
@@ -133,12 +133,13 @@ struct retry_handler {
 	/* Track SCT specific information used to determine if connection is
 	 * recycled.
 	 *
-	 * Track if SCTs are expecting a timeout due to the EOM_GET policy actions.
+	 * seqno_modified records that the RH modified the SCT seqno during a
+	 * cancellation workaround, so a reused SCT index can be recognized.
 	 */
 	struct sct_state {
 		unsigned int seqno;
 		unsigned int req_cnt;
-		bool pending_timeout;
+		bool seqno_modified;
 		uint32_t dfa;
 		uint16_t vni;
 		uint8_t dscp;

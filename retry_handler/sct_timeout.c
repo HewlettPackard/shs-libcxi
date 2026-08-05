@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2019 Hewlett Packard Enterprise Development LP
+ * Copyright 2019, 2026 Hewlett Packard Enterprise Development LP
  */
 
 /* Cassini retry handler
@@ -208,10 +208,10 @@ void sct_timeout(struct retry_handler *rh, const struct c_event_pct *event)
 
 	/* Note that the SCT has timed out */
 	sct->has_timed_out = true;
-	if (rh->sct_state[sct->sct_idx].pending_timeout) {
-		rh_printf(rh, LOG_DEBUG, "Resetting sct=%u pending timeout.\n",
+	if (rh->sct_state[sct->sct_idx].seqno_modified) {
+		rh_printf(rh, LOG_DEBUG, "Resetting sct=%u seqno_modified.\n",
 			  sct->sct_idx);
-		rh->sct_state[sct->sct_idx].pending_timeout = false;
+		rh->sct_state[sct->sct_idx].seqno_modified = false;
 		timer_del(&rh->sct_state[sct->sct_idx].timeout_list);
 	}
 

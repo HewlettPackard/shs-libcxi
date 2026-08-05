@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2019 Hewlett Packard Enterprise Development LP
+ * Copyright 2019, 2026 Hewlett Packard Enterprise Development LP
  */
 
 /* Cassini retry handler
@@ -468,8 +468,8 @@ static struct sct_entry *create_sct_entry(struct retry_handler *rh,
 	};
 
 	rh_printf(rh, LOG_WARNING,
-		  "Tracking sct=%u, pending_timeout=%u\n", sct_idx,
-		  rh->sct_state[sct_idx].pending_timeout);
+		  "Tracking sct=%u, seqno_modified=%u\n", sct_idx,
+		  rh->sct_state[sct_idx].seqno_modified);
 
 	sct = alloc_sct(rh, sct_idx);
 	gettimeofday(&sct->alloc_time, NULL);
@@ -722,7 +722,7 @@ known:
 		/* Start timer for how long this SCT should wait for a timeout
 		 * before we automatically clear that bit
 		 */
-		if (rh->sct_state[sct->sct_idx].pending_timeout)
+		if (rh->sct_state[sct->sct_idx].seqno_modified)
 			timer_add(rh, &rh->sct_state[sct->sct_idx].timeout_list,
 				  &peer_tct_free_wait_time);
 
@@ -846,7 +846,7 @@ known:
 			  "CQ=%u associated with sct=%u is disabled.\n",
 			  spt->ram0.comp_cq, sct->sct_idx);
 
-	if (sct_state->pending_timeout) {
+	if (sct_state->seqno_modified) {
 		union c_pct_cfg_sct_ram4 sct_ram4;
 		unsigned int comp_cnt;
 
@@ -858,10 +858,10 @@ known:
 		assert(spt->ram2_valid == true);
 
 		/* It is possible that this SCT was recycled by HW even if the
-		 * RH thought a SCT timeout was pending. To determine if an SCT
-		 * was recycle, the current SCT head sequence number and Put/Get
+		 * RH had modified its seqno. To determine if an SCT was
+		 * recycled, the current SCT head sequence number and Put/Get
 		 * count can be compared against the expected values. If there
-		 * is a mismatch, the SCT was recycled and pending timeout must
+		 * is a mismatch, the SCT was recycled and seqno_modified must
 		 * be cleared.
 		 */
 		comp_cnt = (sct->ram1.put_comp_cnt + sct_ram4.get_comp_cnt) % 2048;
@@ -875,13 +875,13 @@ known:
 			sct->cancel_spts = true;
 			sct->cancel_rc = C_RC_UNDELIVERABLE;
 			rh_printf(rh, LOG_WARNING,
-				  "will close sct=%u because it is pending a SCT timeout.\n",
+				  "will close sct=%u because its seqno was modified.\n",
 				  sct->sct_idx);
 		} else {
-			sct_state->pending_timeout = false;
+			sct_state->seqno_modified = false;
 
 			rh_printf(rh, LOG_DEBUG,
-				  "Resetting sct=%u (cur_seqno=%u exp_seqno=%u cur_comp_cnt=%u exp_comp_cnt=%u) pending timeout.\n",
+				  "Resetting sct=%u (cur_seqno=%u exp_seqno=%u cur_comp_cnt=%u exp_comp_cnt=%u) seqno_modified.\n",
 				  sct->sct_idx, spt->ram2.sct_seqno,
 				  sct_state->seqno, comp_cnt,
 				  sct_state->req_cnt);
@@ -956,11 +956,11 @@ void new_status_for_spt(struct retry_handler *rh,
 		  spt_in->spt_idx, spt_in->ram1.sct_idx);
 
 	if (event->return_code == C_RC_NO_MATCHING_CONN) {
-		if (rh->sct_state[spt_in->ram1.sct_idx].pending_timeout) {
+		if (rh->sct_state[spt_in->ram1.sct_idx].seqno_modified) {
 			rh_printf(rh, LOG_DEBUG,
-				  "Resetting sct=%u pending timeout.\n",
+				  "Resetting sct=%u seqno_modified.\n",
 				  spt_in->ram1.sct_idx);
-			rh->sct_state[spt_in->ram1.sct_idx].pending_timeout = false;
+			rh->sct_state[spt_in->ram1.sct_idx].seqno_modified = false;
 		}
 	}
 

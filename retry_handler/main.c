@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2020 Hewlett Packard Enterprise Development LP
+ * Copyright 2020, 2026 Hewlett Packard Enterprise Development LP
  */
 
 /* Cassini retry handler
@@ -577,7 +577,7 @@ static void cancel_spt(struct retry_handler *rh, struct spt_entry *spt)
 				rh_printf(rh, LOG_WARNING, "cancel completed for sct=%u (nid=%u, mac=%s)\n",
 					  sct->sct_idx, nid, nid_to_mac(nid));
 
-				if (rh->sct_state[sct->sct_idx].pending_timeout)
+				if (rh->sct_state[sct->sct_idx].seqno_modified)
 					timer_add(rh, &rh->sct_state[sct->sct_idx].timeout_list,
 						  &peer_tct_free_wait_time);
 
@@ -600,13 +600,13 @@ static void timeout_cancel_spt(struct retry_handler *rh,
 	cancel_spt(rh, spt);
 }
 
-/* Reset pending_timeout bit for an SCT that was waiting for a timeout */
-static void timeout_reset_sct_pending(struct retry_handler *rh,
+/* Reset seqno_modified bit for an SCT that was waiting for a timeout */
+static void timeout_reset_sct_seqno_modified(struct retry_handler *rh,
 				      struct timer_list *entry)
 {
 	struct sct_state *sct_state = container_of(entry, struct sct_state,
 						   timeout_list);
-	sct_state->pending_timeout = false;
+	sct_state->seqno_modified = false;
 }
 
 /* This function is used to deliberately cause a sequence error.
@@ -665,14 +665,14 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 			 * Developer Notes: CAS-3283, NETCASSINI-3345
 			 */
 			if (spt->ram0.eom &&
-			    !rh->sct_state[spt->sct->sct_idx].pending_timeout) {
+			    !rh->sct_state[spt->sct->sct_idx].seqno_modified) {
 				rh_printf(rh, LOG_DEBUG, "schedule cancel of EOM Get spt=%u (sct=%u) in %lu.%06lus\n",
 					  spt->spt_idx, spt->sct->sct_idx,
 					  peer_tct_free_wait_time.tv_sec,
 					  peer_tct_free_wait_time.tv_usec);
 
 				/* Add this SCT to a global table to track if cancellation is already scheduled */
-				rh->sct_state[spt->sct->sct_idx].pending_timeout = true;
+				rh->sct_state[spt->sct->sct_idx].seqno_modified = true;
 
 				/* Increment sequence number to cancel EOM GET */
 				increment_sct_seqno(rh, spt->sct);
@@ -688,11 +688,11 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 			break;
 
 		default:
-			/* If the SCT is pending timeout, all ODP policy actions
-			 * were applied to all packets, and the SCT Seqno was incremented.
-			 * No further policy actions required.
+			/* If the SCT seqno was already modified, all ODP policy
+			 * actions were applied to all packets. No further policy
+			 * actions required.
 			 */
-			if (rh->sct_state[spt->sct->sct_idx].pending_timeout) {
+			if (rh->sct_state[spt->sct->sct_idx].seqno_modified) {
 				rh_printf(rh, LOG_DEBUG, "skipping remaining ODP policy actions for spt=%u (sct=%u). Immediately canceling.\n",
 					  spt->spt_idx, spt->sct->sct_idx);
 				cancel_spt(rh, spt);
@@ -704,7 +704,7 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 			 * to be NACK'd.
 			 */
 			if (spt->spt_idx == spt->sct->tail) {
-				rh->sct_state[spt->sct->sct_idx].pending_timeout =
+				rh->sct_state[spt->sct->sct_idx].seqno_modified =
 					true;
 				increment_sct_seqno(rh, spt->sct);
 			}
@@ -2387,7 +2387,7 @@ int main(int argc, char *argv[])
 	init_list_head(&rh.timeout_list.list);
 	for (i = 0; i < C_PCT_CFG_SCT_CAM_ENTRIES; i++) {
 		init_list_head(&rh.sct_state[i].timeout_list.list);
-		rh.sct_state[i].timeout_list.func = timeout_reset_sct_pending;
+		rh.sct_state[i].timeout_list.func = timeout_reset_sct_seqno_modified;
 	}
 
 	start_rh(&rh, dev_id);
