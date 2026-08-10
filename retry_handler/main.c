@@ -1990,9 +1990,19 @@ static void setup_timing(struct retry_handler *rh)
 	/* Tie peer_tct_timeout to TCT Epoch (plus a cushion so the target
 	 * reliably times out before release), unless the user already set it.
 	 */
-	if (!peer_tct_free_wait_time.tv_sec) {
-		peer_tct_free_wait_time.tv_sec = (epoch_us * 2) / 1000000 + 2;
-		peer_tct_free_wait_time.tv_usec = (epoch_us * 2) % 1000000;
+	const struct timeval tct_free_floor = {
+		.tv_sec = (epoch_us * 2) / 1000000 + 2,
+		.tv_usec = (epoch_us * 2) % 1000000,
+	};
+
+	if (!peer_tct_free_wait_time.tv_sec &&
+	    !peer_tct_free_wait_time.tv_usec) {
+		peer_tct_free_wait_time = tct_free_floor;
+	} else if (timercmp(&peer_tct_free_wait_time, &tct_free_floor, <)) {
+		rh_printf(rh, LOG_WARNING,
+			  "configured peer_tct_free_wait_time was below the safe floor; raised to %lu.%06lus\n",
+			  tct_free_floor.tv_sec, tct_free_floor.tv_usec);
+		peer_tct_free_wait_time = tct_free_floor;
 	}
 
 	/* Base initial exponential delay value off of SCT TO */
