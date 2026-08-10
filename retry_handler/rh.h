@@ -338,6 +338,11 @@ struct sct_entry {
 	 */
 	struct spt_entry *cancel_hold_spt;
 
+	/* The target TCT is proven gone (NO_MATCHING_CONN after the connection
+	 * was established), so a Get cancellation can skip the 2x TCT hold.
+	 */
+	bool tct_closed;
+
 	/* Whether to do a force close when releasing the SCT */
 	bool do_force_close;
 

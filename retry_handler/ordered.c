@@ -833,6 +833,7 @@ known:
 	if (tct_closed) {
 		sct->cancel_spts = true;
 		sct->cancel_rc = C_RC_CANCELED;
+		sct->tct_closed = true;
 		rh->stats.cancel_tct_closed++;
 		rh_printf(rh, LOG_WARNING,
 			  "will close sct=%u because its TCT has timed out\n",

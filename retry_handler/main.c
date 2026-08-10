@@ -671,6 +671,14 @@ void schedule_cancel_spt(struct retry_handler *rh, struct spt_entry *spt,
 				break;
 			}
 
+			/* The target TCT is already gone, so there is nothing to
+			 * wait to age out. Cancel now instead of holding.
+			 */
+			if (spt->sct->tct_closed) {
+				cancel_spt(rh, spt);
+				break;
+			}
+
 			/* Calling function tells us which SPT to hold onto.
 			 * Others can be canceled immediately to free up NIC
 			 * resources.
