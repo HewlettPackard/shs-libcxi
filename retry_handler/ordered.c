@@ -552,6 +552,17 @@ static void cancel_spt_entries(struct retry_handler *rh,
 	list_for_each_entry(spt, &sct->spt_list, list)
 		if (spt->status != STS_COMPLETED)
 			hold_spt = spt;
+
+	/* UNDELIVERABLE with no retry means the target was already parked when
+	 * we came to cancel, so nothing on this SCT
+	 * ever reached a peer TCT. Skip the hold and cancel the tail now.
+	 * Keying on !has_retried is deliberate: the SCT that first parks the
+	 * target has retried and may hold a peer TCT, so it still runs the hold.
+	 */
+	if (hold_spt && sct->cancel_rc == C_RC_UNDELIVERABLE &&
+	    !sct->has_retried)
+		hold_spt = NULL;
+
 	sct->cancel_hold_spt = hold_spt;
 
 	/* We expect in practice that the hold_spt and the sct tail are the same
@@ -736,13 +747,6 @@ known:
 				  "retry completed for sct=%u (nid=%u, mac=%s)\n",
 				  sct->sct_idx, nid, nid_to_mac(nid));
 
-		/* Start timer for how long this SCT should wait for a timeout
-		 * before we automatically clear that bit
-		 */
-		if (rh->sct_state[sct->sct_idx].seqno_modified)
-			timer_add(rh, &rh->sct_state[sct->sct_idx].timeout_list,
-				  &peer_tct_free_wait_time);
-
 		release_sct(rh, sct);
 
 		return;
@@ -864,7 +868,11 @@ known:
 			  "CQ=%u associated with sct=%u is disabled.\n",
 			  spt->ram0.comp_cq, sct->sct_idx);
 
-	if (sct_state->seqno_modified) {
+	/* Only run recycle detection on the retry path. If we've already
+	 * decided to cancel, keep seqno_modified bit as is so the workaround
+	 * isn't re-applied to the same connection.
+	 */
+	if (!sct->cancel_spts && sct_state->seqno_modified) {
 		union c_pct_cfg_sct_ram4 sct_ram4;
 		unsigned int comp_cnt;
 
@@ -875,20 +883,20 @@ known:
 
 		assert(spt->ram2_valid == true);
 
-		/* It is possible that this SCT was recycled by HW even if the
-		 * RH had modified its seqno. To determine if an SCT was
-		 * recycled, the current SCT head sequence number and Put/Get
-		 * count can be compared against the expected values. If there
-		 * is a mismatch, the SCT was recycled and seqno_modified must
-		 * be cleared.
+		/* HW may have kept using this SCT to its existing destination
+		 * after RH cancelled traffic and did workarounds, or this may
+		 * be a new connection reusing the same SCT index. The cached
+		 * state tells them apart: the completion count is where we left
+		 * off and HW zeroes it on reuse, so a matching count means the
+		 * same stuck connection (cancel now) and a mismatch means the
+		 * index was recycled.
 		 */
-		comp_cnt = (sct->ram1.put_comp_cnt + sct_ram4.get_comp_cnt) % 2048;
+		comp_cnt = sct->ram1.put_comp_cnt + sct_ram4.get_comp_cnt;
 
 		if (sct_state->dfa == sct->sct_cam.dfa &&
 		    sct_state->dscp == sct->sct_cam.dscp &&
 		    sct_state->vni == sct->sct_cam.vni &&
 		    sct_state->mcu_group == sct->sct_cam.mcu_group &&
-		    spt->ram2.sct_seqno == sct_state->seqno &&
 		    comp_cnt == sct_state->req_cnt) {
 			sct->cancel_spts = true;
 			sct->cancel_rc = C_RC_UNDELIVERABLE;
@@ -896,18 +904,22 @@ known:
 				  "will close sct=%u because its seqno was modified.\n",
 				  sct->sct_idx);
 		} else {
+			/* Index has been recycled to a different connection:
+			 * drop the poison marker so the new connection gets a
+			 * fresh hold if cancelled.
+			 */
 			sct_state->seqno_modified = false;
 
 			rh_printf(rh, LOG_DEBUG,
-				  "Resetting sct=%u (cur_seqno=%u exp_seqno=%u cur_comp_cnt=%u exp_comp_cnt=%u) seqno_modified.\n",
-				  sct->sct_idx, spt->ram2.sct_seqno,
-				  sct_state->seqno, comp_cnt,
+				  "Resetting sct=%u (cur_comp_cnt=%u exp_comp_cnt=%u) seqno_modified.\n",
+				  sct->sct_idx, comp_cnt,
 				  sct_state->req_cnt);
 		}
 	}
 
-	/* Cache SCT state used to determine if SCT is recycled without
-	 * software's knowledge.
+	/* Cache SCT identity and completion count so we can notice if the
+	 * index is later recycled to a different connection without our
+	 * knowledge.
 	 */
 	sct_state->req_cnt = sct->ram0.req_pend_cnt;
 	sct_state->dfa = sct->sct_cam.dfa;

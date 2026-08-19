@@ -130,21 +130,32 @@ struct retry_handler {
 	/* Track when all SPT try numbers have been used. */
 	struct timespec spt_try_ts[C_PCT_CFG_SPT_RAM0_ENTRIES][SPT_TRY_NUM_SIZE];
 
-	/* Track SCT specific information used to determine if connection is
-	 * recycled.
+	/* Cached per-SCT-index state that survives the SCT entry itself, used
+	 * to recognize when HW recycles an index to a different connection.
+	 * See check_sct_status() for how these are compared.
 	 *
-	 * seqno_modified records that the RH modified the SCT seqno during a
-	 * cancellation workaround, so a reused SCT index can be recognized.
+	 * dfa/vni/dscp/mcu_group + req_cnt are a cached snapshot of the SCT's
+	 * identity and completion progress, refreshed on every pass. req_cnt
+	 * caches req_pend_cnt (packets this SCT put on the wire); the live
+	 * completion count converges to it as we cancel, and HW zeroes that
+	 * count on reuse, so identity plus a matching count means the same
+	 * stuck connection while a mismatch means the index was recycled.
+	 *
+	 * seqno_modified: the RH poisoned this index's sequence number while
+	 *   cancelling a Get (see increment_sct_seqno) so a reused index is
+	 *   noticed and the drain hold is not applied twice. While set, further
+	 *   cancels on this index skip the hold and cancel immediately. Cleared
+	 *   when the index is seen to serve a different connection: a recycle
+	 *   or identity mismatch (check_sct_status), a NO_MATCHING_CONN nack
+	 *   (target gone), or a real SCT timeout.
 	 */
 	struct sct_state {
-		unsigned int seqno;
 		unsigned int req_cnt;
 		bool seqno_modified;
 		uint32_t dfa;
 		uint16_t vni;
 		uint8_t dscp;
 		uint8_t mcu_group;
-		struct timer_list timeout_list;
 	} sct_state[C_PCT_CFG_SCT_CAM_ENTRIES];
 
 	pthread_t stats_thread;

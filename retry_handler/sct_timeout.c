@@ -208,11 +208,17 @@ void sct_timeout(struct retry_handler *rh, const struct c_event_pct *event)
 
 	/* Note that the SCT has timed out */
 	sct->has_timed_out = true;
+	/* Clearing seqno_modified here assumes the timed-out connection is
+	 * finished. If HW reuses this SCT immediately after we try to close it
+	 * the connection loses this important marker, the SCT looks new,
+	 * and can be held again. A future option is to not clear it here and
+	 * let the recycle check (identity + poisoned seqno) be the sole judge
+	 * of same-vs-recycled. TODO
+	 */
 	if (rh->sct_state[sct->sct_idx].seqno_modified) {
 		rh_printf(rh, LOG_DEBUG, "Resetting sct=%u seqno_modified.\n",
 			  sct->sct_idx);
 		rh->sct_state[sct->sct_idx].seqno_modified = false;
-		timer_del(&rh->sct_state[sct->sct_idx].timeout_list);
 	}
 
 	nid = cxi_dfa_nid(sct->sct_cam.dfa);

@@ -571,10 +571,6 @@ static void cancel_spt(struct retry_handler *rh, struct spt_entry *spt)
 				rh_printf(rh, LOG_WARNING, "cancel completed for sct=%u (nid=%u, mac=%s)\n",
 					  sct->sct_idx, nid, nid_to_mac(nid));
 
-				if (rh->sct_state[sct->sct_idx].seqno_modified)
-					timer_add(rh, &rh->sct_state[sct->sct_idx].timeout_list,
-						  &peer_tct_free_wait_time);
-
 				release_sct(rh, sct);
 				rh->stats.connections_cancelled++;
 			}
@@ -592,15 +588,6 @@ static void timeout_cancel_spt(struct retry_handler *rh,
 					     timeout_list);
 
 	cancel_spt(rh, spt);
-}
-
-/* Reset seqno_modified bit for an SCT that was waiting for a timeout */
-static void timeout_reset_sct_seqno_modified(struct retry_handler *rh,
-				      struct timer_list *entry)
-{
-	struct sct_state *sct_state = container_of(entry, struct sct_state,
-						   timeout_list);
-	sct_state->seqno_modified = false;
 }
 
 /* This function is used to deliberately cause a sequence error.
@@ -629,11 +616,6 @@ static void increment_sct_seqno(struct retry_handler *rh, struct sct_entry *sct)
 	sct->ram2.req_seqno = new_seqno;
 	cxil_write_csr(rh->dev, C_PCT_CFG_SCT_RAM2(sct->sct_idx),
 		       &sct->ram2, sizeof(sct->ram2));
-
-	/* Cache the next SCT sequence number to determine if a
-	 * connection is unexpectedly reused.
-	 */
-	rh->sct_state[sct->sct_idx].seqno = new_seqno;
 }
 
 /* Schedule an SPT cancellation */
@@ -2345,7 +2327,7 @@ int main(int argc, char *argv[])
 	long dev_id = 0;
 	char *endptr;
 	struct timeval tv;
-	int i, stats_rc;
+	int stats_rc;
 
 	setbuf(stdout, NULL);
 
@@ -2419,10 +2401,6 @@ int main(int argc, char *argv[])
 	gettimeofday(&tv, NULL);
 	srand(getpid() * tv.tv_usec);
 	init_list_head(&rh.timeout_list.list);
-	for (i = 0; i < C_PCT_CFG_SCT_CAM_ENTRIES; i++) {
-		init_list_head(&rh.sct_state[i].timeout_list.list);
-		rh.sct_state[i].timeout_list.func = timeout_reset_sct_seqno_modified;
-	}
 
 	start_rh(&rh, dev_id);
 
