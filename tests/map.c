@@ -1665,6 +1665,27 @@ Test(odp, odp_reg_fault_fail)
 	munmap(m2.buffer, m2.length);
 }
 
+/* Register 1 TiB using ODP */
+Test(odp, odp_reg_large_region)
+{
+	int rc;
+	struct mem_window m1;
+	size_t len = 1UL << 40; /* 1 TiB */
+	uint32_t flags = CXI_MAP_READ;
+
+	m1.loc = on_host;
+	m1.length = len;
+	m1.buffer = HIGH_BPTR;
+
+	rc = cxil_map(lni, m1.buffer, m1.length, flags, NULL, &m1.md);
+	cr_assert_eq(rc, 0, "cxil_map() failed %d", rc);
+
+	rc = cxil_unmap(m1.md);
+	cr_expect_eq(rc, 0, "cxil_unmap() failed %d", rc);
+
+	munmap(m1.buffer, m1.length);
+}
+
 /* ODP CXI_MAP_PREFETCH registration success scenarios */
 Test(odp, odp_reg_prefetch)
 {
