@@ -77,6 +77,7 @@ struct parser_state {
 	enum cxi_rsrc_type rsrc_type;
 	enum cxi_svc_member_type member_type;
 	bool exclusive_cp;
+	bool is_parent;
 	uint16_t vni_min;
 	uint16_t vni_max;
 	uint32_t netns;
@@ -281,10 +282,17 @@ static void print_descriptor(struct cxi_svc_desc *desc,
 			     struct util_opts *opts)
 {
 	int lpr = cxil_get_svc_lpr(opts->dev, desc->svc_id);
+	bool is_parent = false;
+	int rc;
 
 	if (lpr < 0)
 		errx(1, "Couldn't get lnis_per_rgid for descriptor: %d",
 		     desc->svc_id);
+
+	rc = cxil_svc_is_parent(opts->dev, desc->svc_id, &is_parent);
+	if (rc)
+		errx(1, "Couldn't get parent status for descriptor %d: %d",
+		     desc->svc_id, rc);
 
 	printf(" --------------------------\n");
 	printf(" ID: %u%s\n", desc->svc_id,
@@ -294,6 +302,8 @@ static void print_descriptor(struct cxi_svc_desc *desc,
 	       desc->enable ? "Yes" : "No");
 	printf("   System Service     : %s\n",
 	       desc->is_system_svc ? "Yes" : "No");
+	printf("   Parent Service     : %s\n",
+	       is_parent ? "Yes" : "No");
 
 	printf("   Restricted Members : %s\n",
 	       desc->restricted_members ? "Yes" : "No");
@@ -418,6 +428,7 @@ static int consume_event(struct parser_state *s, yaml_event_t *event,
 			    (strcmp((char *)event->data.scalar.value, "restricted_members") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "restricted_vnis") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "restricted_tcs") == 0) ||
+			    (strcmp((char *)event->data.scalar.value, "is_parent") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "exclusive_cp") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "name") == 0) ||
 			    (strcmp((char *)event->data.scalar.value, "max") == 0) ||
@@ -524,6 +535,11 @@ static int consume_event(struct parser_state *s, yaml_event_t *event,
 				if (i < 0 || i > 1)
 					errx(1, "Invalid value for 'restricted_tcs': %s", val);
 				s->desc->restricted_tcs = atoi(val);
+			} else if (strcmp(s->key, "is_parent") == 0) {
+				i = atoi(val);
+				if (i < 0 || i > 1)
+					errx(1, "Invalid value for 'is_parent': %s", val);
+				s->is_parent = atoi(val);
 			} else if (strcmp(s->key, "exclusive_cp") == 0) {
 				i = atoi(val);
 				if (i < 0 || i > 1)
@@ -647,7 +663,9 @@ static void create_service(struct cxi_svc_desc *desc,
 	struct parser_state p_state = {};
 
 	desc_from_yaml(desc, &p_state, opts);
-	svc_id = cxil_alloc_svc(opts->dev, desc, &fail_info);
+	svc_id = p_state.is_parent ?
+		cxil_alloc_parent_svc(opts->dev, desc, &fail_info) :
+		cxil_alloc_svc(opts->dev, desc, &fail_info);
 	if (svc_id < 0) {
 		/* TODO provide more detailed info from fail_info */
 		errx(1, "Failed to create service: %s\n",

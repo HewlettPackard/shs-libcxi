@@ -3,6 +3,7 @@ resource_limits: 1
 restricted_members: 1
 restricted_tcs: 1
 exclusive_cp: 1
+is_parent: 0
 
 ## Ignored if resource_limits is set to false.
 # If a resource is not listed below, max/res will be set to 0 for said resource.

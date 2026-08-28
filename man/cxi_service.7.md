@@ -41,6 +41,10 @@ This API is made available through libcxi, and is used on a per NIC basis.
 ## Interfaces
 _cxil_alloc_svc()_ -  Allocate a CXI Service.
 
+_cxil_alloc_parent_svc()_ - Allocate a CXI parent (VF resource budget ceiling) Service.
+
+_cxil_svc_is_parent()_ - Query whether a service is a parent service.
+
 _cxil_destroy_svc()_ - Destroy a CXI Service, frees any reserved resources.
 
 _cxil_update_svc()_ - Updates a CXI Service.
@@ -389,6 +393,26 @@ cxil_svc_get_netns(struct cxil_dev *dev, unsigned int svc_id, unsigned int &netn
 This function retrieves the Network Namespace ID associated with a given CXI service. If the service is not
 configured for network-namespace-based access, or if no valid namespace ID is present, the function returns
 -EINVAL. Upon success, 0 is returned and netns value will be updated with the valid namespace id.
+
+2.1.8 **Parent services** - _cxil_alloc_parent_svc()_
+
+```
+int cxil_alloc_parent_svc(struct cxil_dev *dev_in,
+                          const struct cxi_svc_desc *desc,
+                          struct cxi_svc_fail_info *fail_info);
+```
+
+A parent service acts as the resource budget ceiling for any child services
+that VFs create via _cxil_alloc_svc()_. Parent status is not part of
+_cxi_svc_desc_; it is set only at allocation time by calling
+_cxil_alloc_parent_svc()_ instead of _cxil_alloc_svc()_, and is immutable
+for the life of the service. Query parent status of an existing service with
+_cxil_svc_is_parent()_:
+
+```
+bool is_parent;
+rc = cxil_svc_is_parent(dev, svc_id, &is_parent);
+```
 
 2.2 **Fail info** - _cxi_fail_info_
 

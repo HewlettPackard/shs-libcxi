@@ -293,6 +293,39 @@ CXIL_API int cxil_alloc_svc(struct cxil_dev *dev,
 			    struct cxi_svc_fail_info *fail_info);
 
 /**
+ * @brief Allocates a CXI parent service. A parent service acts as the
+ *        resource budget ceiling for any child services VFs create via
+ *        cxil_alloc_svc(). Parent status is immutable and set only at
+ *        allocation time.
+ *
+ * @param dev The Cassini Device
+ * @param desc Pointer to a service descriptor. See cxi_svc_desc.
+ * @param fail_info Pointer to a structure to which detailed information
+ *                  will be written if service allocation fails.
+ *                  May be NULL.
+ *
+ * @return On success, svc_id > 0 is returned. Otherwise a negative
+ *         errno value is returned indicating the error.
+ */
+CXIL_API int cxil_alloc_parent_svc(struct cxil_dev *dev,
+				   const struct cxi_svc_desc *desc,
+				   struct cxi_svc_fail_info *fail_info);
+
+/**
+ * @brief Queries whether a service is a parent service.
+ *
+ * @param dev The Cassini Device
+ * @param svc_id The Service ID to query
+ * @param is_parent Destination pointer set to true if the service is a
+ *                  parent service
+ *
+ * @return On success, zero is returned. Otherwise a negative errno value
+ *         is returned indicating the error.
+ */
+CXIL_API int cxil_svc_is_parent(struct cxil_dev *dev, unsigned int svc_id,
+				bool *is_parent);
+
+/**
  * @brief Destroys a CXI Service and releases reserved resources.
  *
  * @param dev The Cassini device

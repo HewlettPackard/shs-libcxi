@@ -345,6 +345,59 @@ CXIL_API int cxil_alloc_svc(struct cxil_dev *dev_in,
 	return resp.svc_id;
 }
 
+/* Allocate a CXI parent (VF resource budget ceiling) Service */
+CXIL_API int cxil_alloc_parent_svc(struct cxil_dev *dev_in,
+				   const struct cxi_svc_desc *desc,
+				   struct cxi_svc_fail_info *fail_info)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_alloc_resp resp = {};
+	struct cxi_svc_alloc_cmd cmd = {
+		.op = CXI_OP_SVC_ALLOC_PARENT,
+		.resp = &resp,
+	};
+	int rc;
+
+	if (!dev_in || !desc)
+		return -EINVAL;
+
+	cmd.svc_desc = *desc;
+
+	rc = device_write(dev, &cmd, sizeof(cmd));
+	if (rc) {
+		if (fail_info)
+			*fail_info = resp.fail_info;
+		return rc;
+	}
+
+	return resp.svc_id;
+}
+
+/* Query whether a service is a parent service */
+CXIL_API int cxil_svc_is_parent(struct cxil_dev *dev_in, unsigned int svc_id,
+				bool *is_parent)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *) dev_in;
+	struct cxi_svc_is_parent_get_resp resp = {};
+	struct cxi_svc_is_parent_get_cmd cmd = {
+		.op = CXI_OP_SVC_IS_PARENT_GET,
+		.resp = &resp,
+		.svc_id = svc_id,
+	};
+	int rc;
+
+	if (!dev_in || !is_parent)
+		return -EINVAL;
+
+	rc = device_write(dev, &cmd, sizeof(cmd));
+	if (rc)
+		return rc;
+
+	*is_parent = resp.is_parent;
+
+	return 0;
+}
+
 /* Destroy a CXI Service */
 int cxil_destroy_svc(struct cxil_dev *dev_in, unsigned int svc_id)
 {

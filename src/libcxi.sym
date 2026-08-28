@@ -126,3 +126,9 @@ LIBCXI_1.11 {
 global:
 	cxil_alloc_buf_cmdq;
 } LIBCXI_1.10;
+
+LIBCXI_1.12 {
+global:
+	cxil_alloc_parent_svc;
+	cxil_svc_is_parent;
+} LIBCXI_1.11;

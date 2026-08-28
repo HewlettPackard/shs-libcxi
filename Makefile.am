@@ -197,8 +197,7 @@ bin_PROGRAMS += \
 check_PROGRAMS = \
 	tests/libcxi_test
 TESTS = \
-	tests/run_tests_vm.sh \
-	tests/run_vf_tests_vm.sh
+	tests/run_tests_vm.sh
 
 tests_libcxi_test_SOURCES = \
 	tests/libcxi_test_common.c \

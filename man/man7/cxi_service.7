@@ -54,6 +54,12 @@ basis.
 .PP
 \f[I]cxil_alloc_svc()\f[R] - Allocate a CXI Service.
 .PP
+\f[I]cxil_alloc_parent_svc()\f[R] - Allocate a CXI parent (VF resource
+budget ceiling) Service.
+.PP
+\f[I]cxil_svc_is_parent()\f[R] - Query whether a service is a parent
+service.
+.PP
 \f[I]cxil_destroy_svc()\f[R] - Destroy a CXI Service, frees any reserved
 resources.
 .PP
@@ -422,6 +428,32 @@ services can be created that reserve TLEs.
 The exclusive_cp bit disables sharing of Communication Profiles (CP).
 Exclusive CP is not allowed if \[lq]restricted_vnis\[rq] bit is set in
 the CXI service descriptor.
+.PP
+2.1.6 \f[B]Parent services\f[R] - \f[I]cxil_alloc_parent_svc()\f[R]
+.IP
+.nf
+\f[C]
+int cxil_alloc_parent_svc(struct cxil_dev *dev_in,
+                          const struct cxi_svc_desc *desc,
+                          struct cxi_svc_fail_info *fail_info);
+\f[R]
+.fi
+.PP
+A parent service acts as the resource budget ceiling for any child
+services that VFs create via \f[I]cxil_alloc_svc()\f[R].
+Parent status is not part of \f[I]cxi_svc_desc\f[R]; it is set only at
+allocation time by calling \f[I]cxil_alloc_parent_svc()\f[R] instead of
+\f[I]cxil_alloc_svc()\f[R], and is immutable for the life of the
+service.
+Query parent status of an existing service with
+\f[I]cxil_svc_is_parent()\f[R]:
+.IP
+.nf
+\f[C]
+bool is_parent;
+rc = cxil_svc_is_parent(dev, svc_id, &is_parent);
+\f[R]
+.fi
 .PP
 2.2 \f[B]Fail info\f[R] - \f[I]cxi_fail_info\f[R]
 .PP
