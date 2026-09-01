@@ -205,6 +205,7 @@ tests_libcxi_test_SOURCES = \
 	tests/libcxi_test.c \
 	tests/libcxi_test_pte.c \
 	tests/libcxi_test_svc.c \
+	tests/libcxi_test_svc_vf.c \
 	tests/libcxi_gpu_hip.c \
 	tests/libcxi_gpu_cuda.c \
 	tests/libcxi_gpu_ze.c \

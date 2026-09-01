@@ -37,11 +37,14 @@ cleanup()
 {
   rm -f "$parent_yaml"
   rm -f "$vf_yaml"
-  echo 0 > /sys/class/cxi/cxi0/device/sriov_numvfs
+  if [ -n "$vf_svc_id" ]; then
+    $cxi_service -d cxi1 delete -s "$vf_svc_id"
+  fi
   if [ -n "$parent_svc_id" ]; then
     echo 0 > /sys/class/cxi/cxi0/vf/0/svc_id
     $cxi_service -d cxi0 delete -s "$parent_svc_id"
   fi
+  echo 0 > /sys/class/cxi/cxi0/device/sriov_numvfs
 }
 trap cleanup EXIT
 
@@ -96,18 +99,27 @@ vnis:
   vni: 63
 EOF
 
+# Configure parent service shared by both VFs
 create_service -d cxi0 -y "$parent_yaml"
 parent_svc_id="$SERVICE_ID"
 $cxi_service enable -d cxi0 -s "$parent_svc_id"
-
 echo "$parent_svc_id" > /sys/class/cxi/cxi0/vf/0/svc_id
+echo "$parent_svc_id" > /sys/class/cxi/cxi0/vf/1/svc_id
 
-echo 1 > /sys/class/cxi/cxi0/device/sriov_numvfs
+# Two VFs, VF 0/cxi1 for regular tests, VF 1/cxi2 for service-parent tests
+echo 2 > /sys/class/cxi/cxi0/device/sriov_numvfs
 sleep 1
 
+# Create child service for VF 0/cxi1 only
 create_service -d cxi1 -y "$vf_yaml"
 vf_svc_id="$SERVICE_ID"
 $cxi_service list -d cxi1
 
-CXIL_TEST_DEV=1 CXIL_TEST_SVC_ID="$vf_svc_id" ./libcxi_test --verbose \
+# CXIL_TEST_DEV: cxi device to run regular tests against
+# CXIL_TEST_SVC_ID: cxi service to use with regular tests
+# CXIL_TEST_PF_DEV: PF cxi device for use with VF parent-service tests
+# CXIL_TEST_VF_DEV: VF cxi device for use with VF parent-service tests
+# CXIL_TEST_VF_IDX: VF index of CXIL_TEST_VF_DEV device
+CXIL_TEST_DEV=1 CXIL_TEST_SVC_ID="$vf_svc_id" CXIL_TEST_PF_DEV=0 \
+  CXIL_TEST_VF_DEV=2 CXIL_TEST_VF_IDX=1 ./libcxi_test --verbose \
   --tap=libcxi_vf_test.tap --tap=- -j1
