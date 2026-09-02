@@ -7,7 +7,7 @@
 %endif
 
 Name:       cray-libcxi
-Version:    1.0.4
+Version:    1.0.5
 Release:    %(echo ${BUILD_METADATA})
 Summary:    Cassini userspace library
 License:    Dual LGPL-2.1/BSD-3-Clause
@@ -229,7 +229,10 @@ install -D --target-directory=%{buildroot}/%{_presetdir}/ 99-cxi_rh.preset
 %postun dracut
 # Remove firmware from initrd.
 %if 0%{?rhel}
-/usr/bin/dracut --force
+# Only rebuild initrd on a live, booted system; skip in image-build chroots.
+if [ -d /run/systemd/system ] && [ -x /usr/bin/systemd-detect-virt ] && ! /usr/bin/systemd-detect-virt --quiet --chroot; then
+    /usr/bin/dracut --force || :
+fi
 %else
 if test -x /usr/lib/module-init-tools/regenerate-initrd-posttrans; then
         mkdir -p /run/regenerate-initrd
@@ -241,7 +244,10 @@ fi
 %posttrans dracut
 # Install firmware in initrd.
 %if 0%{?rhel}
-/usr/bin/dracut --force
+# Only rebuild initrd on a live, booted system; skip in image-build chroots.
+if [ -d /run/systemd/system ] && [ -x /usr/bin/systemd-detect-virt ] && ! /usr/bin/systemd-detect-virt --quiet --chroot; then
+    /usr/bin/dracut --force || :
+fi
 %else
 if test -x /usr/lib/module-init-tools/regenerate-initrd-posttrans; then
         mkdir -p /run/regenerate-initrd
@@ -259,7 +265,10 @@ fi
 %triggerin -n cray-libcxi-dracut -- %dracut_triggers
 
 %if 0%{?rhel}
-/usr/bin/dracut --force
+# Only rebuild initrd on a live, booted system; skip in image-build chroots.
+if [ -d /run/systemd/system ] && [ -x /usr/bin/systemd-detect-virt ] && ! /usr/bin/systemd-detect-virt --quiet --chroot; then
+    /usr/bin/dracut --force || :
+fi
 %else
 if test -x /usr/lib/module-init-tools/regenerate-initrd-posttrans; then
         mkdir -p /run/regenerate-initrd
@@ -271,7 +280,10 @@ fi
 %triggerpostun -n cray-libcxi-dracut -- %dracut_triggers
 
 %if 0%{?rhel}
-/usr/bin/dracut --force
+# Only rebuild initrd on a live, booted system; skip in image-build chroots.
+if [ -d /run/systemd/system ] && [ -x /usr/bin/systemd-detect-virt ] && ! /usr/bin/systemd-detect-virt --quiet --chroot; then
+    /usr/bin/dracut --force || :
+fi
 %else
 if test -x /usr/lib/module-init-tools/regenerate-initrd-posttrans; then
         mkdir -p /run/regenerate-initrd
@@ -281,3 +293,5 @@ fi
 %endif
 
 %changelog
+* Wed Sep 02 2026 Patrick Bueb <patrick.bueb@hpe.com> 1.0.5
+- Guard dracut --force so it is skipped in image-build chroots.
