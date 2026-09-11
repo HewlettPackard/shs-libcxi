@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <getopt.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -652,11 +653,30 @@ static void desc_from_yaml(struct cxi_svc_desc *desc,
 	}
 }
 
+/* Destroy a partially configured service, then exit with the given message.
+ * Every failure after the service is allocated must go through here, otherwise
+ * the service survives with its resource limits reserved and later allocations
+ * fail with ENOSPC.
+ */
+static void __attribute__((noreturn, format(printf, 3, 4)))
+destroy_svc_and_err(struct util_opts *opts, int svc_id, const char *fmt, ...)
+{
+	int rc;
+	va_list ap;
+
+	rc = cxil_destroy_svc(opts->dev, svc_id);
+	if (rc)
+		warnx("Failed to destroy service with ID %d: %s",
+		      svc_id, strerror(-rc));
+
+	va_start(ap, fmt);
+	verrx(1, fmt, ap);
+}
+
 static void create_service(struct cxi_svc_desc *desc,
 			   struct util_opts *opts)
 {
 	int rc;
-	int ret;
 	int svc_id;
 	struct cxi_svc_fail_info fail_info = {};
 	struct cxi_rsrc_use rsrc_use = {};
@@ -674,30 +694,33 @@ static void create_service(struct cxi_svc_desc *desc,
 
 	if (p_state.netns_type == CXI_SVC_MEMBER_NET_NS) {
 		if (!desc->restricted_members)
-			errx(1,
+			destroy_svc_and_err(opts, svc_id,
 			     "Failed to set netns:(restricted_members must be set to 1)\n");
 
 		/* netns with uid/git not supported */
 		for (int i = 0; i < CXI_SVC_MAX_MEMBERS; i++) {
 			if (desc->members[i].type == CXI_SVC_MEMBER_UID ||
 				desc->members[i].type == CXI_SVC_MEMBER_GID) {
-				errx(1,
+				destroy_svc_and_err(opts, svc_id,
 				     "Failed to set netns: (netns based service with uid/gid not supported)\n");
 			}
 		}
 
 		rc = cxil_svc_enable(opts->dev, svc_id, false);
 		if (rc)
-			errx(1, "Failed to disable service: %s\n",
+			destroy_svc_and_err(opts, svc_id,
+			     "Failed to disable service: %s\n",
 			     strerror(-rc));
 
 		rc = cxil_svc_set_netns(opts->dev, svc_id, p_state.netns);
 		if (rc)
-			errx(1, "Failed to set netns ID: %s\n", strerror(-rc));
+			destroy_svc_and_err(opts, svc_id,
+			     "Failed to set netns ID: %s\n", strerror(-rc));
 
 		rc = cxil_svc_enable(opts->dev, svc_id, true);
 		if (rc)
-			errx(1, "Failed to enable service: %s\n",
+			destroy_svc_and_err(opts, svc_id,
+			     "Failed to enable service: %s\n",
 			     strerror(-rc));
 	}
 
@@ -706,31 +729,29 @@ static void create_service(struct cxi_svc_desc *desc,
 					    svc_id,
 					    p_state.vni_min,
 					    p_state.vni_max);
-		if (rc) {
-			ret = cxil_destroy_svc(opts->dev, svc_id);
-			if (ret)
-				errx(1, "Failed to destroy service with ID %d: %s\n",
-				     svc_id, strerror(-ret));
-
-			errx(1, "Failed to set vni range: %d-%d %s\n",
+		if (rc)
+			destroy_svc_and_err(opts, svc_id,
+			     "Failed to set vni range: %d-%d %s\n",
 			     p_state.vni_min, p_state.vni_max, strerror(-rc));
-		}
 
 		if (p_state.exclusive_cp) {
 			rc = cxil_svc_enable(opts->dev, svc_id, false);
 			if (rc)
-				errx(1, "Failed to disable service: %s\n",
+				destroy_svc_and_err(opts, svc_id,
+					"Failed to disable service: %s\n",
 					strerror(-rc));
 
 			rc = cxil_svc_set_exclusive_cp(opts->dev, svc_id,
 						       p_state.exclusive_cp);
 			if (rc)
-				errx(1, "Failed to set exclusive cp: %s\n",
+				destroy_svc_and_err(opts, svc_id,
+					"Failed to set exclusive cp: %s\n",
 					strerror(-rc));
 
 			rc = cxil_svc_enable(opts->dev, svc_id, true);
 			if (rc)
-				errx(1, "Failed to enable service: %s\n",
+				destroy_svc_and_err(opts, svc_id,
+					"Failed to enable service: %s\n",
 					strerror(-rc));
 		}
 	}
