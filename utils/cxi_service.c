@@ -683,6 +683,10 @@ static void create_service(struct cxi_svc_desc *desc,
 	struct parser_state p_state = {};
 
 	desc_from_yaml(desc, &p_state, opts);
+
+	if (p_state.is_parent && p_state.exclusive_cp)
+		errx(1, "Invalid config: exclusive_cp is not supported on a parent service (is_parent); set exclusive_cp on the child service instead\n");
+
 	svc_id = p_state.is_parent ?
 		cxil_alloc_parent_svc(opts->dev, desc, &fail_info) :
 		cxil_alloc_svc(opts->dev, desc, &fail_info);
