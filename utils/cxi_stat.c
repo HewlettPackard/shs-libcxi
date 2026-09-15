@@ -217,7 +217,7 @@ static void get_port_status(struct cxi_dev *cd)
 	if (is_c1)
 		rc = asprintf(&tmp_path, "%s/loopback", base_path);
         else
-		rc = asprintf(&tmp_path, "%s/link/config/loopback", base_path);
+		rc = asprintf(&tmp_path, "%s/config/loopback", base_path);
 	if (rc > 0) {
 		copy_data_from_file(tmp_path, cd->link_loopback);
 		free(tmp_path);
