@@ -142,6 +142,11 @@
 
 #define CDB_FW_HEADER_SIZE_MAX                  112
 
+/* Minimum timeout values since we can't always trust what the vendors give us */
+#define MAXDURATIONSTART_MIN_MS                 10000
+#define MAXDURATIONWRITE_MIN_MS                 1000
+#define MAXDURATIONCOMPLETE_MIN_MS              10000
+
 /* Note: Using a larger chunk size depends on support from the device
  *       (see page 01h byte 164) and fw_mgmt_features
  *       ReadWriteLengthExt and our block write routine.
@@ -502,8 +507,8 @@ get_start_timeout_ms(struct cmis_fw_update *fwu)
 	timeout_ms = fwu->features.MaxDurationStart;
 	if (fwu->features.FWFeaturesFlags & CDB_FW_MAX_DURATION_CODING_10X)
 		timeout_ms *= 10;
-	if (!timeout_ms)
-		timeout_ms = 10000;
+	if (timeout_ms < MAXDURATIONSTART_MIN_MS)
+		timeout_ms = MAXDURATIONSTART_MIN_MS;
 
 	return timeout_ms;
 }
@@ -519,8 +524,8 @@ get_write_timeout_ms(struct cmis_fw_update *fwu)
 	timeout_ms = fwu->features.MaxDurationWrite;
 	if (fwu->features.FWFeaturesFlags & CDB_FW_MAX_DURATION_CODING_10X)
 		timeout_ms *= 10;
-	if (!timeout_ms)
-		timeout_ms = 1000;
+	if (timeout_ms < MAXDURATIONWRITE_MIN_MS)
+		timeout_ms = MAXDURATIONWRITE_MIN_MS;
 
 	return timeout_ms;
 }
@@ -536,8 +541,8 @@ get_complete_timeout_ms(struct cmis_fw_update *fwu)
 	timeout_ms = fwu->features.MaxDurationComplete;
 	if (fwu->features.FWFeaturesFlags & CDB_FW_MAX_DURATION_CODING_10X)
 		timeout_ms *= 10;
-	if (!timeout_ms)
-		timeout_ms = 10000;
+	if (timeout_ms < MAXDURATIONCOMPLETE_MIN_MS)
+		timeout_ms = MAXDURATIONCOMPLETE_MIN_MS;
 
 	return timeout_ms;
 }
@@ -1053,13 +1058,6 @@ te_aoc_dsp_firmware_flash(struct cmis_fw_update *fwu)
 
 	print_out("Programming %d DSP bytes...\n", fwu->length);
 
-	/* Our first ColorChip AOCs advertised the wrong MaxDurationStart */
-	if (get_start_timeout_ms(fwu) < 3000) {
-		fwu->features.MaxDurationStart = 3000;
-		error_out("Using MaxDurationStart override of %dms\n",
-				get_start_timeout_ms(fwu));
-	}
-
 	/* CMD0101h + 9000h Start Firmware Download */
 	rc = dsp_send_start_firmware_download(fwu);
 	if (rc < 0) {
@@ -1123,24 +1121,6 @@ cdb_fw_flash(struct cmis_fw_update *fwu)
 			running_at_start = 'A';
 		else if (fwinfo.FWStatusFlags & CDB_FW_IMG_B_RUNNING)
 			running_at_start = 'B';
-	}
-
-	/* Our first ColorChip AOCs advertised the wrong MaxDurationStart */
-	if (!strncmp((char *)fwu->buf, "Color-Chip", 10)) {
-		if (get_start_timeout_ms(fwu) < 3000) {
-			fwu->features.MaxDurationStart = 3000;
-			print_out("Using MaxDurationStart override of %dms\n",
-					get_start_timeout_ms(fwu));
-		}
-	}
-
-	/* Some Molex devices advertise the wrong MaxDurationWrite */
-	if (strstr(fwu->vendor, CMIS_VENDOR_MOLEX)) {
-		if (get_write_timeout_ms(fwu) < 100) {
-			fwu->features.MaxDurationWrite = 100;
-			print_out("Using MaxDurationWrite override of %dms\n",
-					get_write_timeout_ms(fwu));
-		}
 	}
 
 	/* Some Vendors might require CDB password entry. Typically evident
@@ -1294,15 +1274,6 @@ cdb_fw_revert(struct cmis_fw_update *fwu)
 			running_at_start = 'A';
 		else if (fwinfo.FWStatusFlags & CDB_FW_IMG_B_RUNNING)
 			running_at_start = 'B';
-	}
-
-	/* Some Molex devices advertise the wrong MaxDurationWrite */
-	if (strstr(fwu->vendor, CMIS_VENDOR_MOLEX)) {
-		if (get_write_timeout_ms(fwu) < 100) {
-			fwu->features.MaxDurationWrite = 100;
-			print_out("Using MaxDurationWrite override of %dms\n",
-					get_write_timeout_ms(fwu));
-		}
 	}
 
 	/* Some Vendors might require CDB password entry. Typically evident
