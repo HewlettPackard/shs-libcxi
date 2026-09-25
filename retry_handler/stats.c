@@ -5,8 +5,8 @@
 #define FUSE_USE_VERSION 30
 
 #include <pthread.h>
-#include <fuse.h>
-#include <fuse/fuse_common.h>
+#include <fuse3/fuse.h>
+#include <fuse3/fuse_common.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -23,7 +23,7 @@ static struct retry_handler *fs_rh;
  * Define the permissions for reading any directory and update link count
  * Link count of a directory is 2 + the number of directories immediately contained by it
  */
-static int stats_getattr(const char *path, struct stat *st)
+static int stats_getattr(const char *path, struct stat *st, struct fuse_file_info *fi)
 {
 	st->st_uid = getuid();
 	st->st_gid = getgid();
@@ -52,70 +52,70 @@ static int stats_getattr(const char *path, struct stat *st)
  * Add both sub directories and files
  */
 static int stats_readdir(const char *path, void *buffer,
-			 fuse_fill_dir_t filler, off_t offset,
-			 struct fuse_file_info *fi)
+		fuse_fill_dir_t filler, off_t offset,
+		struct fuse_file_info *fi, enum fuse_readdir_flags flags)
 {
-	filler(buffer, ".", NULL, 0);
-	filler(buffer, "..", NULL, 0);
+	filler(buffer, ".", NULL, 0, 0);
+	filler(buffer, "..", NULL, 0, 0);
 
 	if (!strcmp(path, "/")) {
-		filler(buffer, "config", NULL, 0);
-		filler(buffer, "spt_timeouts", NULL, 0);
-		filler(buffer, "spt_timeouts_u", NULL, 0);
-		filler(buffer, "spt_timeouts_o", NULL, 0);
-		filler(buffer, "connections_cancelled", NULL, 0);
-		filler(buffer, "pkts_cancelled_u", NULL, 0);
-		filler(buffer, "pkts_cancelled_o", NULL, 0);
-		filler(buffer, "cancel_no_matching_conn", NULL, 0);
-		filler(buffer, "cancel_resource_busy", NULL, 0);
-		filler(buffer, "cancel_trs_pend_rsp", NULL, 0);
-		filler(buffer, "cancel_tct_closed", NULL, 0);
-		filler(buffer, "nacks", NULL, 0);
-		filler(buffer, "nack_no_target_trs", NULL, 0);
-		filler(buffer, "nack_no_target_mst", NULL, 0);
-		filler(buffer, "nack_no_target_conn", NULL, 0);
-		filler(buffer, "nack_no_matching_conn", NULL, 0);
-		filler(buffer, "nack_resource_busy", NULL, 0);
-		filler(buffer, "nack_trs_pend_rsp", NULL, 0);
-		filler(buffer, "nack_sequence_error", NULL, 0);
-		filler(buffer, "sct_timeouts", NULL, 0);
-		filler(buffer, "tct_timeouts", NULL, 0);
-		filler(buffer, "accel_close_complete", NULL, 0);
-		filler(buffer, "ignored_sct_timeouts", NULL, 0);
-		filler(buffer, "srb_in_use", NULL, 0);
-		filler(buffer, "spt_in_use", NULL, 0);
-		filler(buffer, "smt_in_use", NULL, 0);
-		filler(buffer, "sct_in_use", NULL, 0);
-		filler(buffer, "trs_in_use", NULL, 0);
-		filler(buffer, "mst_in_use", NULL, 0);
-		filler(buffer, "tct_in_use", NULL, 0);
-		filler(buffer, "rh_sct_status_change", NULL, 0);
-		filler(buffer, "nid_value", NULL, 0);
-		filler(buffer, "nid_tree_count", NULL, 0);
-		filler(buffer, "max_nid_tree_count", NULL, 0);
-		filler(buffer, "switch_tree_count", NULL, 0);
-		filler(buffer, "max_switch_tree_count", NULL, 0);
-		filler(buffer, "parked_nids", NULL, 0);
-		filler(buffer, "max_parked_nids", NULL, 0);
-		filler(buffer, "parked_switches", NULL, 0);
-		filler(buffer, "max_parked_switches", NULL, 0);
+		filler(buffer, "config", NULL, 0, 0);
+		filler(buffer, "spt_timeouts", NULL, 0, 0);
+		filler(buffer, "spt_timeouts_u", NULL, 0, 0);
+		filler(buffer, "spt_timeouts_o", NULL, 0, 0);
+		filler(buffer, "connections_cancelled", NULL, 0, 0);
+		filler(buffer, "pkts_cancelled_u", NULL, 0, 0);
+		filler(buffer, "pkts_cancelled_o", NULL, 0, 0);
+		filler(buffer, "cancel_no_matching_conn", NULL, 0, 0);
+		filler(buffer, "cancel_resource_busy", NULL, 0, 0);
+		filler(buffer, "cancel_trs_pend_rsp", NULL, 0, 0);
+		filler(buffer, "cancel_tct_closed", NULL, 0, 0);
+		filler(buffer, "nacks", NULL, 0, 0);
+		filler(buffer, "nack_no_target_trs", NULL, 0, 0);
+		filler(buffer, "nack_no_target_mst", NULL, 0, 0);
+		filler(buffer, "nack_no_target_conn", NULL, 0, 0);
+		filler(buffer, "nack_no_matching_conn", NULL, 0, 0);
+		filler(buffer, "nack_resource_busy", NULL, 0, 0);
+		filler(buffer, "nack_trs_pend_rsp", NULL, 0, 0);
+		filler(buffer, "nack_sequence_error", NULL, 0, 0);
+		filler(buffer, "sct_timeouts", NULL, 0, 0);
+		filler(buffer, "tct_timeouts", NULL, 0, 0);
+		filler(buffer, "accel_close_complete", NULL, 0, 0);
+		filler(buffer, "ignored_sct_timeouts", NULL, 0, 0);
+		filler(buffer, "srb_in_use", NULL, 0, 0);
+		filler(buffer, "spt_in_use", NULL, 0, 0);
+		filler(buffer, "smt_in_use", NULL, 0, 0);
+		filler(buffer, "sct_in_use", NULL, 0, 0);
+		filler(buffer, "trs_in_use", NULL, 0, 0);
+		filler(buffer, "mst_in_use", NULL, 0, 0);
+		filler(buffer, "tct_in_use", NULL, 0, 0);
+		filler(buffer, "rh_sct_status_change", NULL, 0, 0);
+		filler(buffer, "nid_value", NULL, 0, 0);
+		filler(buffer, "nid_tree_count", NULL, 0, 0);
+		filler(buffer, "max_nid_tree_count", NULL, 0, 0);
+		filler(buffer, "switch_tree_count", NULL, 0, 0);
+		filler(buffer, "max_switch_tree_count", NULL, 0, 0);
+		filler(buffer, "parked_nids", NULL, 0, 0);
+		filler(buffer, "max_parked_nids", NULL, 0, 0);
+		filler(buffer, "parked_switches", NULL, 0, 0);
+		filler(buffer, "max_parked_switches", NULL, 0, 0);
 	} else if (!strcmp(path, "/config")) {
-		filler(buffer, "config_file_path", NULL, 0);
-		filler(buffer, "max_fabric_packet_age", NULL, 0);
-		filler(buffer, "max_spt_retries", NULL, 0);
-		filler(buffer, "max_no_matching_conn_retries", NULL, 0);
-		filler(buffer, "max_resource_busy_retries", NULL, 0);
-		filler(buffer, "max_trs_pend_rsp_retries", NULL, 0);
-		filler(buffer, "max_batch_size", NULL, 0);
-		filler(buffer, "initial_batch_size", NULL, 0);
-		filler(buffer, "backoff_multiplier", NULL, 0);
-		filler(buffer, "nack_backoff_start", NULL, 0);
-		filler(buffer, "tct_wait_time", NULL, 0);
-		filler(buffer, "pause_wait_time", NULL, 0);
-		filler(buffer, "cancel_spt_wait_time", NULL, 0);
-		filler(buffer, "peer_tct_free_wait_time", NULL, 0);
-		filler(buffer, "down_nid_wait_time", NULL, 0);
-		filler(buffer, "log_increment", NULL, 0);
+		filler(buffer, "config_file_path", NULL, 0, 0);
+		filler(buffer, "max_fabric_packet_age", NULL, 0, 0);
+		filler(buffer, "max_spt_retries", NULL, 0, 0);
+		filler(buffer, "max_no_matching_conn_retries", NULL, 0, 0);
+		filler(buffer, "max_resource_busy_retries", NULL, 0, 0);
+		filler(buffer, "max_trs_pend_rsp_retries", NULL, 0, 0);
+		filler(buffer, "max_batch_size", NULL, 0, 0);
+		filler(buffer, "initial_batch_size", NULL, 0, 0);
+		filler(buffer, "backoff_multiplier", NULL, 0, 0);
+		filler(buffer, "nack_backoff_start", NULL, 0, 0);
+		filler(buffer, "tct_wait_time", NULL, 0, 0);
+		filler(buffer, "pause_wait_time", NULL, 0, 0);
+		filler(buffer, "cancel_spt_wait_time", NULL, 0, 0);
+		filler(buffer, "peer_tct_free_wait_time", NULL, 0, 0);
+		filler(buffer, "down_nid_wait_time", NULL, 0, 0);
+		filler(buffer, "log_increment", NULL, 0, 0);
 	}
 
 	return 0;
@@ -308,7 +308,7 @@ static int stats_write(const char *path, const char *buffer, size_t size,
 	return size;
 }
 
-static int stats_truncate(const char *path, off_t size)
+static int stats_truncate(const char *path, off_t size, struct fuse_file_info *fi)
 {
 	if (!strcmp(path, "/config/log_increment"))
 		return 0;
@@ -372,18 +372,19 @@ int stats_init(struct retry_handler *rh)
 		goto free_args;
 	}
 
-	rh->stats_chan = fuse_mount(rh_stats_dir, &args);
-	if (rh->stats_chan == NULL) {
-		rh_printf(rh, LOG_ERR,
-			  "Mount to %s failed\n", rh_stats_dir);
+	rh->stats_fuse = fuse_new(&args, &ops, sizeof(ops), rh);
+	if (rh->stats_fuse == NULL) {
+		rh_printf(rh, LOG_ERR, "fuse_new failed\n");
 		ret = -1;
 		goto free_args;
 	}
 
-	rh->stats_fuse = fuse_new(rh->stats_chan, NULL, &ops, sizeof(ops), rh);
-	if (rh->stats_fuse == NULL) {
+	ret = fuse_mount(rh->stats_fuse, rh_stats_dir);
+	if (ret != 0) {
+		rh_printf(rh, LOG_ERR,
+				"Mount to %s failed\n", rh_stats_dir);
 		ret = -1;
-		goto free_chan;
+		goto free_fuse;
 	}
 
 	ret = pthread_create(&rh->stats_thread, NULL, stats_fs, (void *)rh);
@@ -396,8 +397,6 @@ int stats_init(struct retry_handler *rh)
 
 free_fuse:
 	fuse_destroy(rh->stats_fuse);
-free_chan:
-	fuse_unmount(rh_stats_dir, rh->stats_chan);
 free_args:
 	fuse_opt_free_args(&args);
 err:
@@ -410,7 +409,7 @@ void stats_fini(void)
 	int ret;
 
 	/* interrupt fuse_loop() */
-	fuse_unmount(rh_stats_dir, fs_rh->stats_chan);
+	fuse_unmount(fs_rh->stats_fuse);
 
 	ret = pthread_join(fs_rh->stats_thread, &thread_rc);
 	if (ret)
