@@ -98,6 +98,13 @@ struct cxil_pte_priv {
 	struct cxil_lni_priv *lni_priv;
 };
 
+/* Userspace CXI RMU Ethernet structure */
+struct cxil_rmu_eth_priv {
+	struct cxil_rmu_eth rmu_eth;
+	struct cxil_dev_priv *dev;
+	unsigned int rmu_eth_hndl;
+};
+
 /* Userspace CXI PTE map index structure */
 struct cxil_pte_map {
 	struct cxil_lni_priv *lni_priv;

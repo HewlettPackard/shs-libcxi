@@ -1825,6 +1825,248 @@ CXIL_API int cxil_pte_transition_sm(struct cxil_pte *pte,
 	return rc;
 }
 
+/* Allocate RMU Ethernet packet matching resources */
+CXIL_API int cxil_alloc_rmu_eth(struct cxil_dev *dev_in,
+				const struct cxil_rmu_eth_opts *opts,
+				struct cxil_rmu_eth **rmu_eth)
+{
+	struct cxil_dev_priv *dev = (struct cxil_dev_priv *)dev_in;
+	struct cxi_rmu_eth_alloc_resp resp = {};
+	struct cxi_rmu_eth_alloc_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_ALLOC,
+		.resp = &resp,
+	};
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	int rc;
+
+	if (!dev_in || !opts || !rmu_eth)
+		return -EINVAL;
+
+	rmu_eth_priv = calloc(1, sizeof(*rmu_eth_priv));
+	if (rmu_eth_priv == NULL)
+		return -errno;
+
+	cmd.filter_entries = opts->filter_entries;
+	cmd.rss_indir_entries = opts->rss_indir_entries;
+
+	rc = device_write(dev, &cmd, sizeof(cmd));
+	if (rc)
+		goto free_rmu_eth;
+
+	rmu_eth_priv->dev = dev;
+	rmu_eth_priv->rmu_eth_hndl = resp.rmu_eth;
+	rmu_eth_priv->rmu_eth.id = resp.id;
+	rmu_eth_priv->rmu_eth.max_filters = resp.max_filters;
+	rmu_eth_priv->rmu_eth.max_indir_entries = resp.max_indir_entries;
+
+	*rmu_eth = &rmu_eth_priv->rmu_eth;
+
+	return 0;
+
+free_rmu_eth:
+	free(rmu_eth_priv);
+	return rc;
+}
+
+/* Free RMU Ethernet packet matching resources */
+CXIL_API int cxil_destroy_rmu_eth(struct cxil_rmu_eth *rmu_eth)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_free_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_FREE,
+	};
+	int rc;
+
+	if (!rmu_eth)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+
+	rc = device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+	if (rc)
+		return rc;
+
+	free(rmu_eth_priv);
+
+	return 0;
+}
+
+/* Add a MAC address filter */
+CXIL_API int cxil_rmu_eth_add_mac_filter(struct cxil_rmu_eth *rmu_eth,
+					 uint64_t mac_addr,
+					 struct cxil_pte *pte, bool use_rss)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_add_mac_filter_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_ADD_MAC_FILTER,
+	};
+
+	if (!rmu_eth || !pte)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+	cmd.pte = pte->ptn;
+	cmd.mac_addr = mac_addr;
+	cmd.use_rss = use_rss;
+
+	return device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+}
+
+/* Add a catch-all multicast filter */
+CXIL_API int cxil_rmu_eth_add_all_mcast_filter(struct cxil_rmu_eth *rmu_eth,
+					       struct cxil_pte *pte,
+					       bool use_rss)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_add_all_mcast_filter_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_ADD_ALL_MCAST_FILTER,
+	};
+
+	if (!rmu_eth || !pte)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+	cmd.pte = pte->ptn;
+	cmd.use_rss = use_rss;
+
+	return device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+}
+
+/* Add a promiscuous filter */
+CXIL_API int cxil_rmu_eth_add_promiscuous_filter(struct cxil_rmu_eth *rmu_eth,
+						 struct cxil_pte *pte,
+						 bool use_rss)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_add_promisc_filter_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_ADD_PROMISC_FILTER,
+	};
+
+	if (!rmu_eth || !pte)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+	cmd.pte = pte->ptn;
+	cmd.use_rss = use_rss;
+
+	return device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+}
+
+static int rmu_eth_remove_filter(struct cxil_rmu_eth *rmu_eth,
+				 uint64_t mac_addr, bool all_mcast,
+				 bool promisc)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_remove_filter_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_REMOVE_FILTER,
+	};
+
+	if (!rmu_eth)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+	cmd.mac_addr = mac_addr;
+	cmd.all_mcast = all_mcast;
+	cmd.promisc = promisc;
+
+	return device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+}
+
+/* Remove a MAC address filter */
+CXIL_API int cxil_rmu_eth_remove_mac_filter(struct cxil_rmu_eth *rmu_eth,
+					    uint64_t mac_addr)
+{
+	return rmu_eth_remove_filter(rmu_eth, mac_addr, false, false);
+}
+
+/* Remove the catch-all multicast filter */
+CXIL_API int cxil_rmu_eth_remove_all_mcast_filter(struct cxil_rmu_eth *rmu_eth)
+{
+	return rmu_eth_remove_filter(rmu_eth, 0, true, false);
+}
+
+/* Remove the promiscuous filter */
+CXIL_API int
+cxil_rmu_eth_remove_promiscuous_filter(struct cxil_rmu_eth *rmu_eth)
+{
+	return rmu_eth_remove_filter(rmu_eth, 0, false, true);
+}
+
+/* Set the PtlTEs used for RSS distribution */
+CXIL_API int cxil_rmu_eth_set_rss_queues(struct cxil_rmu_eth *rmu_eth,
+					 unsigned int num_queues,
+					 struct cxil_pte **ptes,
+					 uint32_t hash_types)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_set_rss_queues_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_SET_RSS_QUEUES,
+	};
+	unsigned int i;
+
+	if (!rmu_eth || (num_queues && !ptes))
+		return -EINVAL;
+
+	if (num_queues > CXI_ETH_MAX_RSS_QUEUES)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	for (i = 0; i < num_queues; i++) {
+		if (!ptes[i])
+			return -EINVAL;
+		cmd.ptes[i] = ptes[i]->ptn;
+	}
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+	cmd.num_queues = num_queues;
+	cmd.hash_types = hash_types;
+
+	return device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+}
+
+/* Set the RSS indirection table */
+CXIL_API int cxil_rmu_eth_set_indir_table(struct cxil_rmu_eth *rmu_eth,
+					  const uint8_t *indir_table,
+					  unsigned int indir_size)
+{
+	struct cxil_rmu_eth_priv *rmu_eth_priv;
+	struct cxi_rmu_eth_set_indir_table_cmd cmd = {
+		.op = CXI_OP_RMU_ETH_SET_INDIR_TABLE,
+	};
+
+	if (!rmu_eth || !indir_table || !indir_size)
+		return -EINVAL;
+
+	if (indir_size > CXI_ETH_MAX_INDIR_ENTRIES)
+		return -EINVAL;
+
+	rmu_eth_priv = container_of(rmu_eth, struct cxil_rmu_eth_priv,
+				    rmu_eth);
+
+	cmd.rmu_eth = rmu_eth_priv->rmu_eth_hndl;
+	cmd.indir_size = indir_size;
+	memcpy(cmd.indir_table, indir_table, indir_size);
+
+	return device_write(rmu_eth_priv->dev, &cmd, sizeof(cmd));
+}
+
 static bool valid_csr(const struct cxil_dev_priv *dev,
 		      unsigned int csr, size_t csr_len)
 {
