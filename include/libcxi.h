@@ -85,6 +85,17 @@ struct cxil_pte {
 	unsigned int ptn;
 };
 
+struct cxil_rmu_eth {
+	unsigned int id;
+	unsigned int max_filters;
+	unsigned int max_indir_entries;
+};
+
+struct cxil_rmu_eth_opts {
+	unsigned int filter_entries;
+	unsigned int rss_indir_entries;
+};
+
 struct cxil_domain {
 	unsigned int vni;
 	unsigned int pid;
@@ -853,6 +864,144 @@ CXIL_API int cxil_pte_status(struct cxil_pte *pte,
  */
 CXIL_API int cxil_pte_transition_sm(struct cxil_pte *pte,
 				    unsigned int drop_count);
+
+/**
+ * @brief Allocate RMU Ethernet packet matching resources.
+ *
+ * @param dev Device returned by cxil_open_device().
+ * @param opts Requested number of filter entries and RSS indirection entries.
+ * @param rmu_eth On success, the allocated RMU Ethernet object.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_alloc_rmu_eth(struct cxil_dev *dev,
+				const struct cxil_rmu_eth_opts *opts,
+				struct cxil_rmu_eth **rmu_eth);
+
+/**
+ * @brief Free RMU Ethernet packet matching resources.
+ *
+ * All filters referencing this object are removed by the driver.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_destroy_rmu_eth(struct cxil_rmu_eth *rmu_eth);
+
+/**
+ * @brief Add a unicast/multicast MAC address filter.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ * @param mac_addr MAC address to match, in the lower 48 bits.
+ * @param pte PtlTE receiving the matching packets.
+ * @param use_rss When true, distribute matching packets using RSS.
+ *
+ * This filter is reserved for the PF kernel Ethernet client. User-space
+ * RMU Ethernet handles and VFs receive -EPERM.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_add_mac_filter(struct cxil_rmu_eth *rmu_eth,
+					 uint64_t mac_addr,
+					 struct cxil_pte *pte, bool use_rss);
+
+/**
+ * @brief Add a catch-all multicast filter.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ * @param pte PtlTE receiving the matching packets.
+ * @param use_rss When true, distribute matching packets using RSS.
+ *
+ * This filter is reserved for the PF kernel Ethernet client. User-space
+ * RMU Ethernet handles and VFs receive -EPERM.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_add_all_mcast_filter(struct cxil_rmu_eth *rmu_eth,
+					       struct cxil_pte *pte,
+					       bool use_rss);
+
+/**
+ * @brief Add a promiscuous filter.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ * @param pte PtlTE receiving the matching packets.
+ * @param use_rss When true, distribute matching packets using RSS.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_add_promiscuous_filter(struct cxil_rmu_eth *rmu_eth,
+						 struct cxil_pte *pte,
+						 bool use_rss);
+
+/**
+ * @brief Remove a MAC address filter.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ * @param mac_addr MAC address previously added.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_remove_mac_filter(struct cxil_rmu_eth *rmu_eth,
+					    uint64_t mac_addr);
+
+/**
+ * @brief Remove the catch-all multicast filter.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_remove_all_mcast_filter(struct cxil_rmu_eth *rmu_eth);
+
+/**
+ * @brief Remove the promiscuous filter.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int
+cxil_rmu_eth_remove_promiscuous_filter(struct cxil_rmu_eth *rmu_eth);
+
+/**
+ * @brief Set the set of PtlTEs used for RSS distribution.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ * @param num_queues Number of PtlTEs, up to CXI_ETH_MAX_RSS_QUEUES.
+ * @param ptes Array of @p num_queues PtlTEs.
+ * @param hash_types Bitmask of packet fields to hash on.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_set_rss_queues(struct cxil_rmu_eth *rmu_eth,
+					 unsigned int num_queues,
+					 struct cxil_pte **ptes,
+					 uint32_t hash_types);
+
+/**
+ * @brief Set the RSS indirection table.
+ *
+ * @param rmu_eth Object returned by cxil_alloc_rmu_eth().
+ * @param indir_table Table of RSS queue indices.
+ * @param indir_size Number of entries, up to CXI_ETH_MAX_INDIR_ENTRIES.
+ *
+ * @return int On success, returns zero. Otherwise, a negative errno value is
+ *         returned indicating the error.
+ */
+CXIL_API int cxil_rmu_eth_set_indir_table(struct cxil_rmu_eth *rmu_eth,
+					  const uint8_t *indir_table,
+					  unsigned int indir_size);
 
 /* libcxi clients also use cxi_cq and cxi_eq structures.  Those
  * structures may be passed to hardware access functions defined in
