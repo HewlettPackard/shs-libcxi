@@ -107,8 +107,24 @@ echo "$parent_svc_id" > /sys/class/cxi/cxi0/vf/0/svc_id
 echo "$parent_svc_id" > /sys/class/cxi/cxi0/vf/1/svc_id
 
 # Two VFs, VF 0/cxi1 for regular tests, VF 1/cxi2 for service-parent tests
+ETH_KO="$(realpath ../../cxi-driver)/drivers/net/ethernet/hpe/ss1/cxi-eth.ko"
+if ! find /sys/class/cxi/cxi0/device/net -mindepth 1 -maxdepth 1 \
+	-type d -print -quit 2>/dev/null | grep -q .; then
+  insmod "$ETH_KO"
+fi
+
 echo 2 > /sys/class/cxi/cxi0/device/sriov_numvfs
 sleep 1
+
+# Permit the VF MAC filter tests to exercise multiple MAC filters.
+PF_IF=$(find /sys/class/cxi/cxi0/device/net -mindepth 1 -maxdepth 1 \
+	-type d -printf '%f\n' | head -n 1)
+if [ -z "$PF_IF" ]; then
+  echo "Failed to find PF Ethernet interface" >&2
+  exit 1
+fi
+ip link set "$PF_IF" vf 0 mac 00:11:22:33:44:55
+ip link set "$PF_IF" vf 0 trust on
 
 # Create child service for VF 0/cxi1 only
 create_service -d cxi1 -y "$vf_yaml"
