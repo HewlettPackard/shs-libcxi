@@ -50,8 +50,8 @@ ParameterizedTestParameters(svc, svc_alloc)
 			.resource_limits = true,
 			.limits = (struct cxi_rsrc_limits) {
 					.txqs = {
-							.max = 1024,
-							.res = 1024 - 16,
+							.max = 1022,
+							.res = 1022 - 16,
 					},
 					.eqs = {
 							.max = 10,
@@ -1101,7 +1101,7 @@ ParameterizedTestParameters(svc, le_tle)
 		{
 			.limits = (struct cxi_rsrc_limits) {
 				.les = {
-					.max = 16384,
+					.max = 16383,
 					.res = 1092,
 				},
 			},
@@ -1110,7 +1110,7 @@ ParameterizedTestParameters(svc, le_tle)
 		{
 			.limits = (struct cxi_rsrc_limits) {
 				.les = {
-					.max = 16384,
+					.max = 16383,
 					.res = 0,
 				},
 			},
