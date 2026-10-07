@@ -80,7 +80,9 @@ utils_cxi_stat_SOURCES = utils/cxi_stat.c
 utils_cxi_stat_LDADD = src/libcxi.la
 
 cxi_yamldir = $(datadir)/cxi
-dist_cxi_yaml_DATA = utils/cxi_service_template.yaml
+dist_cxi_yaml_DATA = \
+	utils/cxi_parent_service_template.yaml \
+	utils/cxi_service_template.yaml
 utils_cxi_service_SOURCES = utils/cxi_service.c
 utils_cxi_service_LDADD = ${LIBYAML_LIBS} src/libcxi.la
 
