@@ -186,6 +186,7 @@ install -D --target-directory=%{buildroot}/%{_presetdir}/ 99-cxi_rh.preset
 %{_mandir}/man1/*
 %{_mandir}/man7/*
 %{_datadir}/cxi/cxi_service_template.yaml
+%{_datadir}/cxi/cxi_parent_service_template.yaml
 
 %files dracut
 %{_sysconfdir}/dracut.conf.d/*.conf

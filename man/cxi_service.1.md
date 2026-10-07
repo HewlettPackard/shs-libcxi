@@ -209,8 +209,9 @@ $ cxi_service create -y $PATH_TO_YAML_FILE
 # FILES
 
  _share/cxi/cxi_service_template.yaml_
+ _share/cxi/cxi_parent_service_template.yaml_
  ```
- Sample yaml file to be used with the "create" command
+ Sample yaml files to be used with the "create" command
  ```
 
 # SEE ALSO

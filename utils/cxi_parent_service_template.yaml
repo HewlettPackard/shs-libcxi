@@ -1,0 +1,59 @@
+# Example service definition for a virtual-function parent service. Resource
+# limits defined here will constrain any child services created within the
+# virtual function.
+
+# Valid Values are 0 or 1
+resource_limits: 1
+restricted_tcs: 1
+is_parent: 1
+
+# Restricted members and exclusive communication profiles are not supported by
+# parent services
+restricted_members: 0
+exclusive_cp: 0
+
+## Ignored if resource_limits is set to false.
+# If a resource is not listed below, res will be set to 0 for said resource.
+# max must be set equal to res for parent services.
+limits:
+  - name: ACs
+    res: 16
+    max: 16
+  - name: CTs
+    res: 16
+    max: 16
+  - name: EQs
+    res: 16
+    max: 16
+  - name: LEs
+    res: 16
+    max: 16
+  - name: PTEs
+    res: 16
+    max: 16
+  - name: TGQs
+    res: 16
+    max: 16
+  - name: TXQs
+    res: 16
+    max: 16
+  - name: TLEs
+    res: 128
+    max: 128
+
+#vnis:
+#  vni_min: 64
+#  vni_max: 127
+
+vnis:
+  vni: 2
+  vni: 3
+  vni: 4
+  vni: 5
+
+## Ignored if restricted_tcs is set to false
+tcs:
+  tc: DEDICATED_ACCESS
+  tc: LOW_LATENCY
+  tc: BULK_DATA
+  tc: BEST_EFFORT
