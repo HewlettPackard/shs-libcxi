@@ -103,6 +103,9 @@ static void rma_put_with_cp_modify(void)
 	int pid_idx = 0;
 	int ret = -1;
 	struct cxi_cq_alloc_opts cq_opts;
+	char *valid_vni_str = getenv("CXIL_TEST_VNI_VALID");
+	unsigned int valid_vni = valid_vni_str ?
+		strtoul(valid_vni_str, NULL, 0) : VALID_VNI;
 
 	excp_profile_setup();
 
@@ -166,7 +169,10 @@ static void rma_put_with_cp_modify(void)
 		      "cxil_modify_cp() was successful for invalid VNI %u",
 		      vni_excp);
 
-	ret = cxil_modify_cp(lni, excp, VALID_VNI);
+	/* The valid target VNI is overridable so a VF run can use a VNI within
+	 * the parent service range (see profile.sh / CXIL_TEST_VNI_VALID).
+	 */
+	ret = cxil_modify_cp(lni, excp, valid_vni);
 	cr_assert_eq(ret, 0, "cxil_modify_cp() failed %d", ret);
 
 	/* Do a set of xfers in increments until the whole source mem is xfered

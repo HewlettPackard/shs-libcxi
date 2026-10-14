@@ -127,7 +127,7 @@ ParameterizedTestParameters(domain, domain_alloc)
 
 ParameterizedTest(struct domain_alloc_params *param, domain, domain_alloc)
 {
-	int rc = cxil_alloc_domain(lni, param->vni, param->pid, &domain);
+	int rc = cxil_alloc_domain(lni, vni, param->pid, &domain);
 	cr_assert_eq(rc, param->rc,
 		     "rc mismatch, expected: %d received %d",
 		     param->rc, rc);
@@ -147,6 +147,30 @@ Test(domain, domain_null)
 	cxil_destroy_domain(NULL);
 }
 
+/* On a VF bound to a parent service, a domain may only be allocated on a VNI
+ * within the parent's VNI range. The VF test harness binds the VF to a parent
+ * with VNI range 32-63 (see run_vf_tests_vm.sh), so VNIs outside it must be
+ * rejected with -EPERM. Skipped on the PF, which has no such restriction.
+ */
+Test(domain, vf_vni_outside_parent_range)
+{
+	struct cxil_domain *dom;
+	int rc;
+
+	if (!dev->info.is_vf)
+		cr_skip("requires a VF bound to a parent service");
+
+	rc = cxil_alloc_domain(lni, 1, 0, &dom);
+	cr_assert_eq(rc, -EPERM,
+		     "VF domain alloc for VNI 1 below parent range returned %d, expected %d",
+		     rc, -EPERM);
+
+	rc = cxil_alloc_domain(lni, 100, 0, &dom);
+	cr_assert_eq(rc, -EPERM,
+		     "VF domain alloc for VNI 100 above parent range returned %d, expected %d",
+		     rc, -EPERM);
+}
+
 Test(domain, reserve)
 {
 	int rc;
@@ -163,15 +187,15 @@ Test(domain, reserve)
 	cr_assert_eq(rc, -EINVAL);
 
 	/* Bad LNI */
-	rc = cxil_reserve_domain(NULL, 1, 0, 0);
+	rc = cxil_reserve_domain(NULL, vni, 0, 0);
 	cr_assert_eq(rc, -EINVAL);
 
 	/* Bad count */
-	rc = cxil_reserve_domain(lni, 1, 0, 0);
+	rc = cxil_reserve_domain(lni, vni, 0, 0);
 	cr_assert_eq(rc, -EINVAL);
 
 	/* reserve 1 PID */
-	rc = cxil_reserve_domain(lni, 1, 0, 1);
+	rc = cxil_reserve_domain(lni, vni, 0, 1);
 	cr_assert_eq(rc, 0);
 
 	/* Clean up reservation */
@@ -182,22 +206,22 @@ Test(domain, reserve)
 	cr_assert_eq(rc, 0);
 
 	/* reserve 1 PID */
-	rc = cxil_reserve_domain(lni, 1, 0, 1);
+	rc = cxil_reserve_domain(lni, vni, 0, 1);
 	cr_assert_eq(rc, 0);
 
 	/* Use reserved PID */
-	rc = cxil_alloc_domain(lni, 1, 0, &domain);
+	rc = cxil_alloc_domain(lni, vni, 0, &domain);
 	cr_assert_eq(rc, 0);
 
 	rc = cxil_destroy_domain(domain);
 	cr_assert_eq(rc, 0);
 
 	/* reserve many PIDs */
-	rc = cxil_reserve_domain(lni, 1, 0, max_doms);
+	rc = cxil_reserve_domain(lni, vni, 0, max_doms);
 	cr_assert_eq(rc, 0);
 
 	for (i = 0; i < max_doms; i++) {
-		rc = cxil_alloc_domain(lni, 1, i, &domains[i]);
+		rc = cxil_alloc_domain(lni, vni, i, &domains[i]);
 		cr_assert_eq(rc, 0);
 	}
 
@@ -207,23 +231,23 @@ Test(domain, reserve)
 	}
 
 	/* reserve many PIDs with wildcard */
-	rc = cxil_reserve_domain(lni, 1, C_PID_ANY, 10);
+	rc = cxil_reserve_domain(lni, vni, C_PID_ANY, 10);
 	cr_assert_eq(rc, 0);
 
 	/* attempt to reserve reserved PIDs */
-	rc = cxil_reserve_domain(lni, 1, rc, 10);
+	rc = cxil_reserve_domain(lni, vni, rc, 10);
 	cr_assert_eq(rc, -EEXIST, "rc is %d\n", rc);
 
 	/* reserve many PIDs with wildcard */
-	base_pid = cxil_reserve_domain(lni, 1, C_PID_ANY, 10);
+	base_pid = cxil_reserve_domain(lni, vni, C_PID_ANY, 10);
 	cr_assert_eq(base_pid, 10, "pid is %d\n", base_pid);
 
 	/* Attempt to allocate a reserved PID */
-	rc = cxil_alloc_domain(lni2, 1, base_pid, &domains[0]);
+	rc = cxil_alloc_domain(lni2, vni, base_pid, &domains[0]);
 	cr_assert_eq(rc, -EEXIST, "rc is %d\n", rc);
 
 	for (i = 0; i < 10; i++) {
-		rc = cxil_alloc_domain(lni, 1, base_pid + i, &domains[i]);
+		rc = cxil_alloc_domain(lni, vni, base_pid + i, &domains[i]);
 		cr_assert_eq(rc, 0);
 	}
 
@@ -236,19 +260,19 @@ Test(domain, reserve)
 	rc = cxil_alloc_lni(dev, &lni2, svc_id());
 	cr_assert_eq(rc, 0);
 
-	rc = cxil_reserve_domain(lni2, 1, 100, 1);
+	rc = cxil_reserve_domain(lni2, vni, 100, 1);
 	cr_assert_eq(rc, 100);
 
 	/* reserve many PIDs with defined base */
-	base_pid = cxil_reserve_domain(lni, 1, 101, 10);
+	base_pid = cxil_reserve_domain(lni, vni, 101, 10);
 	cr_assert_eq(base_pid, 101, "pid is %d\n", base_pid);
 
 	/* Attempt to allocate a reserved PID */
-	rc = cxil_alloc_domain(lni2, 1, base_pid, &domains[0]);
+	rc = cxil_alloc_domain(lni2, vni, base_pid, &domains[0]);
 	cr_assert_eq(rc, -EEXIST, "rc is %d\n", rc);
 
 	for (i = 0; i < 10; i++) {
-		rc = cxil_alloc_domain(lni, 1, base_pid + i, &domains[i]);
+		rc = cxil_alloc_domain(lni, vni, base_pid + i, &domains[i]);
 		cr_assert_eq(rc, 0);
 	}
 

@@ -267,7 +267,7 @@ ParameterizedTest(const struct domain_alloc_params *param, ucxi_domain,
 	domain_alloc.op = CXI_OP_DOMAIN_ALLOC;
 	domain_alloc.resp = param->with_resp ? &resp : NULL;
 	domain_alloc.lni = lni->id + param->lni_hndl_off;
-	domain_alloc.vni = param->vni;
+	domain_alloc.vni = (param->vni > UINT16_MAX) ? param->vni : vni;
 	domain_alloc.pid = param->pid;
 	rc = write(pdev->fd, &domain_alloc, param->write_sz);
 	cr_assert_eq(rc, param->write_rc,

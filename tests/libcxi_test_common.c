@@ -85,6 +85,20 @@ void get_dev_id(void)
 	dev_id = dev_num_str ? atoi(dev_num_str) : 0;
 }
 
+/* Allow the test VNIs to be overridden so a run against a VF can use VNIs
+ * within the VF's parent service range.
+ */
+static void get_vni(void)
+{
+	char *vni_str = getenv("CXIL_TEST_VNI");
+	char *vni_excp_str = getenv("CXIL_TEST_VNI_EXCP");
+
+	if (vni_str)
+		vni = strtoul(vni_str, NULL, 0);
+	if (vni_excp_str)
+		vni_excp = strtoul(vni_excp_str, NULL, 0);
+}
+
 int svc_id(void)
 {
 	char *svc_id_str = getenv("CXIL_TEST_SVC_ID");
@@ -97,6 +111,7 @@ void dev_setup(void)
 	int ret;
 
 	get_dev_id();
+	get_vni();
 	set_system_page_size();
 	ret = cxil_open_device(dev_id, &dev);
 	cr_assert_eq(ret, 0, "ret = (%d) %s", ret, strerror(-ret));
