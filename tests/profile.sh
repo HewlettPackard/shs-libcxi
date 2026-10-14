@@ -3,9 +3,15 @@
 
 MY_DIR="../../cxi-driver/scripts"
 
-# Gives a VNI range of 16-31
-match=16
-ignore=15
+# Default VNI range of 16-31. When CXIL_TEST_VNI_EXCP is set (VF test runs),
+# provision a single-VNI profile for that VNI so it falls within the VF's
+# parent service range.
+match=${CXIL_TEST_VNI_EXCP:-16}
+if [ -n "${CXIL_TEST_VNI_EXCP:-}" ]; then
+	ignore=0
+else
+	ignore=15
+fi
 rgroup_name=""
 tle=0
 exclusive=0

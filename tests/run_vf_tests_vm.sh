@@ -133,9 +133,13 @@ $cxi_service list -d cxi1
 
 # CXIL_TEST_DEV: cxi device to run regular tests against
 # CXIL_TEST_SVC_ID: cxi service to use with regular tests
+# CXIL_TEST_VNI: VNI used by the regular tests (must be in the parent range)
+# CXIL_TEST_VNI_EXCP: VNI used by the exclusive-cp tests (in the parent range)
 # CXIL_TEST_PF_DEV: PF cxi device for use with VF parent-service tests
 # CXIL_TEST_VF_DEV: VF cxi device for use with VF parent-service tests
 # CXIL_TEST_VF_IDX: VF index of CXIL_TEST_VF_DEV device
-CXIL_TEST_DEV=1 CXIL_TEST_SVC_ID="$vf_svc_id" CXIL_TEST_PF_DEV=0 \
+CXIL_TEST_DEV=1 CXIL_TEST_SVC_ID="$vf_svc_id" \
+  CXIL_TEST_VNI=63 CXIL_TEST_VNI_EXCP=62 CXIL_TEST_VNI_VALID=62 \
+  CXIL_TEST_PF_DEV=0 \
   CXIL_TEST_VF_DEV=2 CXIL_TEST_VF_IDX=1 ./libcxi_test --verbose \
   --tap=libcxi_vf_test.tap --tap=- -j1
