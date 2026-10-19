@@ -26,6 +26,7 @@
 #define CAS_HZ 1000000000 /* cassini system clock rate */
 #define NUM_PAUSES 8
 #define DEFAULT_PAUSE 4
+#define VF_NA_STR "N/A (VF)"
 
 static const char *name = "cxi_stat";
 static const char *version = "1.5.5";
@@ -329,10 +330,12 @@ static int get_aer(struct cxi_dev *cd, int num_devs)
 			fprintf(stderr, "Error executing %s", __func__);
 			rc2 = 1;
 		} else {
-			rc = copy_file(f_aer, &cd[i].aer_cor);
+			if (!cd[i].info.is_vf || access(f_aer, R_OK) == 0) {
+				rc = copy_file(f_aer, &cd[i].aer_cor);
+				if (rc)
+					rc2 = 1;
+			}
 			free(f_aer);
-			if (rc)
-				rc2 = 1;
 		}
 
 		rc = asprintf(&f_aer,
@@ -342,10 +345,12 @@ static int get_aer(struct cxi_dev *cd, int num_devs)
 			fprintf(stderr, "Error executing %s", __func__);
 			rc2 = 1;
 		} else {
-			rc = copy_file(f_aer, &cd[i].aer_fatal);
+			if (!cd[i].info.is_vf || access(f_aer, R_OK) == 0) {
+				rc = copy_file(f_aer, &cd[i].aer_fatal);
+				if (rc)
+					rc2 = 1;
+			}
 			free(f_aer);
-			if (rc)
-				rc2 = 1;
 		}
 
 		rc = asprintf(&f_aer,
@@ -355,10 +360,12 @@ static int get_aer(struct cxi_dev *cd, int num_devs)
 			fprintf(stderr, "Error executing %s", __func__);
 			rc2 = 1;
 		} else {
-			rc = copy_file(f_aer, &cd[i].aer_nonfatal);
+			if (!cd[i].info.is_vf || access(f_aer, R_OK) == 0) {
+				rc = copy_file(f_aer, &cd[i].aer_nonfatal);
+				if (rc)
+					rc2 = 1;
+			}
 			free(f_aer);
-			if (rc)
-				rc2 = 1;
 		}
 	}
 
@@ -541,6 +548,37 @@ static struct cxi_dev *get_cxi_dev_status(int *n_devs, struct stat_opts opts)
 			continue;
 
 		cdev[n].info = dev_list->info[i];
+		get_pcie_slot(&cdev[n]);
+
+		if (cdev[n].info.is_vf) {
+			snprintf(cdev[n].info.fru_description, CXIL_FRUDESC_MAX,
+				 "%s", VF_NA_STR);
+			snprintf(cdev[n].part_number, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].serial_number, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].fw_version, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].link_layer_retry, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].link_loopback, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].link_media, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].link_speed, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].link_state, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].tx_pause_state, MAX_LEN, "%s", VF_NA_STR);
+			snprintf(cdev[n].rx_pause_state, MAX_LEN, "%s", VF_NA_STR);
+
+			snprintf(tp, MAX_LENX2, "%s%s/device/current_link_speed",
+				 class_path, cdev[n].info.device_name);
+			if (access(tp, R_OK) != 0 ||
+			    copy_data_from_file(tp, cdev[n].pcie_speed) != 0)
+				snprintf(cdev[n].pcie_speed, MAX_LEN, "Unknown");
+
+			snprintf(tp, MAX_LENX2, "%s%s/device/current_link_width",
+				 class_path, cdev[n].info.device_name);
+			if (access(tp, R_OK) != 0 ||
+			    copy_data_from_file(tp, cdev[n].pcie_width) != 0)
+				snprintf(cdev[n].pcie_width, MAX_LEN, "0");
+
+			n++;
+			continue;
+		}
 
 		/* Get FRU info */
 		snprintf(tp, MAX_LENX2, "%s%s/device/fru/part_number",
@@ -565,8 +603,6 @@ static struct cxi_dev *get_cxi_dev_status(int *n_devs, struct stat_opts opts)
 		snprintf(tp, MAX_LENX2, "%s%s/device/current_link_width",
 			 class_path, cdev[n].info.device_name);
 		copy_data_from_file(tp, cdev[n].pcie_width);
-
-		get_pcie_slot(&cdev[n]);
 
 		/* Get uC status */
 		snprintf(tp, MAX_LENX2, "%s%s/device/uc/qspi_blob_version",
@@ -617,7 +653,7 @@ static void print_cxi_status(struct cxi_dev *cdev, int num_devs,
 	float min_ber = 0.0;
 
 	for (i = 0; i < num_devs; i++) {
-		if (opts.report_rates)
+		if (opts.report_rates && !cdev[i].info.is_vf)
 			min_ber = rate_to_ber(1.0/opts.pause, cdev[i].link_speed);
 
 		printf("Device: %s\n", cdev[i].info.device_name);
@@ -630,8 +666,13 @@ static void print_cxi_status(struct cxi_dev *cdev, int num_devs,
 		printf("    NID: %u (0x%05x)\n",
 		       cdev[i].info.nid, cdev[i].info.nid);
 		printf("    PID granule: %u\n", cdev[i].info.pid_granule);
-		printf("    PCIE speed/width: %s x%s\n", cdev[i].pcie_speed,
-		       cdev[i].pcie_width);
+		if (cdev[i].info.is_vf &&
+		    (strcmp(cdev[i].pcie_speed, "Unknown") == 0 ||
+		     strcmp(cdev[i].pcie_width, "0") == 0))
+			printf("    PCIE speed/width: %s\n", VF_NA_STR);
+		else
+			printf("    PCIE speed/width: %s x%s\n",
+			       cdev[i].pcie_speed, cdev[i].pcie_width);
 		printf("    PCIE slot: %s\n", cdev[i].pcie_slot);
 		printf("        Link layer retry: %s\n", cdev[i].link_layer_retry);
 		printf("        Link loopback: %s\n", cdev[i].link_loopback);
@@ -640,35 +681,39 @@ static void print_cxi_status(struct cxi_dev *cdev, int num_devs,
 		printf("        Link speed: %s\n", cdev[i].link_speed);
 		printf("        Link state: %s\n", cdev[i].link_state);
 		if (opts.report_rates) {
-			printf("    Rates:\n");
-			printf("        Good CW: %.2f/s\n", cdev[i].good_cw);
-			printf("        Corrected CW: %.2f/s\n",
-			       cdev[i].corrected_cw);
-			printf("        Uncorrected CW: %.2f/s\n",
-			       cdev[i].uncorrected_cw);
-			printf("        Corrected BER: %s%.3e\n",
-			       cdev[i].corrected_ber ? "" : "<",
-			       cdev[i].corrected_ber ? cdev[i].corrected_ber : min_ber);
-			printf("        Uncorrected BER: %s%.3e\n",
-			       cdev[i].uncorrected_ber ? "" : "<",
-			       cdev[i].uncorrected_ber ? cdev[i].uncorrected_ber : min_ber);
-			printf("        TX Pause state: %s\n",
-			       cdev[i].tx_pause_state);
-			printf("        RX Pause state: %s\n",
-			       cdev[i].rx_pause_state);
-			if (strncmp(cdev[i].tx_pause_state, "pfc", 3) == 0) {
-				for (j = 0; j < NUM_PAUSES; j++) {
-					printf("            RX Pause PCP %d: %3.1f%%\n",
-					       j, cdev[i].rx_pause_pct[j]);
-					printf("            TX Pause PCP %d: %3.1f%%\n",
-					       j, cdev[i].tx_pause_pct[j]);
+			if (cdev[i].info.is_vf) {
+				printf("    Rates: %s\n", VF_NA_STR);
+			} else {
+				printf("    Rates:\n");
+				printf("        Good CW: %.2f/s\n", cdev[i].good_cw);
+				printf("        Corrected CW: %.2f/s\n",
+				       cdev[i].corrected_cw);
+				printf("        Uncorrected CW: %.2f/s\n",
+				       cdev[i].uncorrected_cw);
+				printf("        Corrected BER: %s%.3e\n",
+				       cdev[i].corrected_ber ? "" : "<",
+				       cdev[i].corrected_ber ? cdev[i].corrected_ber : min_ber);
+				printf("        Uncorrected BER: %s%.3e\n",
+				       cdev[i].uncorrected_ber ? "" : "<",
+				       cdev[i].uncorrected_ber ? cdev[i].uncorrected_ber : min_ber);
+				printf("        TX Pause state: %s\n",
+				       cdev[i].tx_pause_state);
+				printf("        RX Pause state: %s\n",
+				       cdev[i].rx_pause_state);
+				if (strncmp(cdev[i].tx_pause_state, "pfc", 3) == 0) {
+					for (j = 0; j < NUM_PAUSES; j++) {
+						printf("            RX Pause PCP %d: %3.1f%%\n",
+						       j, cdev[i].rx_pause_pct[j]);
+						printf("            TX Pause PCP %d: %3.1f%%\n",
+						       j, cdev[i].tx_pause_pct[j]);
+					}
+				} else if (strncmp(cdev[i].tx_pause_state, "std", 3) ==
+					   0) {
+					printf("            RX Pause: %3.1f%%\n",
+					       cdev[i].rx_pause_pct[0]);
+					printf("            TX Pause: %3.1f%%\n",
+					       cdev[i].tx_pause_pct[0]);
 				}
-			} else if (strncmp(cdev[i].tx_pause_state, "std", 3) ==
-				   0) {
-				printf("            RX Pause: %3.1f%%\n",
-				       cdev[i].rx_pause_pct[0]);
-				printf("            TX Pause: %3.1f%%\n",
-				       cdev[i].tx_pause_pct[0]);
 			}
 		}
 		if (opts.report_aer) {
