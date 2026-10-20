@@ -1,1 +1,3 @@
-SUBSYSTEMS=="cxi_user" TAG+="systemd" ENV{SYSTEMD_ALIAS}="/dev/cxi%n" ENV{SYSTEMD_WANTS}="cxi_rh@cxi%n.service"
+SUBSYSTEMS=="cxi_user" TAG+="systemd" ENV{SYSTEMD_ALIAS}="/dev/cxi%n"
+# Only start retry handler on physical functions, not VFs
+SUBSYSTEMS=="pci" DRIVERS=="cxi_ss1" ATTRS{properties/is_physfn}=="1" TAG+="systemd" ENV{SYSTEMD_WANTS}="cxi_rh@cxi%n.service"
