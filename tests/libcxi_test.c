@@ -115,7 +115,7 @@ ParameterizedTestParameters(domain, domain_alloc)
 	size_t param_sz;
 
 	static struct domain_alloc_params params[] = {
-		{.vni = 1,
+		{.vni = 32,
 		 .pid = 0,
 		 .rc = 0 },
 	};
@@ -303,7 +303,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 	static struct alloc_cps_params params[] = {
 		/* Good test */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_BEST_EFFORT,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -313,7 +313,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 		},
 		/* Good test */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_DEDICATED_ACCESS,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -323,7 +323,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 		},
 		/* Good test */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_BULK_DATA,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -333,7 +333,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 		},
 		/* Good test */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_LOW_LATENCY,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -343,7 +343,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 		},
 		/* Good VNI */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_BEST_EFFORT,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -354,7 +354,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 
 		/* Good VNI */
 		{
-			.vni = 10,
+			.vni = 32,
 			.tc = CXI_TC_BEST_EFFORT,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -376,7 +376,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 
 		/* Bad TC */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_ETH_TC2 + 1,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -387,7 +387,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 
 		/* Missing LNI */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_BEST_EFFORT,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -398,7 +398,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 
 		/* Missing CP */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_BEST_EFFORT,
 			.tc_type = CXI_TC_TYPE_DEFAULT,
 			.count = 1,
@@ -408,7 +408,7 @@ ParameterizedTestParameters(cps, alloc_cps)
 		},
 		/* Bad TC type */
 		{
-			.vni = 1,
+			.vni = 32,
 			.tc = CXI_TC_BEST_EFFORT,
 			.tc_type = CXI_TC_TYPE_MAX,
 			.count = 1,
