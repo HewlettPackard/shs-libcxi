@@ -1,3 +1,17 @@
+1.13.0
+Added interface cxil_alloc_parent_svc
+Added interface cxil_svc_is_parent
+Added interface cxil_alloc_rmu_eth
+Added interface cxil_destroy_rmu_eth
+Added interface cxil_rmu_eth_add_mac_filter
+Added interface cxil_rmu_eth_add_all_mcast_filter
+Added interface cxil_rmu_eth_add_promiscuous_filter
+Added interface cxil_rmu_eth_remove_mac_filter
+Added interface cxil_rmu_eth_remove_all_mcast_filter
+Added interface cxil_rmu_eth_remove_promiscuous_filter
+Added interface cxil_rmu_eth_set_rss_queues
+Added interface cxil_rmu_eth_set_indir_table
+
 1.9.0
 Added interface cxil_alloc_buf_cmdq
 

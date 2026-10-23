@@ -5,13 +5,13 @@
 #    https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 
 # ABI Versioning - Libtool
-m4_define([vers_current],[8])
+m4_define([vers_current],[13])
 m4_define([vers_revision],[0])
-m4_define([vers_age],[7])
+m4_define([vers_age],[12])
 
 # API Versioning - Semantic
 m4_define([api_major],[1])
-m4_define([api_minor],[9])
+m4_define([api_minor],[13])
 m4_define([api_patch],[0])
 
 AC_PREREQ(2.60)
