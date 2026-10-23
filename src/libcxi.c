@@ -1091,19 +1091,74 @@ free_ccq:
 }
 
 CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
-			     const struct cxi_cq_alloc_opts *opts_in,
+			     const struct cxi_cq_alloc_opts *opts,
 			     struct cxi_cq **cmdq)
 {
-	const struct cxi_cq_alloc_opts_buf opts = {
-		.opts.count = opts_in->count,
-		.opts.policy = opts_in->policy,
-		.opts.stat_cnt_pool = opts_in->stat_cnt_pool,
-		.opts.flags = opts_in->flags,
-		.opts.lcid = opts_in->lcid,
-		.opts.lpe_cdt_thresh_id = opts_in->lpe_cdt_thresh_id,
-	};
+	struct cxi_cq_alloc_cmd cmd = {};
+	struct cxi_cq_alloc_resp resp;
+	int rc;
+	struct cxil_cq *ccq;
+	struct cxil_lni_priv *lni_priv;
 
-	return cxil_alloc_buf_cmdq(lni, evtq, &opts, cmdq);
+	if (!lni || !cmdq || !opts)
+		return -EINVAL;
+
+	lni_priv = container_of(lni, struct cxil_lni_priv, lni);
+
+	ccq = calloc(1, sizeof(*ccq));
+	if (ccq == NULL)
+		return -errno;
+
+	/* Get a CMDQ */
+	cmd.op = CXI_OP_CQ_ALLOC;
+	cmd.resp = &resp;
+	cmd.lni = lni->id;
+	cmd.eq = evtq ? evtq->eqn : C_EQ_NONE;
+	cmd.opts = *opts;
+
+	rc = device_write(lni_priv->dev, &cmd, sizeof(cmd));
+	if (rc)
+		goto free_ccq;
+
+	ccq->lni_priv = lni_priv;
+	ccq->cmdq_hndl = resp.cq;
+	ccq->size_req = opts->count;
+	ccq->cmds_len = resp.cmds.size;
+	ccq->csr_len = resp.wp_addr.size;
+	ccq->flags = opts->flags;
+
+	/* mmaping queue */
+	ccq->cmds = mmap(NULL, resp.cmds.size,
+			 PROT_READ | PROT_WRITE, MAP_SHARED, lni_priv->dev->fd,
+			 resp.cmds.offset);
+	if (ccq->cmds == MAP_FAILED) {
+		rc = -errno;
+		goto free_cmdq;
+	}
+
+	/* mmaping csr block */
+	ccq->csr = mmap(NULL, resp.wp_addr.size,
+			PROT_READ | PROT_WRITE, MAP_SHARED, lni_priv->dev->fd,
+			resp.wp_addr.offset);
+	if (ccq->csr == MAP_FAILED) {
+		rc = -errno;
+		goto unmap_cmds;
+	}
+
+	cxi_cq_init(&ccq->hw, ccq->cmds, resp.count, ccq->csr,
+		    ccq->cmdq_hndl);
+
+	*cmdq = &ccq->hw;
+
+	return 0;
+
+unmap_cmds:
+	munmap(ccq->cmds, ccq->cmds_len);
+free_cmdq:
+	free_cmdq(lni_priv->dev, resp.cq);
+free_ccq:
+	free(ccq);
+	return rc;
 }
 
 /* Destroy a CXI CMDQ */
