@@ -38,12 +38,20 @@ AC_PROG_AWK
 AM_SILENT_RULES([yes])
 LT_INIT
 
-PKG_CHECK_MODULES([LIBCONFIG], [libconfig >= 1.5])
-PKG_CHECK_MODULES([LIBUV], [libuv >= 1.18])
-PKG_CHECK_MODULES([LIBFUSE], [fuse >= 2.9.7])
-PKG_CHECK_MODULES([LIBYAML], [yaml-0.1 >= 0.1.7])
-PKG_CHECK_MODULES([LIBNL], [libnl-3.0])
-PKG_CHECK_MODULES([LIBNUMA], [numa >= 2.0])
+AC_ARG_ENABLE([stub-only],
+    [AS_HELP_STRING([--enable-stub-only],
+                    [Build only a link-time libcxi.so stub library, headers, and pkg-config file @<:@default=no@:>@])
+    ], [], [enable_stub_only=no])
+AM_CONDITIONAL([ENABLE_STUB_ONLY], [test "x$enable_stub_only" = "xyes"])
+
+AS_IF([test "x$enable_stub_only" != "xyes"], [
+     PKG_CHECK_MODULES([LIBCONFIG], [libconfig >= 1.5])
+     PKG_CHECK_MODULES([LIBUV], [libuv >= 1.18])
+     PKG_CHECK_MODULES([LIBFUSE], [fuse >= 2.9.7])
+     PKG_CHECK_MODULES([LIBYAML], [yaml-0.1 >= 0.1.7])
+     PKG_CHECK_MODULES([LIBNL], [libnl-3.0])
+     PKG_CHECK_MODULES([LIBNUMA], [numa >= 2.0])
+])
 
 pkg_CFLAGS="\
 -Wall \
@@ -62,8 +70,10 @@ AC_SUBST([lt_current],[vers_current])
 AC_SUBST([lt_revision],[vers_revision])
 AC_SUBST([lt_age],[vers_age])
 
-AC_CHECK_DECLS([RDMA_NLDEV_SYS_ATTR_COPY_ON_FORK],
-               [], [], [[#include <rdma/rdma_netlink.h>]])
+AS_IF([test "x$enable_stub_only" != "xyes"], [
+     AC_CHECK_DECLS([RDMA_NLDEV_SYS_ATTR_COPY_ON_FORK],
+                    [], [], [[#include <rdma/rdma_netlink.h>]])
+])
 
 have_criterion=false
 libcxi_test_CPPFLAGS=
@@ -140,7 +150,7 @@ dnl search for the zero library
 AC_ARG_WITH([ze], [AS_HELP_STRING([--with-ze=DIR],
                                    [Alternate location for ze dir])],
                                    [], [withval="/usr"])
-AS_IF([test -d $withval && test -d $withval/include/level_zero],
+AS_IF([test "x$enable_stub_only" != "xyes" && test -d $withval && test -d $withval/include/level_zero],
     [AC_MSG_RESULT([Have ZE $withval])
      CFLAGS="$CFLAGS -D HAVE_ZE_SUPPORT"
      CFLAGS="$CFLAGS -I $withval/include/"
@@ -154,7 +164,7 @@ dnl search for the ROCm HIP library
 AC_ARG_WITH([rocm], [AS_HELP_STRING([--with-rocm=DIR],
                                    [Alternate location for rocm dir])],
                                    [], [withval="/opt/rocm"])
-AS_IF([test -d $withval],
+AS_IF([test "x$enable_stub_only" != "xyes" && test -d $withval],
     [AC_MSG_RESULT([Have ROCm $withval])
      CFLAGS="$CFLAGS -D HAVE_HIP_SUPPORT -D __HIP_PLATFORM_HCC__ -D __HIP_PLATFORM_AMD__"
      CFLAGS="$CFLAGS -I $withval/include/"
@@ -169,7 +179,7 @@ AC_ARG_WITH([cuda],
             [AS_HELP_STRING([--with-cuda=DIR],
                             [Alternate location for CUDA dir])],
                             [], [withval="/usr/local/cuda"])
-AS_IF([test -d $withval],
+AS_IF([test "x$enable_stub_only" != "xyes" && test -d $withval],
     [AC_MSG_RESULT([Have CUDA $withval])
      CFLAGS="$CFLAGS -D HAVE_CUDA_SUPPORT"
      CFLAGS="$CFLAGS -I $withval/include"]
@@ -186,8 +196,10 @@ AC_ARG_ENABLE([asan],
 AS_IF([test x"$enable_asan" != x"no"],
       [CFLAGS="-fsanitize=address $CFLAGS"])
 
-AC_CHECK_HEADER(sensors/sensors.h, [],
-[AC_MSG_ERROR([sensors/sensors.h not found])])
+AS_IF([test "x$enable_stub_only" != "xyes"], [
+     AC_CHECK_HEADER(sensors/sensors.h, [],
+     [AC_MSG_ERROR([sensors/sensors.h not found])])
+])
 
 AC_CHECK_PROG([PANDOC],[pandoc],[yes])
 AS_IF([test "x${PANDOC}" = x"yes"],

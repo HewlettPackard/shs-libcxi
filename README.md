@@ -43,6 +43,65 @@ To run the unit tests and remain in the VM:
 The Address Sanitizer (supported by gcc and clang) can also be enabled
 by adding "--enable-asan" to the configure command line.
 
+Building a link-only stub (--enable-stub-only)
+----------------------------------------------
+
+Container images that bind-mount the host's `libcxi.so.1` at runtime need
+to *link* against libcxi at build time without the full build dependencies
+(libconfig, libuv, fuse, yaml, libnl, numa, lm_sensors) and without a Cassini
+device. `--enable-stub-only` builds and installs only `include/libcxi/libcxi.h`,
+`libcxi.pc`, and a `libcxi.so.1` that exports every `CXIL_API` function with
+the same `LIBCXI_x.y` version nodes as the real library:
+
+```
+./autogen.sh
+./configure --enable-stub-only --prefix=/opt/libcxi
+make
+make install
+```
+
+The stub is link-only. Every function in it prints a diagnostic and aborts,
+so a program that reaches the stub at runtime was started without the host
+`libcxi.so.1` bind-mounted in front of it. The stub still needs the Cassini
+and CXI driver UAPI headers to compile `libcxi.h` (pass them through
+`CPPFLAGS` if they are not installed system-wide).
+
+**Symbol versions decide which hosts a stub-linked binary can run on.** A
+binary linked against the stub records a version-node requirement for every
+libcxi function it references, for example `cxil_alloc_trig_cp@LIBCXI_1.9`.
+`ld.so` refuses to load that binary on a host whose `libcxi.so.1` does not
+define the node:
+
+```
+error while loading shared libraries: libcxi.so.1: version `LIBCXI_1.9' not found
+```
+
+That is the intended fail-fast behaviour, and it means a container may only
+reference the symbols that exist on the *oldest* host it targets. The stub
+exports the full current symbol set; it does not hide newer symbols. Audit a
+binary with:
+
+```
+readelf -W --dyn-syms <binary> | grep -o '@LIBCXI_[0-9.]*' | sort -uV
+```
+
+Version nodes by release: `LIBCXI_1.0` through `LIBCXI_1.8` are present on
+every SHS release from 11.x through 13.0; `LIBCXI_1.9` first shipped in SHS
+13.1, `LIBCXI_1.10` in SHS 14.0, and `LIBCXI_1.11` through `LIBCXI_1.13` in
+SHS 15.0. libfabric's CXI provider resolves its post-`LIBCXI_1.8` calls at
+runtime with `dlsym()` (upstream libfabric and shs-libfabric with the
+runtime-symbol change), so a stub-linked `libfabric.so` requires nothing above
+`LIBCXI_1.5`; other consumers must check their own requirements.
+
+Maintaining the stub: `src/libcxi_stub.c` must define exactly the `CXIL_API`
+functions declared in `include/libcxi.h`. Every regular build compiles the stub
+against the header with `-Werror` (`src/libcxi_stub_check.la`, never linked
+into anything), which catches a changed signature, and `make check` runs
+`contrib/check-stub-symbols.sh`, which reports a function present in the
+header but not in the stub (or vice versa) and a header function that
+`src/libcxi.sym` does not export. When adding a `CXIL_API` function, add it
+to the header, to `src/libcxi.sym`, and to the stub in the same commit.
+
 API Versioning
 ----------
 The "API" / Overall Project revision will utilize Semantic versioning.

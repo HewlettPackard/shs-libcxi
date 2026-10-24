@@ -65,6 +65,16 @@ if grep -q "not ok" tests/libcxi_test.tap; then
 	echo "VM tests failed; see tests/libcxi_test.tap" >&2
 	exit 1
 fi
+# make check also runs the host-side stub symbol check (a TAP test) in commits
+# that carry it; its result is in its .trs. This gate comes from the PR head
+# and runs against every commit, so skip the check where the test does not
+# exist yet.
+if [ -f contrib/check-stub-symbols.sh ] &&
+   ! grep -q "^:global-test-result: PASS" contrib/check-stub-symbols.sh.trs; then
+	echo "not ok - Commit ${SHORT} Tests Status" >> commit-results.tap
+	echo "stub symbol check failed; see contrib/check-stub-symbols.sh.log" >&2
+	exit 1
+fi
 echo "ok - Commit ${SHORT} Tests Status" >> commit-results.tap
 EOF
 chmod +x "$gate"

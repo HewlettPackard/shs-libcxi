@@ -5,9 +5,11 @@
 #define __LIBCXI_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <errno.h>
 #include <assert.h>
+#include <time.h>
 
 #ifdef __cplusplus
 extern "C" {
