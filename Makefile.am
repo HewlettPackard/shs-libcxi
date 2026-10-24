@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
 # Copyright 2018, 2020-2021 Hewlett Packard Enterprise Development LP
 
-# Current version of the tree
-GIT_VERSION := $(shell git describe --abbrev=8 --dirty --always --tags)
-
 AM_CPPFLAGS = \
 	-I$(srcdir)/include \
 	-I$(srcdir)/../cxi-driver/include \
@@ -13,7 +10,53 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
 	${pkg_CFLAGS}
 
+pkginclude_HEADERS = include/libcxi.h
+EXTRA_DIST = src/libcxi.sym src/libcxi_stub.c README.md retry_handler/cxi_rh.conf
+
+AM_DISTCHECK_CONFIGURE_FLAGS = \
+  --with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir) \
+  --with-udevrulesdir=$$dc_install_base/$(udevrulesdir)
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libcxi.pc
+EXTRA_DIST += libcxi.pc.in
+
+CLEANFILES = \
+	libcxi.pc \
+	utils/cxi_dump_csrs.h
+
+check_PROGRAMS =
+TESTS =
+
+# Host-side test: src/libcxi_stub.c (the --enable-stub-only link stub) must
+# define exactly the CXIL_API functions declared in include/libcxi.h. The
+# stub is also compiled against the header with -Werror in every regular
+# build (src/libcxi_stub_check.la), which catches a changed signature. Needs
+# no device, VM, or criterion, so it is part of `make check` in every
+# configuration, including --enable-stub-only.
+TESTS += contrib/check-stub-symbols.sh
+EXTRA_DIST += contrib/check-stub-symbols.sh
+LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
+              $(top_srcdir)/tap-driver.sh
+
+if ENABLE_STUB_ONLY
+lib_LTLIBRARIES = src/libcxi.la
+src_libcxi_la_SOURCES = src/libcxi_stub.c
+src_libcxi_la_CPPFLAGS = $(AM_CPPFLAGS)
+src_libcxi_la_LDFLAGS = \
+	-shared \
+	-version-info @lt_current@:@lt_revision@:@lt_age@ \
+	-Wl,--version-script=$(top_srcdir)/src/libcxi.sym
+src_libcxi_la_DEPENDENCIES = ${top_srcdir}/src/libcxi.sym
+EXTRA_DIST += retry_handler/cxi_rh.target retry_handler/60-cxi.rules
+else
+# Current version of the tree
+GIT_VERSION := $(shell git describe --abbrev=8 --dirty --always --tags)
+
 lib_LTLIBRARIES = utils/libcxiutils.la src/libcxi.la
+noinst_LTLIBRARIES = src/libcxi_stub_check.la
+src_libcxi_stub_check_la_SOURCES = src/libcxi_stub.c
+src_libcxi_stub_check_la_CPPFLAGS = $(AM_CPPFLAGS)
 src_libcxi_la_SOURCES = \
 	src/libcxi.c \
 	src/devinfo.c \
@@ -36,21 +79,6 @@ utils_libcxiutils_la_SOURCES = \
 	utils/get_clock.c
 utils_libcxiutils_la_LDFLAGS = -lm
 utils_libcxiutils_la_CPPFLAGS=$(AM_CPPFLAGS) -fvisibility=default
-
-pkginclude_HEADERS = include/libcxi.h
-EXTRA_DIST = src/libcxi.sym README.md retry_handler/cxi_rh.conf
-
-AM_DISTCHECK_CONFIGURE_FLAGS = \
-  --with-systemdsystemunitdir=$$dc_install_base/$(systemdsystemunitdir) \
-  --with-udevrulesdir=$$dc_install_base/$(udevrulesdir)
-
-pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libcxi.pc
-EXTRA_DIST += libcxi.pc.in
-
-CLEANFILES = \
-	libcxi.pc \
-	utils/cxi_dump_csrs.h
 
 bin_PROGRAMS = \
 	tests/cxi_device_list tests/test_write_csr tests/test_map_csr retry_handler/cxi_rh \
@@ -117,26 +145,6 @@ utils/cxi_dump_csrs.h: utils/cxi_dump_csrs.py
 utils_dgchs_fw_SOURCES = utils/dgchs_fw.c \
 	utils/dgchs_i2c.c
 
-utils_MANS = \
-	man/man1/cxi_atomic_bw.1 \
-	man/man1/cxi_atomic_lat.1 \
-	man/man1/cxi_dump_csrs.1 \
-	man/man1/cxi_gpu_loopback_bw.1 \
-	man/man1/cxi_heatsink_check.1 \
-	man/man1/cxi_read_bw.1 \
-	man/man1/cxi_read_lat.1 \
-	man/man1/cxi_send_bw.1 \
-	man/man1/cxi_send_lat.1 \
-	man/man1/cxi_service.1 \
-	man/man1/cxi_stat.1 \
-	man/man1/cxi_udp_gen.1 \
-	man/man1/cxi_write_bw.1 \
-	man/man1/cxi_write_lat.1 \
-	man/man7/cxi_diags.7 \
-	man/man7/cxi_service.7
-
-MANPAGE_SRCS = $(patsubst man/man%/%.%, man/\2.\3.md, $(utils_MANS))
-
 manpages: $(utils_MANS)
 
 if HAVE_PANDOC
@@ -196,9 +204,9 @@ endif
 if HAVE_CRITERION
 bin_PROGRAMS += \
 	tests/libcxi_test
-check_PROGRAMS = \
+check_PROGRAMS += \
 	tests/libcxi_test
-TESTS = \
+TESTS += \
 	tests/run_tests_vm.sh \
 	tests/run_vf_tests_vm.sh
 
@@ -225,10 +233,10 @@ tests_libcxi_test_CPPFLAGS = $(AM_CPPFLAGS) $(libcxi_test_CPPFLAGS)
 tests_libcxi_test_LDFLAGS = $(libcxi_test_LDFLAGS) -static
 tests_libcxi_test_LDADD =  $(libcxi_test_LIBS) $(lib_LTLIBRARIES)
 
-LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
-              $(top_srcdir)/tap-driver.sh
-
 endif HAVE_CRITERION
+
+dist_man_MANS = $(utils_MANS)
+endif !ENABLE_STUB_ONLY
 
 # UML documentation for the retry handler
 UML_FILES = \
@@ -236,6 +244,26 @@ UML_FILES = \
 	retry_handler/docs/retry-sct-close.uml \
 	retry_handler/docs/spt-status.uml \
 	retry_handler/docs/tct-timeout.uml
+
+utils_MANS = \
+	man/man1/cxi_atomic_bw.1 \
+	man/man1/cxi_atomic_lat.1 \
+	man/man1/cxi_dump_csrs.1 \
+	man/man1/cxi_gpu_loopback_bw.1 \
+	man/man1/cxi_heatsink_check.1 \
+	man/man1/cxi_read_bw.1 \
+	man/man1/cxi_read_lat.1 \
+	man/man1/cxi_send_bw.1 \
+	man/man1/cxi_send_lat.1 \
+	man/man1/cxi_service.1 \
+	man/man1/cxi_stat.1 \
+	man/man1/cxi_udp_gen.1 \
+	man/man1/cxi_write_bw.1 \
+	man/man1/cxi_write_lat.1 \
+	man/man7/cxi_diags.7 \
+	man/man7/cxi_service.7
+
+MANPAGE_SRCS = $(patsubst man/man%/%.%, man/\2.\3.md, $(utils_MANS))
 
 rhdocs: $(patsubst %.uml, %.svg, $(UML_FILES))
 
@@ -246,8 +274,6 @@ if HAVE_PLANTUML
 else
 	@echo "Note: plantuml needed for $(@)"
 endif
-
-dist_man_MANS = $(utils_MANS)
 
 EXTRA_DIST += $(UML_FILES) $(patsubst %.uml, %.svg, $(UML_FILES)) \
 	retry_handler/README retry_handler/dracut.conf.d/50-cxi-driver.conf \
