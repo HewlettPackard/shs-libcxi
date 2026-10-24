@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <assert.h>
 #include <sys/mman.h>
-#include <sys/stat.h>
 #include <sys/types.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -26,7 +25,6 @@
 #define CXIL_DEV_BASE "/sys/class/cxi_user/cxi"
 #define CXIL_DEV_FMT CXIL_DEV_BASE "%u"
 #define CXIL_DEVINFO_FNAME(fname) CXIL_DEV_FMT "/device/" fname
-#define CXIL_PF_BARSIZE 2147483648
 #define STRINGIFY(s) STR(s)
 #define STR(s) #s
 
@@ -87,7 +85,6 @@ int cxil_query_devinfo(uint32_t dev_id, struct cxil_dev *dev)
 {
 	struct cxi_dev_info_use dev_info_use = {};
 	struct cxil_devinfo *info;
-	struct stat st;
 	int rc;
 	char fname[PATH_MAX];
 	char pname[PATH_MAX];
@@ -98,6 +95,7 @@ int cxil_query_devinfo(uint32_t dev_id, struct cxil_dev *dev)
 	unsigned int bus;
 	unsigned int device;
 	unsigned int function;
+	unsigned int is_physfn;
 
 	info = &dev->info;
 	memset(info, 0, sizeof(*info));
@@ -155,19 +153,28 @@ int cxil_query_devinfo(uint32_t dev_id, struct cxil_dev *dev)
 	info->pci_device = device;
 	info->pci_function = function;
 
-	/* Use BAR0 size to determine whether the device is a physical or
-	 * virtual function
+	/* Determine whether the device is a physical or virtual function from
+	 * the driver's properties/is_physfn, decided at probe time (device ID
+	 * on Cassini 2, BAR0 size on Cassini 1). The PCI physfn link and the
+	 * sriov_* attributes describe the host's SR-IOV topology and are
+	 * absent for a function passed through to a VM, so a VF there would
+	 * read as a PF without SR-IOV. SR-IOV is not supported on releases
+	 * whose driver lacks the property, so a device without it is treated
+	 * as a physical function; any other failure to read the property is
+	 * reported, since the retry handler relies on this flag. This also
+	 * removes the dependency on the BAR0 resource file, which some
+	 * container runtimes do not expose.
 	 */
-	rc = snprintf(fname, PATH_MAX, CXIL_DEVINFO_FNAME("resource0"), dev_id);
+	rc = snprintf(fname, PATH_MAX,
+		      CXIL_DEVINFO_FNAME("properties/is_physfn"), dev_id);
 	if (rc < 0)
 		return -ENOMEM;
 
-	rc = stat(fname, &st);
-	if (rc)
-		return -errno;
-
-	if (st.st_size < CXIL_PF_BARSIZE)
-		info->is_vf = true;
+	rc = read_sysfs_var(fname, "%u", &is_physfn);
+	if (rc == 0)
+		info->is_vf = !is_physfn;
+	else if (rc != -ENOENT)
+		return rc;
 
 	rc = cxil_get_dev_info(dev, &dev_info_use);
 	/* If there is an error fallback to sysfs read */
