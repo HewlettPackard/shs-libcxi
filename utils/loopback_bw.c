@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI / GPU loopback bandwidth benchmark */
@@ -24,7 +24,7 @@
 #define LIST_SIZE_DFLT 8192
 
 static const char *name = "cxi_gpu_loopback_bw";
-static const char *version = "1.5.1";
+static const char *version = "1.5.2";
 
 /* Allocate TX resources */
 static int bw_alloc_tx(struct util_context *util)

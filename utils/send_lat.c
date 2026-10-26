@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI RDMA send latency benchmark */
@@ -37,7 +37,7 @@
 // clang-format on
 
 static const char *name = "cxi_send_lat";
-static const char *version = "2.3.0";
+static const char *version = "2.4.1";
 
 /* Allocate resources */
 static int send_lat_alloc(struct util_context *util)

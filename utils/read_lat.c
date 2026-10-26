@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI RDMA read latency benchmark */
@@ -27,7 +27,7 @@
 #define DELAY_DFLT 1000
 
 static const char *name = "cxi_read_lat";
-static const char *version = "2.4.0";
+static const char *version = "2.4.1";
 
 /* Allocate resources */
 static int read_lat_alloc_ini(struct util_context *util)

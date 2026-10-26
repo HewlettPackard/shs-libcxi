@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI RDMA read bandwidth benchmark */
@@ -26,7 +26,7 @@
 #define LIST_SIZE_DFLT 256
 
 static const char *name = "cxi_read_bw";
-static const char *version = "2.4.0";
+static const char *version = "2.4.1";
 
 /* Allocate RDMA Initiator resources */
 static int read_bw_alloc_ini(struct util_context *util)

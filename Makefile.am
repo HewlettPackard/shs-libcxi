@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
-# Copyright 2018, 2020-2021 Hewlett Packard Enterprise Development LP
+# Copyright 2018, 2020-2021, 2026 Hewlett Packard Enterprise Development LP
 
 # Current version of the tree
 GIT_VERSION := $(shell git describe --abbrev=8 --dirty --always --tags)
@@ -35,7 +35,8 @@ utils_libcxiutils_la_SOURCES = \
 	utils/utils_gpu_ze.c \
 	utils/get_clock.c
 utils_libcxiutils_la_LDFLAGS = -lm
-utils_libcxiutils_la_CPPFLAGS=$(AM_CPPFLAGS) -fvisibility=default
+utils_libcxiutils_la_LIBADD = $(LIBNUMA_LIBS)
+utils_libcxiutils_la_CPPFLAGS=$(AM_CPPFLAGS) -fvisibility=default $(LIBNUMA_CFLAGS)
 
 pkginclude_HEADERS = include/libcxi.h
 EXTRA_DIST = src/libcxi.sym README.md retry_handler/cxi_rh.conf

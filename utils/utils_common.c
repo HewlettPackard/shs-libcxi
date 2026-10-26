@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI benchmark common functions */
@@ -17,6 +17,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <limits.h>
+#include <sched.h>
+#include <numa.h>
 
 #include "utils_common.h"
 
@@ -1070,55 +1072,103 @@ int get_hugepage_type(char *type)
 		return -1;
 }
 
-/* Return the number of free hugepages of size hp_size_in_bytes */
-static uint32_t get_free_hugepages(size_t hp_size_in_bytes)
+/* Read a hugepage counter for node, or the system-wide one if node < 0 */
+static unsigned long read_hp_count(int node, size_t hp_kb, const char *file)
 {
-	int rc;
-	uint32_t total = 0;
-	char buf[9];
-	int fd;
-	char *f_name;
+	char path[PATH_MAX];
+	unsigned long val;
+	FILE *f;
 
-	rc = asprintf(&f_name,
-		      "/sys/kernel/mm/hugepages/hugepages-%ldkB/free_hugepages",
-		      hp_size_in_bytes / 1024);
-	if (rc <= 0)
-		err(1, "String allocation failed");
+	if (node < 0)
+		snprintf(path, sizeof(path),
+			 "/sys/kernel/mm/hugepages/hugepages-%zukB/%s",
+			 hp_kb, file);
+	else
+		snprintf(path, sizeof(path),
+			 "/sys/devices/system/node/node%d/hugepages/hugepages-%zukB/%s",
+			 node, hp_kb, file);
 
-	fd = open(f_name, O_RDONLY);
-	if (fd < 0) {
-		free(f_name);
-		err(1, "Unable to open %s", f_name);
+	f = fopen(path, "r");
+	if (!f) {
+		/* Absent for unsupported page sizes and memoryless nodes */
+		if (errno == ENOENT)
+			return 0;
+		err(1, "Unable to open %s", path);
+	}
+	if (fscanf(f, "%lu", &val) != 1)
+		errx(1, "Unable to parse %s", path);
+	fclose(f);
+
+	return val;
+}
+
+/* Exit if the kernel cannot supply needed hugepages; warn if it may not
+ * place them on the local NUMA node.
+ */
+static void check_hugepages(enum hugepage_type hp, size_t hp_size,
+			    unsigned long needed)
+{
+	const char *name = hugepage_names[hp];
+	size_t hp_kb = hp_size / 1024;
+	struct bitmask *nodes;
+	unsigned long avail = 0;
+	unsigned long local;
+	unsigned long overcommit;
+	unsigned long surplus;
+	unsigned long global_free;
+	unsigned long shortfall;
+	unsigned long headroom;
+	int node;
+	int cpu;
+
+	if (numa_available() < 0) {
+		avail = read_hp_count(-1, hp_kb, "free_hugepages");
+	} else {
+		/* Bound nodes if memory is bound, else all allowed nodes */
+		nodes = numa_get_membind();
+		for (node = 0; node <= numa_max_node(); node++) {
+			if (numa_bitmask_isbitset(nodes, node))
+				avail += read_hp_count(node, hp_kb,
+						       "free_hugepages");
+		}
+		numa_bitmask_free(nodes);
+
+		cpu = sched_getcpu();
+		node = cpu < 0 ? -1 : numa_node_of_cpu(cpu);
+		if (node >= 0 && avail >= needed) {
+			local = read_hp_count(node, hp_kb, "free_hugepages");
+			if (local < needed)
+				warnx("Only %lu free %s huge pages on local NUMA node %d. Buffers may be placed on remote nodes",
+				      local, name, node);
+		}
 	}
 
-	buf[8] = '\0';
-	rc = read(fd, buf, 8);
-	if (rc < 0) {
-		free(f_name);
-		close(fd);
-		err(1, "Unable to read %s", f_name);
-	}
+	if (avail >= needed)
+		return;
 
-	rc = sscanf(buf, "%u", &total);
-	if (rc != 1) {
-		free(f_name);
-		close(fd);
-		err(1, "Unable to determine total free hugepages from %s",
-		    f_name);
-	}
+	/* Surplus pages are allocated, or fail, at mmap() time, but only to
+	 * cover the system-wide shortfall.
+	 */
+	overcommit = read_hp_count(-1, hp_kb, "nr_overcommit_hugepages");
+	surplus = read_hp_count(-1, hp_kb, "surplus_hugepages");
+	global_free = read_hp_count(-1, hp_kb, "free_hugepages");
+	headroom = overcommit > surplus ? overcommit - surplus : 0;
+	shortfall = needed > global_free ? needed - global_free : 0;
+	if (headroom > shortfall)
+		headroom = shortfall;
+	if (avail + headroom < needed)
+		errx(1, "Insufficient %s huge pages on allowed NUMA nodes. Need %lu, have %lu free and %lu overcommit",
+		     name, needed, avail, headroom);
 
-	free(f_name);
-	close(fd);
-	return total;
+	warnx("Only %lu free %s huge pages on allowed NUMA nodes. Relying on overcommit for the remaining %lu",
+	      avail, name, needed - avail);
 }
 
 int get_hugepages_needed(struct util_opts *opts, bool ini_buf, bool tgt_buf)
 {
 	int bufs_needed = 0;
-	uint32_t num_2m;
-	uint32_t num_1g;
-	int hp_2m_needed;
-	int hp_1g_needed;
+	size_t hp_size;
+	int hp_needed;
 
 	/* Determine number of huge pages needed */
 	if (opts->hugepages == HP_DISABLED)
@@ -1133,31 +1183,18 @@ int get_hugepages_needed(struct util_opts *opts, bool ini_buf, bool tgt_buf)
 	}
 
 	/* Determine if available and update buffer size to match */
-	if (opts->hugepages == HP_2M) {
-		num_2m = get_free_hugepages(TWO_MB);
-		hp_2m_needed =
-			(opts->buf_size / TWO_MB) + !!(opts->buf_size % TWO_MB);
-		hp_2m_needed *= bufs_needed;
-		if (hp_2m_needed > num_2m) {
-			errx(1, "Insufficient 2M huge pages. Need %d to run",
-			     hp_2m_needed);
-		} else {
-			opts->buf_size = NEXT_MULTIPLE(opts->buf_size, TWO_MB);
-			return hp_2m_needed;
-		}
-	} else if (opts->hugepages == HP_1G) {
-		num_1g = get_free_hugepages(ONE_GB);
-		hp_1g_needed =
-			(opts->buf_size / ONE_GB) + !!(opts->buf_size % ONE_GB);
-		hp_1g_needed *= bufs_needed;
-		if (hp_1g_needed > num_1g) {
-			errx(1, "Insufficient 1G huge pages. Need %d to run",
-			     hp_1g_needed);
-		} else {
-			opts->buf_size = NEXT_MULTIPLE(opts->buf_size, ONE_GB);
-			return hp_1g_needed;
-		}
-	}
+	if (opts->hugepages == HP_2M)
+		hp_size = TWO_MB;
+	else if (opts->hugepages == HP_1G)
+		hp_size = ONE_GB;
+	else
+		goto no_hp;
+
+	hp_needed = (opts->buf_size / hp_size) + !!(opts->buf_size % hp_size);
+	hp_needed *= bufs_needed;
+	check_hugepages(opts->hugepages, hp_size, hp_needed);
+	opts->buf_size = NEXT_MULTIPLE(opts->buf_size, hp_size);
+	return hp_needed;
 
 no_hp:
 	opts->buf_size = NEXT_MULTIPLE(opts->buf_size, sysconf(_SC_PAGE_SIZE));

@@ -1,6 +1,6 @@
 ---
-title: CXI_ATOMIC_LAT(1) Version 2.4.0 | CXI Diagnostics and Utilities
-date: 2025-08-05
+title: CXI_ATOMIC_LAT(1) Version 2.4.1 | CXI Diagnostics and Utilities
+date: 2026-10-26
 ---
 
 # NAME

@@ -1,6 +1,6 @@
 ---
-title: CXI_GPU_LOOPBACK_BW(1) Version 1.5.1 | CXI Diagnostics and Utilities
-date: 2025-08-05
+title: CXI_GPU_LOOPBACK_BW(1) Version 1.5.2 | CXI Diagnostics and Utilities
+date: 2026-10-26
 ---
 
 # NAME

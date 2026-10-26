@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2023 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2023, 2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI resource allocation and cleanup for CXI benchmarks
@@ -294,7 +294,7 @@ int ctx_alloc_buf(struct cxi_context *ctx, size_t buf_len,
 	buf_tmp->len = buf_len;
 	buf_tmp->buf = mmap(NULL, buf_len, PROT_READ | PROT_WRITE,
 			    flags, -1, 0);
-	if (!buf_tmp->buf)
+	if (buf_tmp->buf == MAP_FAILED)
 		err(1, "Failed to allocate data buffer");
 	register_for_cleanup(buf_tmp, NULL, munmap_buf, "munmap");
 

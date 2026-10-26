@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-only or BSD-2-Clause
- * Copyright 2021-2025 Hewlett Packard Enterprise Development LP
+ * Copyright 2021-2026 Hewlett Packard Enterprise Development LP
  */
 
 /* CXI send bandwidth benchmark */
@@ -35,7 +35,7 @@
 // clang-format on
 
 static const char *name = "cxi_send_bw";
-static const char *version = "2.4.0";
+static const char *version = "2.4.1";
 
 /* Increment the PUT event counter for either the next response or the next set
  * of puts
