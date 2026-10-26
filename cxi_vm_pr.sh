@@ -65,22 +65,19 @@ if grep -q "not ok" tests/libcxi_test.tap; then
 	echo "VM tests failed; see tests/libcxi_test.tap" >&2
 	exit 1
 fi
-# make check also runs the host-side TAP tests (stub symbol check, version
-# sync check) in commits that carry them; each result is in its .trs. This
-# gate comes from the PR head and runs against every commit, so skip a check
-# where its test does not exist yet.
-if [ -f contrib/check-stub-symbols.sh ] &&
-   ! grep -q "^:global-test-result: PASS" contrib/check-stub-symbols.sh.trs; then
-	echo "not ok - Commit ${SHORT} Tests Status" >> commit-results.tap
-	echo "stub symbol check failed; see contrib/check-stub-symbols.sh.log" >&2
-	exit 1
-fi
-if [ -f contrib/check-version-sync.sh ] &&
-   ! grep -q "^:global-test-result: PASS" contrib/check-version-sync.sh.trs; then
-	echo "not ok - Commit ${SHORT} Tests Status" >> commit-results.tap
-	echo "version sync check failed; see contrib/check-version-sync.sh.log" >&2
-	exit 1
-fi
+# make check also runs the host-side tests; each result is in its .trs.
+# This gate comes from the PR head and runs against every commit, so skip
+# a test the commit doesn't have yet.
+for t in contrib/check-stub-symbols.sh contrib/check-version-sync.sh \
+	 tests/legacy_opcode_test; do
+	[ -f "$t" ] || [ -f "$t.c" ] || continue
+	if ! grep -q "^:global-test-result: PASS" "$t.trs"; then
+		echo "not ok - Commit ${SHORT} Tests Status" \
+			>> commit-results.tap
+		echo "$t failed; see $t.log" >&2
+		exit 1
+	fi
+done
 echo "ok - Commit ${SHORT} Tests Status" >> commit-results.tap
 EOF
 chmod +x "$gate"

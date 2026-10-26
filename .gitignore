@@ -64,6 +64,9 @@ Makefile.in
 # Built binaries - tests
 /tests/cxi_device_list
 /tests/libcxi_test
+/tests/legacy_opcode_test
+/tests/legacy_opcode_test.log
+/tests/legacy_opcode_test.trs
 /tests/test_map_csr
 /tests/test_write_csr
 

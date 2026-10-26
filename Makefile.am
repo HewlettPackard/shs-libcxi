@@ -245,6 +245,17 @@ tests_libcxi_test_LDADD =  $(libcxi_test_LIBS) $(lib_LTLIBRARIES)
 
 endif HAVE_CRITERION
 
+# Host-side test: every function in version nodes LIBCXI_1.0-1.8 must
+# still send the same kernel driver command (opcode and struct) it sent in
+# SHS 12.0. Needs no device, no VM and no criterion, so it is always part
+# of `make check`.
+check_PROGRAMS += tests/legacy_opcode_test
+TESTS += tests/legacy_opcode_test
+tests_legacy_opcode_test_SOURCES = tests/legacy_opcode_test.c
+tests_legacy_opcode_test_CPPFLAGS = $(AM_CPPFLAGS)
+tests_legacy_opcode_test_LDFLAGS = -static
+tests_legacy_opcode_test_LDADD = src/libcxi.la
+
 dist_man_MANS = $(utils_MANS)
 endif !ENABLE_STUB_ONLY
 
