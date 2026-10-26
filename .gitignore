@@ -70,4 +70,5 @@ Makefile.in
 # Test output
 /test-suite.log
 /tests/*.tap
+/tests/commit-taps/
 /tests/*.dbg
