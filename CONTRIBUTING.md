@@ -31,3 +31,10 @@ sign-offs to document the patch's path from contributor to maintainer.
 - [ ] Change description and motivation are included in the PR.
 - [ ] Testing approach or results are documented in the PR.
 - [ ] Code follows the Linux kernel coding style (passes `checkpatch`).
+- [ ] `make check`, `make check-symver` and `make check-abi` pass. If the
+      change adds a public function, it is in a new version node
+      (`LIBCXI_x.y`) in `src/libcxi.sym` and in `src/libcxi_stub.c`; the
+      version in `configure.ac`, `include/libcxi.h` and `cray-libcxi.spec`
+      and `NEWS` are updated; and `abi/libcxi.abi` is regenerated with
+      `make update-abi` (see "Backwards compatibility checks" in
+      README.md).

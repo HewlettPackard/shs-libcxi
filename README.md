@@ -117,8 +117,9 @@ Every version bump changes:
 - `include/libcxi.h` (`LIBCXI_API_MAJOR`, `LIBCXI_API_MINOR`, `LIBCXI_API_PATCH`), and
 - `cray-libcxi.spec` (`Version:`);
 
-a MAJOR or MINOR bump also adds a `LIBCXI_<MAJOR>.<MINOR>` symbol-version
-stanza to `src/libcxi.sym` for the new symbols.
+a MAJOR or MINOR bump also adds a `LIBCXI_<MAJOR>.<MINOR>` version node
+to `src/libcxi.sym` for the new symbols (see "Backwards compatibility
+checks" below).
 
 `make check` runs `contrib/check-version-sync.sh`, a TAP test that fails when
 `include/libcxi.h` or `cray-libcxi.spec` disagree with `configure.ac`; CI runs
@@ -137,7 +138,7 @@ ABI Versioning
 --------------
 For the "ABI" libtool versioning is used.
 
-Libtool versions follow the format of Current:Revision:Age and they *do not* map to the project revision.
+Libtool versions follow the format of Current:Revision:Age. In general they do not map to the API version; libcxi keeps them aligned (see below).
 'Current' and 'Age' together define a range of interface numbers that are compatible (i.e. does not require recompilation of any consumer libraries or executables.).
 
 Official Rules from GNU
@@ -148,6 +149,17 @@ Official Rules from GNU
 
 As a rule of thumb, Age should only be incremented if the binary interface is backwards compatible.
 
+libcxi follows these rules with one deliberate difference. Instead of
+updating the version once per public release, every PR that adds functions
+adds a new version node and bumps the version (see "Why each PR gets its
+own version node" below). In `configure.ac`:
+
+- `vers_current` and `api_minor` equal N of the newest `LIBCXI_1.N` version
+  node (for example `13:0:12` is API 1.13).
+- `vers_age` is bumped together with `vers_current`, so
+  `vers_current - vers_age` stays 1 and the SONAME stays `libcxi.so.1`.
+- `vers_revision` stays 0.
+
 These changes should be made in configure.ac.
 See: ABI Versioning - Libtool
 
@@ -157,6 +169,178 @@ https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 
 Still confusing? This has further helpful clarifications:
 https://autotools.io/libtool/version.html
+
+Backwards compatibility checks
+------------------------------
+
+### Why these exist
+
+Users run libcxi inside containers. The libcxi in the container and the
+kernel driver on the host come from different SHS releases, and both
+directions have to work. Some changes are easy to get wrong without
+noticing: an existing function that starts using a newer kernel command
+fails on older drivers, and a new function added without updating the
+library version makes two different libraries claim the same version.
+Review alone does not reliably catch these, so these checks detect them
+automatically in CI, before a release.
+
+### Terms used below
+
+| Term | Meaning |
+|---|---|
+| **Public function** | A function declared in `include/libcxi.h` for programs to call. |
+| **ABI** | Everything an already-compiled program relies on when it calls libcxi: function names and signatures, the layout of the structs it passes, and the numbered commands libcxi sends to the kernel driver. A program built against an older libcxi keeps working only while the ABI it used is unchanged. |
+| **Driver command (opcode)** | libcxi talks to the kernel driver by writing a small request that starts with a command number, the opcode. A driver only understands the opcodes that existed when it shipped. |
+| **Version node** | The GNU linker manual's term for a block in `src/libcxi.sym` such as `LIBCXI_1.9 { ... }`. Each one lists the functions added by one change and names the node it follows. A program records the newest version node it uses and refuses to start against a library that lacks it. A version node that is already on the main branch is frozen, whether or not it has shipped: new functions go in a new version node. |
+| **Library version numbers** | `vers_current`, `vers_age` and `api_minor` in `configure.ac`. They set the library's file name (for example `libcxi.so.1.12.0`) and the API version reported to packaging. By convention `vers_current` and `api_minor` equal N of the newest `LIBCXI_1.N` node. |
+| **SONAME** | The `libcxi.so.1` part of the file name. Programs are linked against it, so it must not change for a compatible update. |
+| **Baseline** | `abi/libcxi.abi`, a generated description of the ABI we last agreed to ship. |
+| **PR base** | The commit your branch started from. The checks compare your change against it. |
+
+### What a developer has to do differently
+
+Nothing, unless the change adds or alters a public function or type.
+An internal change that touches no public function or type passes all
+the checks unchanged.
+
+**Adding a new public function**
+
+1. Declare it in `include/libcxi.h`, and add a stub for it to
+   `src/libcxi_stub.c` (copy a neighbour: it reports the call and aborts).
+2. Add it to a **new** version node at the end of `src/libcxi.sym`. Its number
+   is the newest existing node's number plus one, it lists only the
+   new function(s), and its closing line names the previous node:
+
+   ```
+   LIBCXI_1.14 {
+   global:
+   	cxil_my_new_function;
+   } LIBCXI_1.13;
+   ```
+
+   Never add a function to a version node that is already on `main`, even
+   if it has not shipped yet. Each PR that adds functions gets its own
+   new version node; if another PR claims the same N first, rebase and
+   renumber.
+3. In `configure.ac` add 1 to each of `vers_current`, `vers_age` and
+   `api_minor` (for example `13` / `12` / `13` becomes `14` / `13` /
+   `14`), and make `LIBCXI_API_MINOR` in `include/libcxi.h` and
+   `Version:` in `cray-libcxi.spec` match.
+4. Add a line for it to `NEWS`.
+5. Run `make update-abi` and commit the regenerated `abi/libcxi.abi`, so
+   the new function shows up in the PR diff for review.
+
+`check-stub-symbols.sh` reports a missing stub or `libcxi.sym` entry,
+`check-symver` reports which of steps 2 to 4 are missing,
+`check-version-sync.sh` reports a header or spec version that does not
+match, and `check-abi` fails until step 5 is done. A new function is not
+covered by `legacy_opcode_test` (see below); the other checks do cover
+it.
+
+**Other kinds of change**
+
+| Change you are making | What to do | Enforced by |
+|---|---|---|
+| Make an existing function use a newer kernel command | Don't. Add a new function (above) and leave the old one sending what it always did. | `legacy_opcode_test` |
+| Fix a bug inside an existing function | Fine, as long as its signature and the command it sends do not change. | |
+| Change or add a field in an existing public struct | Don't change existing fields. Add a new struct, or a new function that takes one. | `check-abi` |
+| Remove or rename a public function | Don't. Programs already built against libcxi depend on it. | `check-symver`, `check-abi` |
+| Edit a version node that is already on `main` | Don't. Existing version nodes are frozen, shipped or not. | `check-symver` |
+
+If a check fails and you believe the change is intentional, raise it
+with the maintainers instead of editing the baseline or the check. A
+change that breaks compatibility on purpose needs a new SONAME, not a
+quiet update.
+
+### Why each PR gets its own version node
+
+A version node is a promise: "a library that has this node contains every
+function in it". A program built against it records "I need LIBCXI_1.N",
+and the dynamic loader checks only that the node exists.
+
+If a node could gain functions after it landed on `main`, two different
+libraries could carry the same node name. A program built against the later
+one (using function B) would start on the earlier one (without B) and then
+fail mid-run with an undefined symbol, the failure version nodes exist to
+prevent. This is not hypothetical: every merged commit can become a build
+(nightly packages, CI images, anyone building from `main`), not only
+releases.
+
+So the rule can be checked from git alone: a version node that already
+exists on the PR base is frozen, and new functions go in a new node with its
+own version bump. It needs no knowledge of what has shipped, a clash between
+two PRs claiming the same N shows up as a merge conflict (the second one
+renumbers) instead of a silent mistake, and it is cheap: node numbers are
+free and the SONAME does not change.
+
+The cost is more churn in `configure.ac`, `NEWS` and `libcxi.sym`, and a
+release can span several `api_minor` values. libtool's own advice is to
+update the version once just before a public release; that assumes
+intermediate builds never leave the building, which is not true here.
+
+### The checks
+
+CI runs all of them on every pull request. `make check` runs the
+host-side tests, which CI judges for every commit; `check-symver` and
+`check-abi` compare against the PR base, so CI runs them once per pull
+request (a version bump or baseline update may land in a later commit
+than the change that needs it). Each can be run locally:
+
+```
+make check          # legacy_opcode_test, check-stub-symbols.sh,
+                    # check-version-sync.sh (and the VM tests if available)
+make check-symver   # libcxi.sym and configure.ac agree; existing version nodes unchanged
+make check-abi      # built libcxi.so.1 matches abi/libcxi.abi
+```
+
+The `make check` tests report through TAP (`not ok` lines) and exit 0
+when they ran; `check-symver` and `check-abi` print errors and exit
+non-zero.
+
+**`check-symver`** (`contrib/check-symver.sh`) reads `src/libcxi.sym` and
+`configure.ac` at the PR base and in your working tree and reports any
+existing version node that gained or lost a function, any new version
+node without a version bump, and any version bump that does not match the
+newest version node or would change the SONAME from `libcxi.so.1`. Every
+error message says what to change; the rules are explained at the top of
+the script.
+
+**`check-abi`** (`contrib/check-abi.sh`) compares the freshly built
+`libcxi.so.1` with the baseline, `abi/libcxi.abi` (every exported
+function, its signature, and the layout of every public type). The
+baseline is generated by `make update-abi` and never edited by hand. It
+makes two comparisons:
+
+- Against the baseline in your working tree. Any difference fails,
+  including additions, so that extending the ABI always shows up in a PR
+  diff for review.
+- Against the baseline as it was at the PR base, ignoring additions.
+  Anything removed or changed fails, so regenerating the baseline cannot
+  hide an incompatible change.
+
+Private structures from `include/libcxi_priv.h` are excluded via
+`abi/libcxi.suppr`.
+
+**`legacy_opcode_test`** (`tests/legacy_opcode_test.c`) calls each of the
+45 functions in version nodes `LIBCXI_1.0` through `LIBCXI_1.8` (the API as of
+SHS 12.0) and checks that it still sends the same driver command it sent
+in SHS 12.0. It needs no device or VM. The list of functions is fixed:
+anything added later goes in a newer version node and is checked by
+`check-symver` and `check-abi`.
+
+**`check-stub-symbols.sh`** (`contrib/`) checks that `src/libcxi_stub.c`
+defines exactly the public functions in `include/libcxi.h` and that
+`src/libcxi.sym` exports each of them once. See "Building a link-only stub"
+above.
+
+**`check-version-sync.sh`** (`contrib/`) checks that `LIBCXI_API_*` in
+`include/libcxi.h` and `Version:` in `cray-libcxi.spec` match
+`configure.ac`. See "API Versioning" above.
+
+`make check-abi` and `make update-abi` need libabigail 2.3 or later
+(`libabigail-tools` on SLES/openSUSE via PackageHub, `libabigail` on
+RHEL/Fedora, `abigail-tools` on Debian/Ubuntu). The others have no
+extra dependencies.
 
 Submitting a patch
 ------------------
