@@ -85,3 +85,6 @@ echo "ok - Commit ${SHORT} Tests Status" >> commit-results.tap
 EOF
 chmod +x "$gate"
 git rebase $(git merge-base origin/main HEAD) --exec "$gate"
+
+# Once per PR: the baseline may be regenerated in a later commit.
+make check-abi || exit 1

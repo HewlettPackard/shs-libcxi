@@ -1,0 +1,13 @@
+# libabigail suppressions for `make check-abi`.
+#
+# include/libcxi_priv.h is installed, but it documents libcxi's private
+# structures: consumers only ever hold opaque pointers to them, and no
+# in-tree consumer (libfabric, pycxi, kfabric) includes the header. Layout
+# changes to these types are therefore not ABI changes.
+#
+# Listed by name because libabigail 2.3 (SLE 15 PackageHub) does not honour
+# source_location_regexp for this case. Keep in sync with the struct names
+# in include/libcxi_priv.h; a new private struct that is missing here shows
+# up as an ABI change until it is added.
+[suppress_type]
+  name_regexp = ^cxil_(dev_priv|lni_priv|domain_priv|cp_priv|cq|eq|ct|md_priv|pte_priv|rmu_eth_priv|pte_map|wait_obj)$

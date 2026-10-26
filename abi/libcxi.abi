@@ -1,0 +1,962 @@
+<abi-corpus version='2.2' architecture='elf-amd-x86_64' soname='libcxi.so.1'>
+  <elf-needed>
+    <dependency name='libnl-3.so.200'/>
+    <dependency name='libc.so.6'/>
+  </elf-needed>
+  <elf-function-symbols>
+    <elf-symbol name='cxil_alloc_buf_cmdq' version='LIBCXI_1.11' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_cmdq' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_cp' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_ct' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_domain' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_evtq' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_lni' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_parent_svc' version='LIBCXI_1.12' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_pte' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_rmu_eth' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_svc' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_trig_cp' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_alloc_wait_obj' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_clear_wait_obj' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_close_device' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_cmdq_ack_counter' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_ct_wb_update' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_cmdq' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_cp' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_ct' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_domain' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_evtq' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_lni' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_pte' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_rmu_eth' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_svc' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_destroy_wait_obj' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_evtq_adjust_reserved_fc' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_evtq_resize' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_evtq_resize_complete' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_free_device_list' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_free_svc_list' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_free_svc_rsrc_list' version='LIBCXI_1.5' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_amo_remap_to_pcie_fadd' version='LIBCXI_1.3' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_device_list' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_svc' version='LIBCXI_1.2' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_svc_list' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_svc_lpr' version='LIBCXI_1.8' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_svc_rsrc_list' version='LIBCXI_1.5' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_svc_rsrc_use' version='LIBCXI_1.5' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_get_wait_obj_fd' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_inbound_wait' version='LIBCXI_1.1' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_invalidate_pte_le' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_is_copy_on_fork' version='LIBCXI_1.6' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_map' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_map_csr' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_map_pte' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_modify_cp' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_open_device' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_page_size' version='LIBCXI_1.6' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_pte_status' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_pte_transition_sm' version='LIBCXI_1.4' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_read_all_cntrs' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_read_cntr' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_read_csr' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_read_n_cntrs' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_reserve_domain' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_add_all_mcast_filter' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_add_mac_filter' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_add_promiscuous_filter' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_remove_all_mcast_filter' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_remove_mac_filter' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_remove_promiscuous_filter' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_set_indir_table' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_rmu_eth_set_rss_queues' version='LIBCXI_1.13' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_sbus_op' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_sbus_op_compat' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_sbus_op_reset' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_sbus_op_reset_compat' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_serdes_op' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_set_svc_lpr' version='LIBCXI_1.8' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_enable' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_get_exclusive_cp' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_get_netns' version='LIBCXI_1.10' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_get_vni_range' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_is_parent' version='LIBCXI_1.12' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_set_exclusive_cp' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_set_netns' version='LIBCXI_1.10' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_svc_set_vni_range' version='LIBCXI_1.9' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_unmap' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_unmap_pte' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_update_md' version='LIBCXI_1.7' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_update_svc' version='LIBCXI_1.2' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_write8_csr' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='cxil_write_csr' version='LIBCXI_1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-function-symbols>
+  <abi-instr address-size='64' path='src/devinfo.c' comp-dir-path='/home/aabraham/devbootstrap/libcxi' language='LANG_C99'>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='unknown' id='type-id-2'>
+      <subrange length='unknown' lower-bound='0' upper-bound='0' type-id='type-id-3' id='type-id-4'/>
+    </array-type-def>
+    <class-decl name='cxil_device_list' size-in-bits='64' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='116' column='1' id='type-id-5'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='count' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='117' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='info' type-id='type-id-2' visibility='default' filepath='./include/libcxi.h' line='118' column='1'/>
+      </data-member>
+    </class-decl>
+    <pointer-type-def type-id='type-id-5' size-in-bits='64' id='type-id-7'/>
+    <pointer-type-def type-id='type-id-7' size-in-bits='64' id='type-id-8'/>
+    <pointer-type-def type-id='type-id-9' size-in-bits='64' id='type-id-10'/>
+    <function-decl name='cxil_get_device_list' mangled-name='cxil_get_device_list' filepath='src/devinfo.c' line='491' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_device_list@@LIBCXI_1.0'>
+      <parameter type-id='type-id-8' name='dev_list' filepath='src/devinfo.c' line='491' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_free_device_list' mangled-name='cxil_free_device_list' filepath='src/devinfo.c' line='569' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_free_device_list@@LIBCXI_1.0'>
+      <parameter type-id='type-id-7' name='dev_list' filepath='src/devinfo.c' line='569' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='cxil_get_amo_remap_to_pcie_fadd' mangled-name='cxil_get_amo_remap_to_pcie_fadd' filepath='src/devinfo.c' line='574' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_amo_remap_to_pcie_fadd@@LIBCXI_1.3'>
+      <parameter type-id='type-id-12' name='dev' filepath='src/devinfo.c' line='574' column='1'/>
+      <parameter type-id='type-id-10' name='amo_remap_to_pcie_fadd' filepath='src/devinfo.c' line='575' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='src/libcxi.c' comp-dir-path='/home/aabraham/devbootstrap/libcxi' language='LANG_C99'>
+    <type-decl name='bool' size-in-bits='8' id='type-id-13'/>
+    <type-decl name='char' size-in-bits='8' id='type-id-14'/>
+    <array-type-def dimensions='1' type-id='type-id-14' size-in-bits='112' id='type-id-15'>
+      <subrange length='14' lower-bound='0' upper-bound='13' type-id='type-id-3' id='type-id-16'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-14' size-in-bits='128' id='type-id-17'>
+      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-3' id='type-id-18'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-14' size-in-bits='72' id='type-id-19'>
+      <subrange length='9' lower-bound='0' upper-bound='8' type-id='type-id-3' id='type-id-20'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-21' size-in-bits='unknown' id='type-id-22'>
+      <subrange length='unknown' lower-bound='0' upper-bound='0' type-id='type-id-3' id='type-id-4'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-23' size-in-bits='unknown' id='type-id-24'>
+      <subrange length='unknown' lower-bound='0' upper-bound='0' type-id='type-id-3' id='type-id-4'/>
+    </array-type-def>
+    <enum-decl name='c_cntr_type' filepath='./../cassini-headers/install/include/cassini_cntr_defs.h' line='33' column='1' id='type-id-25'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <enum-decl name='c_ptl_list' filepath='./../cassini-headers/install/include/cassini_user_defs.h' line='169' column='1' id='type-id-27'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <enum-decl name='cassini_version' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1405' column='1' id='type-id-28'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <enum-decl name='cxi_traffic_class' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='360' column='1' id='type-id-29'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <enum-decl name='cxi_traffic_class_type' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='378' column='1' id='type-id-30'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <enum-decl name='cxi_trig_cp' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='494' column='1' id='type-id-31'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <enum-decl name='system_type_identifier' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1418' column='1' id='type-id-32'>
+      <underlying-type type-id='type-id-26'/>
+    </enum-decl>
+    <type-decl name='int' size-in-bits='32' id='type-id-9'/>
+    <type-decl name='long int' size-in-bits='64' id='type-id-33'/>
+    <class-decl name='cxil_dev' size-in-bits='1216' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='104' column='1' id='type-id-34'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='info' type-id='type-id-1' visibility='default' filepath='./include/libcxi.h' line='105' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_dev_priv' size-in-bits='1408' is-struct='yes' visibility='default' filepath='./include/libcxi_priv.h' line='18' column='1' id='type-id-35'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='dev' type-id='type-id-34' visibility='default' filepath='./include/libcxi_priv.h' line='19' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1216'>
+        <var-decl name='fd' type-id='type-id-9' visibility='default' filepath='./include/libcxi_priv.h' line='20' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1280'>
+        <var-decl name='mapped_csrs' type-id='type-id-36' visibility='default' filepath='./include/libcxi_priv.h' line='23' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1344'>
+        <var-decl name='mapped_csrs_size' type-id='type-id-37' visibility='default' filepath='./include/libcxi_priv.h' line='24' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_devinfo' size-in-bits='1216' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='30' column='1' id='type-id-1'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='dev_id' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='31' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='' type-id='type-id-38' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='pid_bits' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='36' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='pid_count' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='37' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='pid_granule' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='38' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='min_free_shift' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='39' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='rdzv_get_idx' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='40' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='device_name' type-id='type-id-15' visibility='default' filepath='./include/libcxi.h' line='42' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='336'>
+        <var-decl name='driver_name' type-id='type-id-19' visibility='default' filepath='./include/libcxi.h' line='43' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='416'>
+        <var-decl name='vendor_id' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='44' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='device_id' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='45' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='device_rev' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='46' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='device_proto' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='47' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='544'>
+        <var-decl name='device_platform' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='48' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='num_ptes' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='50' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='592'>
+        <var-decl name='num_txqs' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='51' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='608'>
+        <var-decl name='num_tgqs' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='52' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='624'>
+        <var-decl name='num_eqs' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='53' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='num_cts' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='54' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='656'>
+        <var-decl name='num_acs' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='55' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='672'>
+        <var-decl name='num_tles' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='56' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='688'>
+        <var-decl name='num_les' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='57' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='pci_domain' type-id='type-id-39' visibility='default' filepath='./include/libcxi.h' line='59' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='720'>
+        <var-decl name='pci_bus' type-id='type-id-40' visibility='default' filepath='./include/libcxi.h' line='60' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='728'>
+        <var-decl name='pci_device' type-id='type-id-40' visibility='default' filepath='./include/libcxi.h' line='61' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='736'>
+        <var-decl name='pci_function' type-id='type-id-40' visibility='default' filepath='./include/libcxi.h' line='62' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='link_mtu' type-id='type-id-37' visibility='default' filepath='./include/libcxi.h' line='64' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='link_speed' type-id='type-id-37' visibility='default' filepath='./include/libcxi.h' line='65' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='link_state' type-id='type-id-40' visibility='default' filepath='./include/libcxi.h' line='66' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='928'>
+        <var-decl name='uc_nic' type-id='type-id-9' visibility='default' filepath='./include/libcxi.h' line='68' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='960'>
+        <var-decl name='pct_eq' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='70' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='992'>
+        <var-decl name='cassini_version' type-id='type-id-28' visibility='default' filepath='./include/libcxi.h' line='73' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1024'>
+        <var-decl name='fru_description' type-id='type-id-17' visibility='default' filepath='./include/libcxi.h' line='76' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1152'>
+        <var-decl name='is_vf' type-id='type-id-13' visibility='default' filepath='./include/libcxi.h' line='78' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1184'>
+        <var-decl name='system_type_identifier' type-id='type-id-32' visibility='default' filepath='./include/libcxi.h' line='81' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_domain' size-in-bits='64' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='99' column='1' id='type-id-41'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='vni' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='100' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='pid' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='101' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_lni' size-in-bits='32' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='108' column='1' id='type-id-42'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='id' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='109' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_lni_priv' size-in-bits='128' is-struct='yes' visibility='default' filepath='./include/libcxi_priv.h' line='28' column='1' id='type-id-43'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='dev' type-id='type-id-44' visibility='default' filepath='./include/libcxi_priv.h' line='29' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='lni' type-id='type-id-42' visibility='default' filepath='./include/libcxi_priv.h' line='30' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_pte' size-in-bits='32' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='84' column='1' id='type-id-45'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ptn' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='85' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_pte_map' size-in-bits='128' is-struct='yes' visibility='default' filepath='./include/libcxi_priv.h' line='109' column='1' id='type-id-46'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='lni_priv' type-id='type-id-47' visibility='default' filepath='./include/libcxi_priv.h' line='110' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='pte_index' type-id='type-id-6' visibility='default' filepath='./include/libcxi_priv.h' line='111' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_rmu_eth' size-in-bits='96' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='88' column='1' id='type-id-48'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='id' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='89' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='max_filters' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='90' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='max_indir_entries' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='91' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_rmu_eth_opts' size-in-bits='64' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='94' column='1' id='type-id-49'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='filter_entries' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='95' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='rss_indir_entries' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='96' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_svc_list' size-in-bits='32' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='121' column='1' id='type-id-50'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='count' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='122' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='descs' type-id='type-id-24' visibility='default' filepath='./include/libcxi.h' line='123' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_svc_rsrc_list' size-in-bits='32' is-struct='yes' visibility='default' filepath='./include/libcxi.h' line='126' column='1' id='type-id-51'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='count' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='127' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='rsrcs' type-id='type-id-22' visibility='default' filepath='./include/libcxi.h' line='128' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='cxil_wait_obj' size-in-bits='128' is-struct='yes' visibility='default' filepath='./include/libcxi_priv.h' line='114' column='1' id='type-id-52'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='lni_priv' type-id='type-id-47' visibility='default' filepath='./include/libcxi_priv.h' line='115' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='wait' type-id='type-id-6' visibility='default' filepath='./include/libcxi_priv.h' line='116' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='fd' type-id='type-id-9' visibility='default' filepath='./include/libcxi_priv.h' line='117' column='1'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='timespec' size-in-bits='128' is-struct='yes' visibility='default' filepath='/usr/include/bits/types/struct_timespec.h' line='11' column='1' id='type-id-53'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='tv_sec' type-id='type-id-54' visibility='default' filepath='/usr/include/bits/types/struct_timespec.h' line='16' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='tv_nsec' type-id='type-id-55' visibility='default' filepath='/usr/include/bits/types/struct_timespec.h' line='21' column='1'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__syscall_slong_t' type-id='type-id-33' filepath='/usr/include/bits/types.h' line='197' column='1' id='type-id-55'/>
+    <typedef-decl name='__time_t' type-id='type-id-33' filepath='/usr/include/bits/types.h' line='160' column='1' id='type-id-54'/>
+    <typedef-decl name='__uint16_t' type-id='type-id-56' filepath='/usr/include/bits/types.h' line='40' column='1' id='type-id-57'/>
+    <typedef-decl name='__uint32_t' type-id='type-id-6' filepath='/usr/include/bits/types.h' line='42' column='1' id='type-id-58'/>
+    <typedef-decl name='__uint64_t' type-id='type-id-3' filepath='/usr/include/bits/types.h' line='45' column='1' id='type-id-59'/>
+    <typedef-decl name='__uint8_t' type-id='type-id-60' filepath='/usr/include/bits/types.h' line='38' column='1' id='type-id-61'/>
+    <typedef-decl name='size_t' type-id='type-id-3' filepath='/usr/lib64/gcc/x86_64-suse-linux/7/include/stddef.h' line='216' column='1' id='type-id-37'/>
+    <typedef-decl name='uint16_t' type-id='type-id-57' filepath='/usr/include/bits/stdint-uintn.h' line='25' column='1' id='type-id-39'/>
+    <typedef-decl name='uint32_t' type-id='type-id-58' filepath='/usr/include/bits/stdint-uintn.h' line='26' column='1' id='type-id-62'/>
+    <typedef-decl name='uint64_t' type-id='type-id-59' filepath='/usr/include/bits/stdint-uintn.h' line='27' column='1' id='type-id-63'/>
+    <typedef-decl name='uint8_t' type-id='type-id-61' filepath='/usr/include/bits/stdint-uintn.h' line='24' column='1' id='type-id-40'/>
+    <union-decl name='__anonymous_union__' size-in-bits='32' is-anonymous='yes' visibility='default' filepath='./include/libcxi.h' line='32' column='1' id='type-id-38'>
+      <data-member access='public'>
+        <var-decl name='nic_addr' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='33' column='1'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='nid' type-id='type-id-6' visibility='default' filepath='./include/libcxi.h' line='34' column='1'/>
+      </data-member>
+    </union-decl>
+    <type-decl name='unnamed-enum-underlying-type-32' is-anonymous='yes' size-in-bits='32' alignment-in-bits='32' id='type-id-26'/>
+    <type-decl name='unsigned char' size-in-bits='8' id='type-id-60'/>
+    <type-decl name='unsigned int' size-in-bits='32' id='type-id-6'/>
+    <type-decl name='unsigned long int' size-in-bits='64' id='type-id-3'/>
+    <type-decl name='unsigned short int' size-in-bits='16' id='type-id-56'/>
+    <pointer-type-def type-id='type-id-13' size-in-bits='64' id='type-id-64'/>
+    <pointer-type-def type-id='type-id-65' size-in-bits='64' id='type-id-66'/>
+    <qualified-type-def type-id='type-id-25' const='yes' id='type-id-67'/>
+    <pointer-type-def type-id='type-id-67' size-in-bits='64' id='type-id-68'/>
+    <qualified-type-def type-id='type-id-69' const='yes' id='type-id-70'/>
+    <pointer-type-def type-id='type-id-70' size-in-bits='64' id='type-id-71'/>
+    <qualified-type-def type-id='type-id-72' const='yes' id='type-id-73'/>
+    <pointer-type-def type-id='type-id-73' size-in-bits='64' id='type-id-74'/>
+    <qualified-type-def type-id='type-id-75' const='yes' id='type-id-76'/>
+    <pointer-type-def type-id='type-id-76' size-in-bits='64' id='type-id-77'/>
+    <qualified-type-def type-id='type-id-78' const='yes' id='type-id-79'/>
+    <pointer-type-def type-id='type-id-79' size-in-bits='64' id='type-id-80'/>
+    <qualified-type-def type-id='type-id-81' const='yes' id='type-id-82'/>
+    <pointer-type-def type-id='type-id-82' size-in-bits='64' id='type-id-83'/>
+    <qualified-type-def type-id='type-id-23' const='yes' id='type-id-84'/>
+    <pointer-type-def type-id='type-id-84' size-in-bits='64' id='type-id-85'/>
+    <qualified-type-def type-id='type-id-49' const='yes' id='type-id-86'/>
+    <pointer-type-def type-id='type-id-86' size-in-bits='64' id='type-id-87'/>
+    <qualified-type-def type-id='type-id-40' const='yes' id='type-id-88'/>
+    <pointer-type-def type-id='type-id-88' size-in-bits='64' id='type-id-89'/>
+    <pointer-type-def type-id='type-id-90' size-in-bits='64' id='type-id-91'/>
+    <pointer-type-def type-id='type-id-91' size-in-bits='64' id='type-id-92'/>
+    <pointer-type-def type-id='type-id-93' size-in-bits='64' id='type-id-94'/>
+    <pointer-type-def type-id='type-id-94' size-in-bits='64' id='type-id-95'/>
+    <pointer-type-def type-id='type-id-96' size-in-bits='64' id='type-id-97'/>
+    <pointer-type-def type-id='type-id-97' size-in-bits='64' id='type-id-98'/>
+    <pointer-type-def type-id='type-id-99' size-in-bits='64' id='type-id-100'/>
+    <pointer-type-def type-id='type-id-100' size-in-bits='64' id='type-id-101'/>
+    <pointer-type-def type-id='type-id-78' size-in-bits='64' id='type-id-102'/>
+    <pointer-type-def type-id='type-id-102' size-in-bits='64' id='type-id-103'/>
+    <pointer-type-def type-id='type-id-104' size-in-bits='64' id='type-id-105'/>
+    <pointer-type-def type-id='type-id-106' size-in-bits='64' id='type-id-107'/>
+    <pointer-type-def type-id='type-id-108' size-in-bits='64' id='type-id-109'/>
+    <pointer-type-def type-id='type-id-21' size-in-bits='64' id='type-id-110'/>
+    <pointer-type-def type-id='type-id-23' size-in-bits='64' id='type-id-111'/>
+    <pointer-type-def type-id='type-id-112' size-in-bits='64' id='type-id-113'/>
+    <pointer-type-def type-id='type-id-34' size-in-bits='64' id='type-id-12'/>
+    <pointer-type-def type-id='type-id-12' size-in-bits='64' id='type-id-114'/>
+    <pointer-type-def type-id='type-id-35' size-in-bits='64' id='type-id-44'/>
+    <pointer-type-def type-id='type-id-41' size-in-bits='64' id='type-id-115'/>
+    <pointer-type-def type-id='type-id-115' size-in-bits='64' id='type-id-116'/>
+    <pointer-type-def type-id='type-id-42' size-in-bits='64' id='type-id-117'/>
+    <pointer-type-def type-id='type-id-117' size-in-bits='64' id='type-id-118'/>
+    <pointer-type-def type-id='type-id-43' size-in-bits='64' id='type-id-47'/>
+    <pointer-type-def type-id='type-id-45' size-in-bits='64' id='type-id-119'/>
+    <pointer-type-def type-id='type-id-119' size-in-bits='64' id='type-id-120'/>
+    <pointer-type-def type-id='type-id-46' size-in-bits='64' id='type-id-121'/>
+    <pointer-type-def type-id='type-id-121' size-in-bits='64' id='type-id-122'/>
+    <pointer-type-def type-id='type-id-48' size-in-bits='64' id='type-id-123'/>
+    <pointer-type-def type-id='type-id-123' size-in-bits='64' id='type-id-124'/>
+    <pointer-type-def type-id='type-id-50' size-in-bits='64' id='type-id-125'/>
+    <pointer-type-def type-id='type-id-125' size-in-bits='64' id='type-id-126'/>
+    <pointer-type-def type-id='type-id-51' size-in-bits='64' id='type-id-127'/>
+    <pointer-type-def type-id='type-id-127' size-in-bits='64' id='type-id-128'/>
+    <pointer-type-def type-id='type-id-52' size-in-bits='64' id='type-id-129'/>
+    <pointer-type-def type-id='type-id-129' size-in-bits='64' id='type-id-130'/>
+    <pointer-type-def type-id='type-id-53' size-in-bits='64' id='type-id-131'/>
+    <pointer-type-def type-id='type-id-39' size-in-bits='64' id='type-id-132'/>
+    <pointer-type-def type-id='type-id-62' size-in-bits='64' id='type-id-133'/>
+    <pointer-type-def type-id='type-id-63' size-in-bits='64' id='type-id-134'/>
+    <pointer-type-def type-id='type-id-40' size-in-bits='64' id='type-id-135'/>
+    <pointer-type-def type-id='type-id-6' size-in-bits='64' id='type-id-136'/>
+    <type-decl name='void' id='type-id-11'/>
+    <pointer-type-def type-id='type-id-11' size-in-bits='64' id='type-id-137'/>
+    <pointer-type-def type-id='type-id-11' size-in-bits='64' id='type-id-36'/>
+    <class-decl name='c_ct_writeback' is-struct='yes' visibility='default' filepath='./../cassini-headers/install/include/cassini_user_defs.h' line='3137' column='1' is-declaration-only='yes' id='type-id-65'/>
+    <class-decl name='cxi_cq' is-struct='yes' visibility='default' filepath='./../cassini-headers/install/include/cxi_prov_hw.h' line='140' column='1' is-declaration-only='yes' id='type-id-93'/>
+    <class-decl name='cxi_ct' is-struct='yes' visibility='default' filepath='./../cassini-headers/install/include/cxi_prov_hw.h' line='511' column='1' is-declaration-only='yes' id='type-id-96'/>
+    <class-decl name='cxi_eq' is-struct='yes' visibility='default' filepath='./../cassini-headers/install/include/cxi_prov_hw.h' line='528' column='1' is-declaration-only='yes' id='type-id-99'/>
+    <class-decl name='cxi_cq_alloc_opts' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='556' column='1' is-declaration-only='yes' id='type-id-69'/>
+    <class-decl name='cxi_cq_alloc_opts_buf' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='582' column='1' is-declaration-only='yes' id='type-id-72'/>
+    <class-decl name='cxi_pt_alloc_opts' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='667' column='1' is-declaration-only='yes' id='type-id-106'/>
+    <class-decl name='cxi_md' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='688' column='1' is-declaration-only='yes' id='type-id-78'/>
+    <class-decl name='cxi_cp' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='706' column='1' is-declaration-only='yes' id='type-id-90'/>
+    <class-decl name='cxi_md_hints' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='716' column='1' is-declaration-only='yes' id='type-id-104'/>
+    <class-decl name='cxi_eq_attr' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='847' column='1' is-declaration-only='yes' id='type-id-75'/>
+    <class-decl name='cxi_pte_status' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1000' column='1' is-declaration-only='yes' id='type-id-108'/>
+    <class-decl name='cxi_rsrc_use' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1112' column='1' is-declaration-only='yes' id='type-id-21'/>
+    <class-decl name='cxi_svc_fail_info' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1129' column='1' is-declaration-only='yes' id='type-id-112'/>
+    <class-decl name='cxi_svc_desc' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1146' column='1' is-declaration-only='yes' id='type-id-23'/>
+    <class-decl name='cxi_sbus_op_params' is-struct='yes' visibility='default' filepath='./../cxi-driver/include/uapi/ethernet/cxi-abi.h' line='1352' column='1' is-declaration-only='yes' id='type-id-81'/>
+    <function-decl name='cxil_open_device' mangled-name='cxil_open_device' filepath='src/libcxi.c' line='57' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_open_device@@LIBCXI_1.0'>
+      <parameter type-id='type-id-62' name='dev_id' filepath='src/libcxi.c' line='57' column='1'/>
+      <parameter type-id='type-id-114' name='dev' filepath='src/libcxi.c' line='57' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_close_device' mangled-name='cxil_close_device' filepath='src/libcxi.c' line='105' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_close_device@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='105' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='cxil_get_svc_rsrc_list' mangled-name='cxil_get_svc_rsrc_list' filepath='src/libcxi.c' line='119' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_svc_rsrc_list@@LIBCXI_1.5'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='119' column='1'/>
+      <parameter type-id='type-id-128' name='rsrc_list' filepath='src/libcxi.c' line='120' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_free_svc_rsrc_list' mangled-name='cxil_free_svc_rsrc_list' filepath='src/libcxi.c' line='170' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_free_svc_rsrc_list@@LIBCXI_1.5'>
+      <parameter type-id='type-id-127' name='rsrc_list' filepath='src/libcxi.c' line='170' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='cxil_get_svc_rsrc_use' mangled-name='cxil_get_svc_rsrc_use' filepath='src/libcxi.c' line='176' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_svc_rsrc_use@@LIBCXI_1.5'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='176' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='177' column='1'/>
+      <parameter type-id='type-id-110' name='rsrcs' filepath='src/libcxi.c' line='178' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_get_svc_list' mangled-name='cxil_get_svc_list' filepath='src/libcxi.c' line='206' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_svc_list@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='206' column='1'/>
+      <parameter type-id='type-id-126' name='svc_list' filepath='src/libcxi.c' line='207' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_free_svc_list' mangled-name='cxil_free_svc_list' filepath='src/libcxi.c' line='257' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_free_svc_list@@LIBCXI_1.0'>
+      <parameter type-id='type-id-125' name='svc_list' filepath='src/libcxi.c' line='257' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='cxil_get_svc' mangled-name='cxil_get_svc' filepath='src/libcxi.c' line='263' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_svc@@LIBCXI_1.2'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='263' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='264' column='1'/>
+      <parameter type-id='type-id-111' name='desc' filepath='src/libcxi.c' line='265' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_update_svc' mangled-name='cxil_update_svc' filepath='src/libcxi.c' line='293' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_update_svc@@LIBCXI_1.2'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='293' column='1'/>
+      <parameter type-id='type-id-85' name='desc' filepath='src/libcxi.c' line='294' column='1'/>
+      <parameter type-id='type-id-113' name='fail_info' filepath='src/libcxi.c' line='295' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_svc' mangled-name='cxil_alloc_svc' filepath='src/libcxi.c' line='321' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_svc@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='321' column='1'/>
+      <parameter type-id='type-id-85' name='desc' filepath='src/libcxi.c' line='322' column='1'/>
+      <parameter type-id='type-id-113' name='fail_info' filepath='src/libcxi.c' line='323' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_parent_svc' mangled-name='cxil_alloc_parent_svc' filepath='src/libcxi.c' line='349' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_parent_svc@@LIBCXI_1.12'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='349' column='1'/>
+      <parameter type-id='type-id-85' name='desc' filepath='src/libcxi.c' line='350' column='1'/>
+      <parameter type-id='type-id-113' name='fail_info' filepath='src/libcxi.c' line='351' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_is_parent' mangled-name='cxil_svc_is_parent' filepath='src/libcxi.c' line='377' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_is_parent@@LIBCXI_1.12'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='377' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='377' column='1'/>
+      <parameter type-id='type-id-64' name='is_parent' filepath='src/libcxi.c' line='378' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_svc' mangled-name='cxil_destroy_svc' filepath='src/libcxi.c' line='402' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_svc@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='402' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='402' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_set_svc_lpr' mangled-name='cxil_set_svc_lpr' filepath='src/libcxi.c' line='420' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_set_svc_lpr@@LIBCXI_1.8'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='420' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='420' column='1'/>
+      <parameter type-id='type-id-6' name='lnis_per_rgid' filepath='src/libcxi.c' line='421' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_get_svc_lpr' mangled-name='cxil_get_svc_lpr' filepath='src/libcxi.c' line='437' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_svc_lpr@@LIBCXI_1.8'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='437' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='437' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_enable' mangled-name='cxil_svc_enable' filepath='src/libcxi.c' line='458' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_enable@@LIBCXI_1.9'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='458' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='458' column='1'/>
+      <parameter type-id='type-id-13' name='enable' filepath='src/libcxi.c' line='459' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_set_exclusive_cp' mangled-name='cxil_svc_set_exclusive_cp' filepath='src/libcxi.c' line='477' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_set_exclusive_cp@@LIBCXI_1.9'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='477' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='478' column='1'/>
+      <parameter type-id='type-id-13' name='exclusive_cp' filepath='src/libcxi.c' line='479' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_get_exclusive_cp' mangled-name='cxil_svc_get_exclusive_cp' filepath='src/libcxi.c' line='497' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_get_exclusive_cp@@LIBCXI_1.9'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='497' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='498' column='1'/>
+      <parameter type-id='type-id-64' name='exclusive_cp' filepath='src/libcxi.c' line='498' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_set_vni_range' mangled-name='cxil_svc_set_vni_range' filepath='src/libcxi.c' line='521' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_set_vni_range@@LIBCXI_1.9'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='521' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='522' column='1'/>
+      <parameter type-id='type-id-39' name='vni_min' filepath='src/libcxi.c' line='522' column='1'/>
+      <parameter type-id='type-id-39' name='vni_max' filepath='src/libcxi.c' line='523' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_get_vni_range' mangled-name='cxil_svc_get_vni_range' filepath='src/libcxi.c' line='542' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_get_vni_range@@LIBCXI_1.9'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='542' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='543' column='1'/>
+      <parameter type-id='type-id-132' name='vni_min' filepath='src/libcxi.c' line='543' column='1'/>
+      <parameter type-id='type-id-132' name='vni_max' filepath='src/libcxi.c' line='544' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_set_netns' mangled-name='cxil_svc_set_netns' filepath='src/libcxi.c' line='571' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_set_netns@@LIBCXI_1.10'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='571' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='572' column='1'/>
+      <parameter type-id='type-id-6' name='netns' filepath='src/libcxi.c' line='572' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_svc_get_netns' mangled-name='cxil_svc_get_netns' filepath='src/libcxi.c' line='590' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_svc_get_netns@@LIBCXI_1.10'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='590' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='591' column='1'/>
+      <parameter type-id='type-id-136' name='netns' filepath='src/libcxi.c' line='591' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_lni' mangled-name='cxil_alloc_lni' filepath='src/libcxi.c' line='617' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_lni@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='617' column='1'/>
+      <parameter type-id='type-id-118' name='lni' filepath='src/libcxi.c' line='617' column='1'/>
+      <parameter type-id='type-id-6' name='svc_id' filepath='src/libcxi.c' line='618' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_lni' mangled-name='cxil_destroy_lni' filepath='src/libcxi.c' line='653' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_lni@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='653' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_trig_cp' mangled-name='cxil_alloc_trig_cp' filepath='src/libcxi.c' line='677' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_trig_cp@@LIBCXI_1.9'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='677' column='1'/>
+      <parameter type-id='type-id-6' name='vni' filepath='src/libcxi.c' line='677' column='1'/>
+      <parameter type-id='type-id-29' name='tc' filepath='src/libcxi.c' line='678' column='1'/>
+      <parameter type-id='type-id-30' name='tc_type' filepath='src/libcxi.c' line='679' column='1'/>
+      <parameter type-id='type-id-31' name='cp_type' filepath='src/libcxi.c' line='680' column='1'/>
+      <parameter type-id='type-id-92' name='cp' filepath='src/libcxi.c' line='681' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_cp' mangled-name='cxil_alloc_cp' filepath='src/libcxi.c' line='727' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_cp@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='727' column='1'/>
+      <parameter type-id='type-id-6' name='vni' filepath='src/libcxi.c' line='727' column='1'/>
+      <parameter type-id='type-id-29' name='tc' filepath='src/libcxi.c' line='728' column='1'/>
+      <parameter type-id='type-id-30' name='tc_type' filepath='src/libcxi.c' line='729' column='1'/>
+      <parameter type-id='type-id-92' name='cp' filepath='src/libcxi.c' line='730' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_cp' mangled-name='cxil_destroy_cp' filepath='src/libcxi.c' line='775' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_cp@@LIBCXI_1.0'>
+      <parameter type-id='type-id-91' name='cp' filepath='src/libcxi.c' line='775' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_modify_cp' mangled-name='cxil_modify_cp' filepath='src/libcxi.c' line='799' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_modify_cp@@LIBCXI_1.9'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='799' column='1'/>
+      <parameter type-id='type-id-91' name='cp' filepath='src/libcxi.c' line='799' column='1'/>
+      <parameter type-id='type-id-6' name='vni' filepath='src/libcxi.c' line='800' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_reserve_domain' mangled-name='cxil_reserve_domain' filepath='src/libcxi.c' line='820' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_reserve_domain@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='820' column='1'/>
+      <parameter type-id='type-id-6' name='vni' filepath='src/libcxi.c' line='820' column='1'/>
+      <parameter type-id='type-id-6' name='pid' filepath='src/libcxi.c' line='821' column='1'/>
+      <parameter type-id='type-id-6' name='count' filepath='src/libcxi.c' line='821' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_domain' mangled-name='cxil_alloc_domain' filepath='src/libcxi.c' line='848' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_domain@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='848' column='1'/>
+      <parameter type-id='type-id-6' name='vni' filepath='src/libcxi.c' line='848' column='1'/>
+      <parameter type-id='type-id-6' name='pid' filepath='src/libcxi.c' line='849' column='1'/>
+      <parameter type-id='type-id-116' name='domain' filepath='src/libcxi.c' line='849' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_domain' mangled-name='cxil_destroy_domain' filepath='src/libcxi.c' line='889' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_domain@@LIBCXI_1.0'>
+      <parameter type-id='type-id-115' name='domain' filepath='src/libcxi.c' line='889' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_ct' mangled-name='cxil_alloc_ct' filepath='src/libcxi.c' line='944' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_ct@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='944' column='1'/>
+      <parameter type-id='type-id-66' name='wb' filepath='src/libcxi.c' line='944' column='1'/>
+      <parameter type-id='type-id-98' name='ct' filepath='src/libcxi.c' line='945' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_ct_wb_update' mangled-name='cxil_ct_wb_update' filepath='src/libcxi.c' line='999' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_ct_wb_update@@LIBCXI_1.0'>
+      <parameter type-id='type-id-97' name='ct' filepath='src/libcxi.c' line='999' column='1'/>
+      <parameter type-id='type-id-66' name='wb' filepath='src/libcxi.c' line='999' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_ct' mangled-name='cxil_destroy_ct' filepath='src/libcxi.c' line='1025' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_ct@@LIBCXI_1.0'>
+      <parameter type-id='type-id-97' name='ct' filepath='src/libcxi.c' line='1025' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_buf_cmdq' mangled-name='cxil_alloc_buf_cmdq' filepath='src/libcxi.c' line='1049' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_buf_cmdq@@LIBCXI_1.11'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='1049' column='1'/>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1049' column='1'/>
+      <parameter type-id='type-id-74' name='opts_in' filepath='src/libcxi.c' line='1050' column='1'/>
+      <parameter type-id='type-id-95' name='cmdq' filepath='src/libcxi.c' line='1051' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_cmdq' mangled-name='cxil_alloc_cmdq' filepath='src/libcxi.c' line='1132' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_cmdq@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='1132' column='1'/>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1132' column='1'/>
+      <parameter type-id='type-id-71' name='opts' filepath='src/libcxi.c' line='1133' column='1'/>
+      <parameter type-id='type-id-95' name='cmdq' filepath='src/libcxi.c' line='1134' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_cmdq' mangled-name='cxil_destroy_cmdq' filepath='src/libcxi.c' line='1204' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_cmdq@@LIBCXI_1.0'>
+      <parameter type-id='type-id-94' name='cmdq' filepath='src/libcxi.c' line='1204' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_cmdq_ack_counter' mangled-name='cxil_cmdq_ack_counter' filepath='src/libcxi.c' line='1244' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_cmdq_ack_counter@@LIBCXI_1.0'>
+      <parameter type-id='type-id-94' name='cmdq' filepath='src/libcxi.c' line='1244' column='1'/>
+      <parameter type-id='type-id-136' name='ack_counter' filepath='src/libcxi.c' line='1245' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_map' mangled-name='cxil_map' filepath='src/libcxi.c' line='1269' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_map@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='1269' column='1'/>
+      <parameter type-id='type-id-36' name='va' filepath='src/libcxi.c' line='1269' column='1'/>
+      <parameter type-id='type-id-37' name='len' filepath='src/libcxi.c' line='1269' column='1'/>
+      <parameter type-id='type-id-62' name='flags' filepath='src/libcxi.c' line='1270' column='1'/>
+      <parameter type-id='type-id-105' name='hints' filepath='src/libcxi.c' line='1270' column='1'/>
+      <parameter type-id='type-id-103' name='md' filepath='src/libcxi.c' line='1271' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_unmap' mangled-name='cxil_unmap' filepath='src/libcxi.c' line='1327' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_unmap@@LIBCXI_1.0'>
+      <parameter type-id='type-id-102' name='md' filepath='src/libcxi.c' line='1327' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_update_md' mangled-name='cxil_update_md' filepath='src/libcxi.c' line='1352' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_update_md@@LIBCXI_1.7'>
+      <parameter type-id='type-id-102' name='md' filepath='src/libcxi.c' line='1352' column='1'/>
+      <parameter type-id='type-id-36' name='va' filepath='src/libcxi.c' line='1352' column='1'/>
+      <parameter type-id='type-id-37' name='len' filepath='src/libcxi.c' line='1352' column='1'/>
+      <parameter type-id='type-id-62' name='flags' filepath='src/libcxi.c' line='1353' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_clear_wait_obj' mangled-name='cxil_clear_wait_obj' filepath='src/libcxi.c' line='1377' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_clear_wait_obj@@LIBCXI_1.0'>
+      <parameter type-id='type-id-129' name='wait' filepath='src/libcxi.c' line='1377' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_wait_obj' mangled-name='cxil_alloc_wait_obj' filepath='src/libcxi.c' line='1405' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_wait_obj@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='1405' column='1'/>
+      <parameter type-id='type-id-130' name='wait_out' filepath='src/libcxi.c' line='1406' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_wait_obj' mangled-name='cxil_destroy_wait_obj' filepath='src/libcxi.c' line='1473' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_wait_obj@@LIBCXI_1.0'>
+      <parameter type-id='type-id-129' name='wait' filepath='src/libcxi.c' line='1473' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_get_wait_obj_fd' mangled-name='cxil_get_wait_obj_fd' filepath='src/libcxi.c' line='1487' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_get_wait_obj_fd@@LIBCXI_1.0'>
+      <parameter type-id='type-id-129' name='wait' filepath='src/libcxi.c' line='1487' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_evtq' mangled-name='cxil_alloc_evtq' filepath='src/libcxi.c' line='1509' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_evtq@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='1509' column='1'/>
+      <parameter type-id='type-id-80' name='md' filepath='src/libcxi.c' line='1509' column='1'/>
+      <parameter type-id='type-id-77' name='attr' filepath='src/libcxi.c' line='1510' column='1'/>
+      <parameter type-id='type-id-129' name='event_wait' filepath='src/libcxi.c' line='1511' column='1'/>
+      <parameter type-id='type-id-129' name='status_wait' filepath='src/libcxi.c' line='1512' column='1'/>
+      <parameter type-id='type-id-101' name='evtq' filepath='src/libcxi.c' line='1513' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_evtq' mangled-name='cxil_destroy_evtq' filepath='src/libcxi.c' line='1589' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_evtq@@LIBCXI_1.0'>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1589' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_evtq_adjust_reserved_fc' mangled-name='cxil_evtq_adjust_reserved_fc' filepath='src/libcxi.c' line='1616' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_evtq_adjust_reserved_fc@@LIBCXI_1.0'>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1616' column='1'/>
+      <parameter type-id='type-id-9' name='value' filepath='src/libcxi.c' line='1616' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_evtq_resize' mangled-name='cxil_evtq_resize' filepath='src/libcxi.c' line='1640' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_evtq_resize@@LIBCXI_1.0'>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1640' column='1'/>
+      <parameter type-id='type-id-36' name='queue' filepath='src/libcxi.c' line='1640' column='1'/>
+      <parameter type-id='type-id-37' name='queue_len' filepath='src/libcxi.c' line='1641' column='1'/>
+      <parameter type-id='type-id-102' name='queue_md' filepath='src/libcxi.c' line='1641' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_evtq_resize_complete' mangled-name='cxil_evtq_resize_complete' filepath='src/libcxi.c' line='1676' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_evtq_resize_complete@@LIBCXI_1.0'>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1676' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_pte' mangled-name='cxil_alloc_pte' filepath='src/libcxi.c' line='1722' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_pte@@LIBCXI_1.0'>
+      <parameter type-id='type-id-117' name='lni' filepath='src/libcxi.c' line='1722' column='1'/>
+      <parameter type-id='type-id-100' name='evtq' filepath='src/libcxi.c' line='1722' column='1'/>
+      <parameter type-id='type-id-107' name='opts' filepath='src/libcxi.c' line='1723' column='1'/>
+      <parameter type-id='type-id-120' name='pte' filepath='src/libcxi.c' line='1724' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_pte' mangled-name='cxil_destroy_pte' filepath='src/libcxi.c' line='1771' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_pte@@LIBCXI_1.0'>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='1771' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_map_pte' mangled-name='cxil_map_pte' filepath='src/libcxi.c' line='1788' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_map_pte@@LIBCXI_1.0'>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='1788' column='1'/>
+      <parameter type-id='type-id-115' name='domain' filepath='src/libcxi.c' line='1788' column='1'/>
+      <parameter type-id='type-id-6' name='pid_offset' filepath='src/libcxi.c' line='1789' column='1'/>
+      <parameter type-id='type-id-13' name='is_multicast' filepath='src/libcxi.c' line='1789' column='1'/>
+      <parameter type-id='type-id-122' name='pte_map' filepath='src/libcxi.c' line='1790' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_unmap_pte' mangled-name='cxil_unmap_pte' filepath='src/libcxi.c' line='1832' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_unmap_pte@@LIBCXI_1.0'>
+      <parameter type-id='type-id-121' name='pte_map' filepath='src/libcxi.c' line='1832' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_invalidate_pte_le' mangled-name='cxil_invalidate_pte_le' filepath='src/libcxi.c' line='1852' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_invalidate_pte_le@@LIBCXI_1.0'>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='1852' column='1'/>
+      <parameter type-id='type-id-6' name='buffer_id' filepath='src/libcxi.c' line='1853' column='1'/>
+      <parameter type-id='type-id-27' name='list' filepath='src/libcxi.c' line='1854' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_pte_status' mangled-name='cxil_pte_status' filepath='src/libcxi.c' line='1876' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_pte_status@@LIBCXI_1.0'>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='1876' column='1'/>
+      <parameter type-id='type-id-109' name='status' filepath='src/libcxi.c' line='1877' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_pte_transition_sm' mangled-name='cxil_pte_transition_sm' filepath='src/libcxi.c' line='1902' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_pte_transition_sm@@LIBCXI_1.4'>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='1902' column='1'/>
+      <parameter type-id='type-id-6' name='drop_count' filepath='src/libcxi.c' line='1903' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_alloc_rmu_eth' mangled-name='cxil_alloc_rmu_eth' filepath='src/libcxi.c' line='1923' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_alloc_rmu_eth@@LIBCXI_1.13'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='1923' column='1'/>
+      <parameter type-id='type-id-87' name='opts' filepath='src/libcxi.c' line='1924' column='1'/>
+      <parameter type-id='type-id-124' name='rmu_eth' filepath='src/libcxi.c' line='1925' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_destroy_rmu_eth' mangled-name='cxil_destroy_rmu_eth' filepath='src/libcxi.c' line='1966' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_destroy_rmu_eth@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='1966' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_add_mac_filter' mangled-name='cxil_rmu_eth_add_mac_filter' filepath='src/libcxi.c' line='1992' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_add_mac_filter@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='1992' column='1'/>
+      <parameter type-id='type-id-63' name='mac_addr' filepath='src/libcxi.c' line='1993' column='1'/>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='1994' column='1'/>
+      <parameter type-id='type-id-13' name='use_rss' filepath='src/libcxi.c' line='1994' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_add_all_mcast_filter' mangled-name='cxil_rmu_eth_add_all_mcast_filter' filepath='src/libcxi.c' line='2016' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_add_all_mcast_filter@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2016' column='1'/>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='2017' column='1'/>
+      <parameter type-id='type-id-13' name='use_rss' filepath='src/libcxi.c' line='2018' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_add_promiscuous_filter' mangled-name='cxil_rmu_eth_add_promiscuous_filter' filepath='src/libcxi.c' line='2039' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_add_promiscuous_filter@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2039' column='1'/>
+      <parameter type-id='type-id-119' name='pte' filepath='src/libcxi.c' line='2040' column='1'/>
+      <parameter type-id='type-id-13' name='use_rss' filepath='src/libcxi.c' line='2041' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_remove_mac_filter' mangled-name='cxil_rmu_eth_remove_mac_filter' filepath='src/libcxi.c' line='2085' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_remove_mac_filter@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2085' column='1'/>
+      <parameter type-id='type-id-63' name='mac_addr' filepath='src/libcxi.c' line='2086' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_remove_all_mcast_filter' mangled-name='cxil_rmu_eth_remove_all_mcast_filter' filepath='src/libcxi.c' line='2092' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_remove_all_mcast_filter@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2092' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_remove_promiscuous_filter' mangled-name='cxil_rmu_eth_remove_promiscuous_filter' filepath='src/libcxi.c' line='2099' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_remove_promiscuous_filter@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2099' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_set_rss_queues' mangled-name='cxil_rmu_eth_set_rss_queues' filepath='src/libcxi.c' line='2105' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_set_rss_queues@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2105' column='1'/>
+      <parameter type-id='type-id-6' name='num_queues' filepath='src/libcxi.c' line='2106' column='1'/>
+      <parameter type-id='type-id-120' name='ptes' filepath='src/libcxi.c' line='2107' column='1'/>
+      <parameter type-id='type-id-62' name='hash_types' filepath='src/libcxi.c' line='2108' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_rmu_eth_set_indir_table' mangled-name='cxil_rmu_eth_set_indir_table' filepath='src/libcxi.c' line='2139' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_rmu_eth_set_indir_table@@LIBCXI_1.13'>
+      <parameter type-id='type-id-123' name='rmu_eth' filepath='src/libcxi.c' line='2139' column='1'/>
+      <parameter type-id='type-id-89' name='indir_table' filepath='src/libcxi.c' line='2140' column='1'/>
+      <parameter type-id='type-id-6' name='indir_size' filepath='src/libcxi.c' line='2141' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_read_csr' mangled-name='cxil_read_csr' filepath='src/libcxi.c' line='2173' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_read_csr@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2173' column='1'/>
+      <parameter type-id='type-id-6' name='csr' filepath='src/libcxi.c' line='2173' column='1'/>
+      <parameter type-id='type-id-36' name='value' filepath='src/libcxi.c' line='2174' column='1'/>
+      <parameter type-id='type-id-37' name='csr_len' filepath='src/libcxi.c' line='2174' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_write_csr' mangled-name='cxil_write_csr' filepath='src/libcxi.c' line='2196' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_write_csr@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2196' column='1'/>
+      <parameter type-id='type-id-6' name='csr' filepath='src/libcxi.c' line='2196' column='1'/>
+      <parameter type-id='type-id-137' name='value' filepath='src/libcxi.c' line='2197' column='1'/>
+      <parameter type-id='type-id-37' name='csr_len' filepath='src/libcxi.c' line='2197' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_write8_csr' mangled-name='cxil_write8_csr' filepath='src/libcxi.c' line='2219' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_write8_csr@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2219' column='1'/>
+      <parameter type-id='type-id-6' name='csr' filepath='src/libcxi.c' line='2219' column='1'/>
+      <parameter type-id='type-id-6' name='offset' filepath='src/libcxi.c' line='2220' column='1'/>
+      <parameter type-id='type-id-137' name='value' filepath='src/libcxi.c' line='2220' column='1'/>
+      <parameter type-id='type-id-37' name='csr_len' filepath='src/libcxi.c' line='2221' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_map_csr' mangled-name='cxil_map_csr' filepath='src/libcxi.c' line='2242' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_map_csr@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2242' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_read_cntr' mangled-name='cxil_read_cntr' filepath='src/libcxi.c' line='2341' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_read_cntr@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev' filepath='src/libcxi.c' line='2341' column='1'/>
+      <parameter type-id='type-id-6' name='cntr' filepath='src/libcxi.c' line='2341' column='1'/>
+      <parameter type-id='type-id-134' name='value' filepath='src/libcxi.c' line='2342' column='1'/>
+      <parameter type-id='type-id-131' name='ts' filepath='src/libcxi.c' line='2342' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_read_n_cntrs' mangled-name='cxil_read_n_cntrs' filepath='src/libcxi.c' line='2358' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_read_n_cntrs@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev' filepath='src/libcxi.c' line='2358' column='1'/>
+      <parameter type-id='type-id-6' name='count' filepath='src/libcxi.c' line='2358' column='1'/>
+      <parameter type-id='type-id-68' name='cntr' filepath='src/libcxi.c' line='2359' column='1'/>
+      <parameter type-id='type-id-134' name='value' filepath='src/libcxi.c' line='2359' column='1'/>
+      <parameter type-id='type-id-131' name='ts' filepath='src/libcxi.c' line='2360' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_read_all_cntrs' mangled-name='cxil_read_all_cntrs' filepath='src/libcxi.c' line='2378' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_read_all_cntrs@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev' filepath='src/libcxi.c' line='2378' column='1'/>
+      <parameter type-id='type-id-134' name='value' filepath='src/libcxi.c' line='2378' column='1'/>
+      <parameter type-id='type-id-131' name='ts' filepath='src/libcxi.c' line='2379' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_inbound_wait' mangled-name='cxil_inbound_wait' filepath='src/libcxi.c' line='2387' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_inbound_wait@@LIBCXI_1.1'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2387' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_sbus_op' mangled-name='cxil_sbus_op' filepath='src/libcxi.c' line='2401' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_sbus_op@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2401' column='1'/>
+      <parameter type-id='type-id-83' name='params' filepath='src/libcxi.c' line='2402' column='1'/>
+      <parameter type-id='type-id-133' name='rsp_data' filepath='src/libcxi.c' line='2403' column='1'/>
+      <parameter type-id='type-id-135' name='result_code' filepath='src/libcxi.c' line='2403' column='1'/>
+      <parameter type-id='type-id-135' name='overrun' filepath='src/libcxi.c' line='2404' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_sbus_op_compat' mangled-name='cxil_sbus_op_compat' filepath='src/libcxi.c' line='2433' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_sbus_op_compat@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2433' column='1'/>
+      <parameter type-id='type-id-9' name='ring' filepath='src/libcxi.c' line='2433' column='1'/>
+      <parameter type-id='type-id-62' name='req_data' filepath='src/libcxi.c' line='2434' column='1'/>
+      <parameter type-id='type-id-40' name='data_addr' filepath='src/libcxi.c' line='2434' column='1'/>
+      <parameter type-id='type-id-40' name='rx_addr' filepath='src/libcxi.c' line='2435' column='1'/>
+      <parameter type-id='type-id-40' name='command' filepath='src/libcxi.c' line='2435' column='1'/>
+      <parameter type-id='type-id-133' name='rsp_data' filepath='src/libcxi.c' line='2436' column='1'/>
+      <parameter type-id='type-id-135' name='result_code' filepath='src/libcxi.c' line='2436' column='1'/>
+      <parameter type-id='type-id-135' name='overrun' filepath='src/libcxi.c' line='2437' column='1'/>
+      <parameter type-id='type-id-9' name='timeout' filepath='src/libcxi.c' line='2437' column='1'/>
+      <parameter type-id='type-id-6' name='flags' filepath='src/libcxi.c' line='2438' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_sbus_op_reset' mangled-name='cxil_sbus_op_reset' filepath='src/libcxi.c' line='2480' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_sbus_op_reset@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2480' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_sbus_op_reset_compat' mangled-name='cxil_sbus_op_reset_compat' filepath='src/libcxi.c' line='2497' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_sbus_op_reset_compat@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev' filepath='src/libcxi.c' line='2497' column='1'/>
+      <parameter type-id='type-id-9' name='ring' filepath='src/libcxi.c' line='2497' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+    <function-decl name='cxil_serdes_op' mangled-name='cxil_serdes_op' filepath='src/libcxi.c' line='2502' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_serdes_op@@LIBCXI_1.0'>
+      <parameter type-id='type-id-12' name='dev_in' filepath='src/libcxi.c' line='2502' column='1'/>
+      <parameter type-id='type-id-9' name='port_num' filepath='src/libcxi.c' line='2502' column='1'/>
+      <parameter type-id='type-id-63' name='serdes_sel' filepath='src/libcxi.c' line='2503' column='1'/>
+      <parameter type-id='type-id-63' name='op' filepath='src/libcxi.c' line='2503' column='1'/>
+      <parameter type-id='type-id-63' name='data' filepath='src/libcxi.c' line='2503' column='1'/>
+      <parameter type-id='type-id-132' name='result' filepath='src/libcxi.c' line='2504' column='1'/>
+      <parameter type-id='type-id-9' name='timeout' filepath='src/libcxi.c' line='2504' column='1'/>
+      <parameter type-id='type-id-6' name='flags' filepath='src/libcxi.c' line='2504' column='1'/>
+      <return type-id='type-id-9'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='src/memory.c' comp-dir-path='/home/aabraham/devbootstrap/libcxi' language='LANG_C99'>
+    <pointer-type-def type-id='type-id-11' size-in-bits='64' id='type-id-138'/>
+    <function-decl name='cxil_page_size' mangled-name='cxil_page_size' filepath='src/memory.c' line='109' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_page_size@@LIBCXI_1.6'>
+      <parameter type-id='type-id-138' name='base' filepath='src/memory.c' line='109' column='1'/>
+      <return type-id='type-id-37'/>
+    </function-decl>
+    <function-decl name='cxil_is_copy_on_fork' mangled-name='cxil_is_copy_on_fork' filepath='src/memory.c' line='267' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='cxil_is_copy_on_fork@@LIBCXI_1.6'>
+      <return type-id='type-id-13'/>
+    </function-decl>
+  </abi-instr>
+</abi-corpus>

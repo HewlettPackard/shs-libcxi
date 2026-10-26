@@ -269,6 +269,41 @@ check-symver:
 
 .PHONY: check-symver
 
+# Shared-library ABI gate. abi/libcxi.abi (the "baseline") is a generated
+# libabigail description of the ABI we last agreed to ship. contrib/check-abi.sh
+# fails on any difference from it (for a new function, run `make update-abi`
+# and commit the regenerated baseline in the same PR so the addition shows
+# up in review), and also on anything removed or changed since the PR base
+# so that regenerating the baseline cannot hide an incompatible change.
+# ABI_BASE=<ref> picks the PR base; default is the merge-base with
+# origin/main (UPSTREAM_BRANCH overrides origin/main).
+#
+# Scoped to types declared in include/ so the baseline does not depend on
+# the sibling cxi-driver/cassini-headers checkouts (cxi-abi.h is covered
+# by the driver's own check-abi).
+#
+# The baseline records source line numbers. abidiff ignores them, so
+# editing libcxi.c never fails check-abi, but `make update-abi` on an
+# unrelated change will show line-number churn. Only regenerate the
+# baseline when the ABI actually changes. (--no-show-locs would avoid
+# the churn but breaks --headers-dir scoping in libabigail 2.3.)
+ABI_BASELINE = $(top_srcdir)/abi/libcxi.abi
+ABI_LIB = src/.libs/libcxi.so.1
+ABI_SCOPE = --headers-dir $(top_srcdir)/include --drop-private-types
+
+check-abi: src/libcxi.la
+	@$(top_srcdir)/contrib/check-abi.sh -s $(top_srcdir) -l $(ABI_LIB) \
+		$(if $(ABI_BASE),-p "$(ABI_BASE)")
+
+update-abi: src/libcxi.la
+	@command -v abidw >/dev/null || { echo "abidw not found; install libabigail"; exit 1; }
+	abidw --no-corpus-path $(ABI_SCOPE) --out-file $(ABI_BASELINE) $(ABI_LIB)
+	@echo "Regenerated $(ABI_BASELINE); review and commit it."
+
+.PHONY: check-abi update-abi
+
+EXTRA_DIST += abi/libcxi.abi abi/libcxi.suppr
+
 # UML documentation for the retry handler
 UML_FILES = \
 	retry_handler/docs/request-timeout-nack.uml \
