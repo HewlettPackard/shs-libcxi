@@ -7,6 +7,9 @@ git checkout -b rebase-test-branch
 ./autogen.sh
 ./configure --with-criterion=$(realpath ../Criterion/build/install)
 
+# Once per PR: a version bump may land in a later commit than the symbols.
+make check-symver || exit 1
+
 # Always leave a TAP file for Jenkins and abort any unfinished rebase.
 finish() {
 	git rebase --abort 2>/dev/null || true

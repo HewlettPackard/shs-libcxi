@@ -259,6 +259,16 @@ tests_legacy_opcode_test_LDADD = src/libcxi.la
 dist_man_MANS = $(utils_MANS)
 endif !ENABLE_STUB_ONLY
 
+# Version discipline: existing version nodes (LIBCXI_x.y blocks in
+# src/libcxi.sym) are frozen, new functions need a new version node, and
+# a new version node needs a configure.ac version bump.
+# Compares against the PR base (merge-base with origin/main) by default;
+# pass SYMVER_BASE=<ref> to compare against another ref.
+check-symver:
+	@$(top_srcdir)/contrib/check-symver.sh $(if $(SYMVER_BASE),-p "$(SYMVER_BASE)")
+
+.PHONY: check-symver
+
 # UML documentation for the retry handler
 UML_FILES = \
 	retry_handler/docs/request-timeout-nack.uml \
