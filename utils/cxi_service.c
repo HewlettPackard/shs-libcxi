@@ -291,7 +291,12 @@ static void print_descriptor(struct cxi_svc_desc *desc,
 		     desc->svc_id);
 
 	rc = cxil_svc_is_parent(opts->dev, desc->svc_id, &is_parent);
-	if (rc)
+	if (rc == -EINVAL)
+		/* For backward-compatibility with cxi-driver versions lacking
+		 * CXI_OP_SVC_IS_PARENT_GET.
+		 */
+		is_parent = false;
+	else if (rc)
 		errx(1, "Couldn't get parent status for descriptor %d: %d",
 		     desc->svc_id, rc);
 
