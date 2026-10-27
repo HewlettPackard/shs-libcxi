@@ -9,4 +9,7 @@ mkdir -p install
 make dist
 make -j 8
 make install # libfabric uses the libcxi installation
-ssh -tt localhost "cd ~/workspace/workspace/os-networking-team/cassini-vm/libcxi; rm -f tests/libcxi_test.tap tests/libcxi_vf_test.tap; make check"
+ws=~/workspace/workspace/os-networking-team/cassini-vm/libcxi
+ssh -tt localhost "cd $ws &&
+	rm -f tests/libcxi_test.tap tests/libcxi_vf_test.tap &&
+	exec timeout -k 30 15m make check"
