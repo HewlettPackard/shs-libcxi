@@ -7,7 +7,7 @@
 %endif
 
 Name:       cray-libcxi
-Version:    1.9.2
+Version:    1.13.0
 Release:    %(echo ${BUILD_METADATA})
 Summary:    Cassini userspace library
 License:    Dual LGPL-2.1/BSD-3-Clause

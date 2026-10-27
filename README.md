@@ -112,8 +112,21 @@ Given a version number MAJOR.MINOR.PATCH, increment the:
 - MINOR version when you add functionality in a backwards compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
 
-These changes should be made in configure.ac.
-See: API Versioning - Semantic
+Every version bump changes:
+- `configure.ac` (`api_major`, `api_minor`, `api_patch`),
+- `include/libcxi.h` (`LIBCXI_API_MAJOR`, `LIBCXI_API_MINOR`, `LIBCXI_API_PATCH`), and
+- `cray-libcxi.spec` (`Version:`);
+
+a MAJOR or MINOR bump also adds a `LIBCXI_<MAJOR>.<MINOR>` symbol-version
+stanza to `src/libcxi.sym` for the new symbols.
+
+`make check` runs `contrib/check-version-sync.sh`, a TAP test that fails when
+`include/libcxi.h` or `cray-libcxi.spec` disagree with `configure.ac`; CI runs
+it for every commit (the symbol-version script has its own check). It is
+deliberately not part of `configure`, which every downstream build runs. The
+script can also be run by hand from the source tree; mismatches are reported
+as `not ok` lines and the exit status is non-zero only when the script could
+not run.
 
 Further details can be found here:
 https://semver.org/

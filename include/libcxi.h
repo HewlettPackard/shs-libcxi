@@ -25,6 +25,10 @@ extern "C" {
 #include "uapi/misc/cxi.h"
 #include "cassini_cntr_defs.h"
 
+#define LIBCXI_API_MAJOR 1
+#define LIBCXI_API_MINOR 13
+#define LIBCXI_API_PATCH 0
+
 #define CXIL_DEVNAME_MAX 13	/* "cxi" + up to 10 digits */
 #define CXIL_DRVNAME_MAX 8
 #define CXIL_FRUDESC_MAX 16
