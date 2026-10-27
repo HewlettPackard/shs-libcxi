@@ -48,8 +48,9 @@ make clean
 make dist
 make -j 8
 
-# Judged by the results file, not ssh's exit status.
-ssh -tt localhost "cd $CWD && make check" || true
+# Judged by the results file, not ssh's exit status. The timeout runs on
+# the ssh side so it can kill the VM; Jenkins can't reach it.
+ssh -tt localhost "cd $CWD && exec timeout -k 30 15m make check" || true
 # Keep a copy; cxi_vm_post.sh still needs the original.
 if [ -f tests/libcxi_test.tap ]; then
 	cp tests/libcxi_test.tap "tests/commit-taps/libcxi_test.${SHORT}.tap"
