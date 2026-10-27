@@ -36,6 +36,15 @@ TESTS =
 # configuration, including --enable-stub-only.
 TESTS += contrib/check-stub-symbols.sh
 EXTRA_DIST += contrib/check-stub-symbols.sh
+
+# Host-side test: include/libcxi.h (LIBCXI_API_*) and cray-libcxi.spec must
+# carry the api_major.api_minor.api_patch version from configure.ac (the
+# symbol-version script is covered by the symbol-version check). A source-tree lint, so it runs under `make check`
+# (CI runs it for every commit) rather than in configure, which every
+# downstream build runs and where nothing can be fixed. The spec test is
+# skipped when cray-libcxi.spec is absent.
+TESTS += contrib/check-version-sync.sh
+EXTRA_DIST += contrib/check-version-sync.sh
 LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
               $(top_srcdir)/tap-driver.sh
 
