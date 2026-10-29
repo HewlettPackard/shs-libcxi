@@ -45,6 +45,9 @@ static int h_malloc(struct mem_window *win)
 	return 0;
 }
 
+/* Note: is_device is false so we will use CPU pages. ROCm cannot export
+ * host-pinned memory as a dma-buf (hsa_amd_portable_export_dmabuf fails).
+ */
 static int h_host_alloc(struct mem_window *win)
 {
 	hipError_t rc = hip_host_alloc((void **)&win->buffer, win->length,
@@ -52,7 +55,7 @@ static int h_host_alloc(struct mem_window *win)
 
 	cr_assert_eq(rc, hipSuccess, "hip_host_alloc() failed %d", rc);
 	win->loc = on_host;
-	win->is_device = true;
+	win->is_device = false;
 
 	return 0;
 }

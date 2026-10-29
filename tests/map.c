@@ -2319,7 +2319,7 @@ ParameterizedTest(bool *use_dmabuf, map_xfer, device5)
 
 Test(map_xfer, device6)
 {
-	struct mem_window src_mem = {.use_dmabuf = true};
+	struct mem_window src_mem = {.use_dmabuf = false};
 	struct mem_window dst_mem = {};
 	size_t len = 64UL * 1024;
 	int rc;
@@ -2374,21 +2374,12 @@ ParameterizedTest(bool *use_dmabuf, map_xfer, device7)
 	gpu_lib_fini();
 }
 
-ParameterizedTestParameters(map_xfer, device8)
-{
-	size_t param_sz;
-	static bool param[] = {false, true};
-
-	param_sz = ARRAY_SIZE(param);
-	return cr_make_param_array(bool, param, param_sz);
-}
-
-ParameterizedTest(bool *use_dmabuf, map_xfer, device8)
+Test(map_xfer, device8)
 {
 	int rc;
 	size_t len;
-	struct mem_window src_mem = {.use_dmabuf = *use_dmabuf};
-	struct mem_window dst_mem = {.use_dmabuf = *use_dmabuf};
+	struct mem_window src_mem = {.use_dmabuf = false};
+	struct mem_window dst_mem = {.use_dmabuf = false};
 
 	rc = gpu_lib_init();
 	if (rc)

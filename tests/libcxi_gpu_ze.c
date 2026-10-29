@@ -278,6 +278,7 @@ static int ze_malloc(struct mem_window *win)
 	return 0;
 }
 
+/* Note: is_device is false so we will use CPU pages. */
 static int ze_alloc_host(struct mem_window *win)
 {
 	ze_result_t ze_ret;
@@ -290,7 +291,7 @@ static int ze_alloc_host(struct mem_window *win)
 	}
 
 	win->loc = on_host;
-	win->is_device = true;
+	win->is_device = false;
 
 	return 0;
 }
