@@ -442,6 +442,8 @@ static int ze_close_fd(int fd)
 	return 0;
 }
 
+bool ze_active;
+
 int ze_init(void)
 {
 	int ret;
@@ -506,6 +508,9 @@ int ze_init(void)
 	gpu_memcpy = ze_memcpy;
 	gpu_props = ze_mem_props;
 	gpu_close_fd = ze_close_fd;
+	ze_active = true;
+
+	printf("Found Intel GPU\n");
 
 	return 0;
 
@@ -518,6 +523,8 @@ err:
 void ze_fini(void)
 {
 	// int i;
+
+	ze_active = false;
 
 	if (!libze_handle)
 		return;

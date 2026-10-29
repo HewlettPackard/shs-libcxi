@@ -206,6 +206,7 @@ int cuda_lib_init(void);
 void cuda_lib_fini(void);
 void ze_fini(void);
 int ze_init(void);
+extern bool ze_active;
 extern int (*gpu_malloc)(struct mem_window *win);
 extern int (*gpu_host_alloc)(struct mem_window *win);
 extern int (*gpu_free)(void *devPtr);

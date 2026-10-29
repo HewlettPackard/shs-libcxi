@@ -217,6 +217,14 @@ Test(device_ct, device)
 	if (rc)
 		cr_skip_test("No GPU detected\n");
 
+#ifdef HAVE_ZE_SUPPORT
+	/* driver can only pin ZE memory via dma-buf, which CT alloc lacks */
+	if (ze_active) {
+		gpu_lib_fini();
+		cr_skip_test("CT writeback in ZE memory not supported\n");
+	}
+#endif
+
 	buf.length = sizeof(*wb);
 	rc = gpu_malloc(&buf);
 	cr_assert_eq(rc, 0, "gpu_malloc() failed %d", rc);

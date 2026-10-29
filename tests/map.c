@@ -2219,8 +2219,8 @@ Test(map_xfer, device3)
 {
 	int rc;
 	size_t len;
-	struct mem_window src_mem;
-	struct mem_window dst_mem;
+	struct mem_window src_mem = {};
+	struct mem_window dst_mem = {};
 
 	rc = gpu_lib_init();
 	if (rc)
