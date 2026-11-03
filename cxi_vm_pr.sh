@@ -66,9 +66,9 @@ if grep -q "not ok" tests/libcxi_test.tap; then
 	exit 1
 fi
 # make check also runs the host-side TAP tests (stub symbol check, version
-# sync check) in commits that carry them; each result is in its .trs. This
-# gate comes from the PR head and runs against every commit, so skip a check
-# where its test does not exist yet.
+# sync check, glibc baseline check) in commits that carry them; each result
+# is in its .trs. This gate comes from the PR head and runs against every
+# commit, so skip a check where its test does not exist yet.
 if [ -f contrib/check-stub-symbols.sh ] &&
    ! grep -q "^:global-test-result: PASS" contrib/check-stub-symbols.sh.trs; then
 	echo "not ok - Commit ${SHORT} Tests Status" >> commit-results.tap
@@ -79,6 +79,12 @@ if [ -f contrib/check-version-sync.sh ] &&
    ! grep -q "^:global-test-result: PASS" contrib/check-version-sync.sh.trs; then
 	echo "not ok - Commit ${SHORT} Tests Status" >> commit-results.tap
 	echo "version sync check failed; see contrib/check-version-sync.sh.log" >&2
+	exit 1
+fi
+if [ -f contrib/check-glibc-baseline.sh ] &&
+   ! grep -q "^:global-test-result: PASS" contrib/check-glibc-baseline.sh.trs; then
+	echo "not ok - Commit ${SHORT} Tests Status" >> commit-results.tap
+	echo "glibc baseline check failed; see contrib/check-glibc-baseline.sh.log" >&2
 	exit 1
 fi
 echo "ok - Commit ${SHORT} Tests Status" >> commit-results.tap
