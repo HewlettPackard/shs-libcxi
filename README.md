@@ -120,7 +120,9 @@ commit. When it fails, the diagnostic lines before `not ok 1` name the
 symbols bound above the baseline (or the `GLIBC_ABI_DT_RELR` node of a
 `-z pack-relative-relocs` link, which needs glibc 2.36); the fix is usually a
 feature macro, an avoidable new glibc interface or a linker flag, not a change
-to the baseline.
+to the baseline. On RHEL 10, whose default linker flags pack relative
+relocations, `cray-libcxi.spec` opts out (`%undefine _ld_pack_relocs`) so the
+packaged library keeps loading on older container glibc versions.
 
 API Versioning
 ----------
