@@ -6,6 +6,16 @@
 %define static_subpackage static
 %endif
 
+%if 0%{?rhel} >= 10
+# RHEL 10 links with -z pack-relative-relocs (DT_RELR) by default, which gives
+# every shared object a GLIBC_ABI_DT_RELR version need that only glibc 2.36 and
+# newer satisfy. libcxi.so.1 is bind-mounted into containers whose glibc may be
+# older (RHEL 8/9, Ubuntu 22.04 images on an upgraded host), so keep the legacy
+# relative relocations; the library grows by about 34 KB and nothing else
+# changes. See contrib/check-glibc-baseline.sh.
+%undefine _ld_pack_relocs
+%endif
+
 Name:       cray-libcxi
 Version:    1.13.0
 Release:    %(echo ${BUILD_METADATA})
