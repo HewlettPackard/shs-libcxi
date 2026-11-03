@@ -53,7 +53,12 @@ AS_IF([test "x$enable_stub_only" != "xyes"], [
      PKG_CHECK_MODULES([LIBNUMA], [numa >= 2.0])
 ])
 
+# gnu11: the newest standard the SLES 15 system compiler (GCC 7) accepts, and
+# below C2X, so glibc 2.38+ headers do not redirect the scanf family (and strtol
+# through the inline atoi) to the __isoc23_* symbols, which would raise the
+# installed library's minimum glibc.
 pkg_CFLAGS="\
+-std=gnu11 \
 -Wall \
 -Wchar-subscripts \
 -Wformat-security \

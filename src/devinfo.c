@@ -3,7 +3,20 @@
 
 /* User space-CXI device interaction */
 
-#define _GNU_SOURCE
+/* Feature-test macros instead of _GNU_SOURCE. The library needs POSIX.1-2008
+ * (getline, realpath, glob, O_CLOEXEC), the default-source extensions and
+ * asprintf (ISO C TR 24731-2, __STDC_WANT_LIB_EXT2__; honoured by glibc 2.25
+ * and newer, so an older build host fails loudly with an undeclared asprintf).
+ * _GNU_SOURCE would also select the C2X feature set, under which glibc 2.38+
+ * headers bind the scanf family, and strtol through glibc's inline atoi, to
+ * the __isoc23_* symbols and raise the library's minimum glibc to 2.38; the
+ * installed libcxi.so.1 is bind-mounted into containers whose glibc may be
+ * older, so keep the requirement at the symbols the code actually uses.
+ * configure.ac pins -std=gnu11 for the same reason.
+ */
+#define _POSIX_C_SOURCE 200809L
+#define _DEFAULT_SOURCE
+#define __STDC_WANT_LIB_EXT2__ 1
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
