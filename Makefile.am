@@ -45,6 +45,16 @@ EXTRA_DIST += contrib/check-stub-symbols.sh
 # skipped when cray-libcxi.spec is absent.
 TESTS += contrib/check-version-sync.sh
 EXTRA_DIST += contrib/check-version-sync.sh
+
+# Host-side test: the built libcxi.so.1 must stay loadable on older glibc,
+# because the installed library is bind-mounted into containers whose glibc
+# may be older than the build host's. Checks the highest GLIBC_ version node
+# the library needs against a baseline (default 2.28, RHEL 8; override with
+# LIBCXI_GLIBC_BASELINE) and that every NEEDED entry is on an allowed list
+# (override with LIBCXI_NEEDED_ALLOW). Runs in the regular and the
+# --enable-stub-only build; needs only readelf.
+TESTS += contrib/check-glibc-baseline.sh
+EXTRA_DIST += contrib/check-glibc-baseline.sh
 LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) \
               $(top_srcdir)/tap-driver.sh
 

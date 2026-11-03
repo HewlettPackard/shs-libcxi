@@ -72,7 +72,7 @@ fi
 # This gate comes from the PR head and runs against every commit, so skip
 # a test the commit doesn't have yet.
 for t in contrib/check-stub-symbols.sh contrib/check-version-sync.sh \
-	 tests/legacy_opcode_test; do
+	 contrib/check-glibc-baseline.sh tests/legacy_opcode_test; do
 	[ -f "$t" ] || [ -f "$t.c" ] || continue
 	if ! grep -q "^:global-test-result: PASS" "$t.trs"; then
 		echo "not ok - Commit ${SHORT} Tests Status" \

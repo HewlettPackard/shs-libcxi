@@ -102,6 +102,26 @@ header but not in the stub (or vice versa) and a header function that
 `src/libcxi.sym` does not export. When adding a `CXIL_API` function, add it
 to the header, to `src/libcxi.sym`, and to the stub in the same commit.
 
+glibc baseline
+--------------
+The installed `libcxi.so.1` is bind-mounted into containers (see "Stub-only
+build"), so the glibc symbol versions it requires set the oldest glibc a
+container can have. The library source therefore uses the POSIX and
+default-source feature macros plus `__STDC_WANT_LIB_EXT2__` (for `asprintf`)
+instead of `_GNU_SOURCE`, which on glibc 2.38 and newer would bind `strtol`
+and the scanf family to the `__isoc23_*` symbols and raise the requirement to
+`GLIBC_2.38`, and `configure.ac` pins `-std=gnu11`. `make check` runs
+`contrib/check-glibc-baseline.sh`, a TAP test that fails when the built
+library needs a `GLIBC_` version above the baseline (default 2.28, the RHEL 8
+glibc; `LIBCXI_GLIBC_BASELINE=x.y make check` to override) or has a `NEEDED`
+entry outside the allowed list (`LIBCXI_NEEDED_ALLOW`; glibc's own dynamic
+linker is always accepted). CI runs it for every
+commit. When it fails, the diagnostic lines before `not ok 1` name the
+symbols bound above the baseline (or the `GLIBC_ABI_DT_RELR` node of a
+`-z pack-relative-relocs` link, which needs glibc 2.36); the fix is usually a
+feature macro, an avoidable new glibc interface or a linker flag, not a change
+to the baseline.
+
 API Versioning
 ----------
 The "API" / Overall Project revision will utilize Semantic versioning.
