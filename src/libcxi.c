@@ -1058,6 +1058,70 @@ CXIL_API int cxil_destroy_ct(struct cxi_ct *ct)
 	return 0;
 };
 
+/* The hardware spaces CQ launch windows 64 KiB apart. Guard at least that
+ * much on each side of the mapped launch page, and never less than a page.
+ */
+#define CQ_LAUNCH_GUARD_MIN (64 * 1024)
+
+/* Map a CQ launch page between two inaccessible guard regions.
+ *
+ * The launch page is write-combining MMIO (Normal-NC on arm64). Software only
+ * ever writes it, but the CPU may read Normal-NC memory speculatively: a
+ * hardware prefetcher or a speculative load running off the top of an adjacent
+ * cacheable buffer reaches into the launch page, and the NIC rejects every
+ * such read with a Completer Abort (C_PI_EXT pri_mb_xlat_pf_addr_error and
+ * pri_mb_xlat_comp_ca). A PROT_NONE region has no translation, so the
+ * speculation stops there and the launch page is never adjacent to anything
+ * the CPU reads.
+ */
+static int map_cq_launch(struct cxil_cq *ccq, int fd, off_t offset)
+{
+	long page = sysconf(_SC_PAGESIZE);
+	size_t guard = CQ_LAUNCH_GUARD_MIN;
+	size_t launch_len;
+	void *region;
+	void *csr;
+	int rc;
+
+	if (page <= 0)
+		return -errno ? -errno : -EINVAL;
+
+	launch_len = (ccq->csr_len + page - 1) & ~((size_t)page - 1);
+	if (guard < (size_t)page)
+		guard = page;
+	guard = (guard + page - 1) & ~((size_t)page - 1);
+
+	ccq->csr_region_len = launch_len + 2 * guard;
+	region = mmap(NULL, ccq->csr_region_len, PROT_NONE,
+		      MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
+	if (region == MAP_FAILED)
+		return -errno;
+
+	csr = mmap((char *)region + guard, ccq->csr_len,
+		   PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, fd, offset);
+	if (csr == MAP_FAILED) {
+		rc = -errno;
+		munmap(region, ccq->csr_region_len);
+		return rc;
+	}
+
+	ccq->csr_region = region;
+	ccq->csr = csr;
+
+	return 0;
+}
+
+/* Unmap a CQ launch page together with its guard regions. */
+static int unmap_cq_launch(struct cxil_cq *ccq)
+{
+	if (ccq->csr && munmap(ccq->csr_region, ccq->csr_region_len))
+		return -errno;
+	ccq->csr = NULL;
+	ccq->csr_region = NULL;
+
+	return 0;
+}
+
 /* Allocate a CXI CMDQ */
 CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 				 const struct cxi_cq_alloc_opts_buf *opts_in,
@@ -1117,13 +1181,9 @@ CXIL_API int cxil_alloc_buf_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 	}
 
 	/* mmaping csr block */
-	ccq->csr = mmap(NULL, resp.wp_addr.size,
-			PROT_READ | PROT_WRITE, MAP_SHARED, lni_priv->dev->fd,
-			resp.wp_addr.offset);
-	if (ccq->csr == MAP_FAILED) {
-		rc = -errno;
+	rc = map_cq_launch(ccq, lni_priv->dev->fd, resp.wp_addr.offset);
+	if (rc)
 		goto unmap_cmds;
-	}
 
 	cxi_cq_init(&ccq->hw, ccq->cmds, resp.count, ccq->csr,
 		    ccq->cmdq_hndl);
@@ -1189,13 +1249,9 @@ CXIL_API int cxil_alloc_cmdq(struct cxil_lni *lni, struct cxi_eq *evtq,
 	}
 
 	/* mmaping csr block */
-	ccq->csr = mmap(NULL, resp.wp_addr.size,
-			PROT_READ | PROT_WRITE, MAP_SHARED, lni_priv->dev->fd,
-			resp.wp_addr.offset);
-	if (ccq->csr == MAP_FAILED) {
-		rc = -errno;
+	rc = map_cq_launch(ccq, lni_priv->dev->fd, resp.wp_addr.offset);
+	if (rc)
 		goto unmap_cmds;
-	}
 
 	cxi_cq_init(&ccq->hw, ccq->cmds, resp.count, ccq->csr,
 		    ccq->cmdq_hndl);
@@ -1237,9 +1293,9 @@ CXIL_API int cxil_destroy_cmdq(struct cxi_cq *cmdq)
 	 * Test code will force failures, so this is written to be safely called
 	 * again after the underlying forcing-condition has been removed.
 	 */
-	if (ccq->csr && munmap(ccq->csr, ccq->csr_len))
-		return -errno;
-	ccq->csr = NULL;
+	rc = unmap_cq_launch(ccq);
+	if (rc)
+		return rc;
 
 	if (ccq->cmds && !ccq->user_buffer && munmap(ccq->cmds, ccq->cmds_len))
 		return -errno;
